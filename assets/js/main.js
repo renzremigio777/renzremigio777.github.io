@@ -12,14 +12,16 @@ window.addEventListener("load", () => {
     const video = document.getElementById('video');
     const videoSrc = 'http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8';
 
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Safari
-      video.src = videoSrc;
-    } else if (Hls.isSupported()) {
-      // Other browsers
-      const hls = new Hls();
-      hls.loadSource(videoSrc);
-      hls.attachMedia(video);
+    if(video) {
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari
+        video.src = videoSrc;
+      } else if (Hls.isSupported()) {
+        // Other browsers
+        const hls = new Hls();
+        hls.loadSource(videoSrc);
+        hls.attachMedia(video);
+      }
     }
   }
   function startProgress() {

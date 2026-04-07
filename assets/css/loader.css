@@ -1,0 +1,40 @@
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  pointer-events: none;
+  background-color: #0a0202;
+  /* background-color: #cccccc33; */
+  opacity: 1;
+}
+.loader.fading {
+  animation: fadeOut 1s ease-out  alternate;
+}
+
+@keyframes fadeOut {
+ 0%{
+  opacity: 1;
+ }
+ 100%{
+  opacity: 0;
+ }
+}
+
+.loader .logo {
+  grid-area: unset;
+  height: 1;
+  font-family: var(--font-main);
+}
+
+.loader svg {
+  width: 100%;
+  max-width: 100px;
+  /* background-color: rgba(90, 88, 92, 0.185); */
+}
+.loader svg text {
+  font-family: var(--font-main);
+  fill: #fff;
+}
