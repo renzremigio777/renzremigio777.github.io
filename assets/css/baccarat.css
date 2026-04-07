@@ -75,20 +75,21 @@ html, body {
   flex: 1 0 30%;
 }
 .hud-panel > svg {
-  background: #ffffff46;
-  width: 100%;
+  background: #243b95b0;
+    width: 100%;
+    border: dotted 1px white;
 }
 
 
 
 .hud svg text {
   font-family: var(--font-main);
-  fill: #2c2525;
+  fill: #fff;
   /* font-size: clamp(12px, 4vw, 28px); */
-  font-weight:900;
+  font-weight:500;
 }
 
 .hud-panel > svg.white-road {
-  background: #fff;
+  background: #ffffff4d;
 }
 
