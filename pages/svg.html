@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Betzone - SVG Playground</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="../assets/css/icons.css" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/svg.css" />
+</head>
+<body>
+  <!-- <div class="extra">
+
+  </div> -->
+  <div class="layout">
+    <aside>
+      <a href="#" class="logo"<span>Bet</span><span>Zone</span></a>
+      <h2 class="logo-narrow"><span>B</span><span>Z</span></h2>
+      <div class="wallet-info">
+        <p class="money"><i class="icon-casino"></i>PHP 34,002</p>
+        <p class="users"><i class="icon-user"></i>player58900</p>
+      </div>
+      <nav>
+        <ul>
+          <li>
+            <a href="#"  class="" >
+              <span class="icons">
+                <i class="icon-game"></i>
+              </span> 
+              <span>
+                SVG Playground
+              </span> 
+            </a>
+          </li>
+          <li>
+            <a href="/index.html"  >
+              <span class="icons">
+                <i class="icon-game"></i>
+              </span> 
+              <span>
+                All Games
+              </span> 
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span class="icons">
+                  <i class="icon-top"></i>
+                </span>
+                <span>
+                  Top
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span class="icons">
+                  <i class="icon-new"></i>
+                </span>
+                <span>
+                  New
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span class="icons">
+                  <i class="icon-popular"></i>
+                </span>
+                <span>
+                  Popular
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span class="icons">
+                  <i class="icon-slots"></i>
+                </span>
+                <span>
+                  Slots
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span class="icons">
+                  <i class="icon-ttennis"></i>
+                </span>
+                <span>
+                  Table Games
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span class="icons">
+                  <i class="icon-jackpot"></i>
+                </span>
+                <span>
+                  Jackpots
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span class="icons">
+                  <i class="icon-live"></i>
+                </span>
+                <span>
+                  Live Games
+              </span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+       <!-- Search -->
+      <div class="bz-search">
+        <form class="bz-search-input">
+           <i class="icon-search"></i>
+          <input type="text" placeholder="Search">
+        </form>
+        <!-- <button type="button" class="bz-btn">Search</button> -->
+      </div>  
+    </aside>
+  
+    <main class="main-content">
+       <header class="topbar">
+        <h1>SVG Playground</h1>
+      </header>
+      <section>
+        <article>
+        <h2>Circle</h2>
+        <svg width="100" height="100">
+          <circle cx="50" cy="50" r="25" fill="none" stroke="#49a1ff" stroke-width="12"/>
+        </svg>
+      </article>
+      <article>
+        <h2>Rect</h2>
+        <svg width="100" height="100">
+          <rect width="50" height="50" x="25" y="25" fill="none" stroke="#49a1ff" stroke-width="12"/>
+        </svg>
+      </article>
+      <article class="viewbox">
+        <h2>View Box</h2>
+        <pre>&lt;svg viewBox=<span>"MinX MinY Width Height"</span>&gt;&lt;/svg&gt;</pre>
+        <svg width="100" height="100" viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="75" fill="#49a1ff" />
+        </svg>
+      </article>
+      <article>
+        <h2>Radial Gradient</h2>
+        <svg width="100" height="100">
+          <defs>
+            <radialgradient id="radialgradient" cx="50%" cy="50%" r="50%">
+              <stop offset="10%" stop-color="#49a1ff"></stop>
+              <stop offset="100%" stop-color="#184378"></stop>
+            </radialgradient>
+          </defs>
+          <rect width="50" height="50" x="25" y="25" fill="url(#radialgradient)"/>
+        </svg>
+      </article>
+      <article>
+        <h2>Linear Gradient</h2>
+        <svg width="100" height="100">
+          <defs>
+            <lineargradient id="lineargradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="20%" stop-color="#49a1ff"></stop>
+              <stop offset="100%" stop-color="#184378"></stop>
+            </lineargradient>
+          </defs>
+          <rect width="50" height="50" x="25" y="25" fill="url(#lineargradient)"/>
+        </svg>
+      </article>
+      <article class="text">
+        <h2>Text</h2>
+        <svg width="200" height="200">
+          <defs>
+            <lineargradient id="lineargradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#49a1ff"></stop>
+              <stop offset="100%" stop-color="#fff"></stop>
+            </lineargradient>
+          </defs>
+          <rect width="100" height="100" x="50" y="50" fill="url(#lineargradient2)"/>
+          <text x="55" y="80"z font-size="32" font-weight="700"  >.ara</text>
+        </svg>
+      </article>
+      <article class="text">
+        <h2>Path</h2>
+         <table>
+          <tbody>
+            <tr> <td>d</td><td>Draw</td></tr>
+            <tr> <td>M</td><td>Move</td></tr>
+            <tr> <td>L</td><td>Straight Lines</td></tr>
+          </tbody>
+         </table>
+         <br>
+         <pre>&lt;path d=<span>"M 10, 50 L 190, 50 M 10, 100 L 190, 100 M 10, 150 L 190, 150"</span>/&gt;</pre>
+        <svg width="200" height="200" viewBox="0 0 200 200">
+            <defs>
+            <lineargradient id="lineargradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#49a1ff"></stop>
+              <stop offset="100%" stop-color="#fff"></stop>
+            </lineargradient>
+          </defs>
+          <path d="M 10, 50 L 190, 50 M 10, 100 L 190, 100 M 10, 150 L 190, 150" stroke="url(#lineargradient3)" stroke-width="20px"/>
+        </svg>
+      </article>
+      </section>
+    </main>
+    
+  </div>
+</body>
+</html>
