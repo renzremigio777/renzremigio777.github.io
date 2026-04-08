@@ -31,16 +31,7 @@ html, body {
   color: #fff;
 }
 
-/* 
-.wrapper {
-  
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  position: relative;
-  background: black;
-  max-width: 100vw;
 
-} */
 .wrapper {
     aspect-ratio: 16 / 9;
     /* This is the key 👇 */
@@ -121,12 +112,10 @@ svg.roadmap .grid-line{
     position: sticky;
     bottom: 0;
     align-self: start;
-  }
-  .hud {
     flex-direction: column;
     bottom: 0;
-    
   }
+  
   .hud-panel {
     padding-block: 2px;
     padding-inline: 0px !important;
@@ -137,4 +126,29 @@ svg.roadmap .grid-line{
   .hud-panel:nth-child(2) {
     /* order: 2; */
   }
+}
+@media (max-height: 500px) {
+  .wrapper {
+    display: unset;
+    grid-template-rows: 1fr 1fr;
+    width: min(100vw, calc(100vh * (16 / 9)));
+    height: min(100vh, calc(100vw * (9 / 16)));
+  }
+
+  .hud {
+    position: absolute;
+    bottom: 0;
+    flex-direction: row;
+  }
+  .hud-panel {
+    padding-block: 2px;
+    padding-inline: 2px !important;
+  }
+  .hud-panel:nth-child(1) {
+    order: unset;
+  }
+  .hud-panel:nth-child(2) {
+    /* order: 2; */
+  }
+
 }
