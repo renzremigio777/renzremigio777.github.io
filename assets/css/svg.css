@@ -9,9 +9,10 @@ h2 {
 pre {
   font-weight: 600;
   font-family: var(--font-main);
+  white-space: pre-wrap;
 }
 pre span{
-      color: #ff5656;
+  color: #ff5656;
 }
 
 
