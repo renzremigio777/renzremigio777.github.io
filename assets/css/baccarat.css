@@ -127,7 +127,7 @@ svg.roadmap .grid-line{
     /* order: 2; */
   }
 }
-@media (max-height: 500px) {
+@media (max-width: 768px) and (max-height: 700px) {
   .wrapper {
     display: unset;
     grid-template-rows: 1fr 1fr;
