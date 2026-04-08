@@ -46,24 +46,16 @@
             <defs>
             
               <lineargradient id="secondary-blue-fill"  x1="50%" y1="0%" x2="50%" y2="100%" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: #10223c; stop-opacity:.8;"></stop>
-                <stop offset="100%" style="stop-color: #113c7c; stop-opacity:.8;"></stop>
+                <stop offset="0%" style="stop-color: #054bad; stop-opacity:.8;"></stop>
+                <!-- <stop offset="100%" style="stop-color: #113c7c; stop-opacity:.8;"></stop> -->
+                <stop offset="100%" style="stop-color: #0d203b; stop-opacity:.8;"></stop>
               </lineargradient>
               <lineargradient id="secondary-blue-stroke" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: #065bd8;stop-opacity: 0.8;"></stop>
                 <stop offset="100%" style="stop-color: #0f3d81;stop-opacity: 0.8;"></stop>
               </lineargradient>
-
               
-              <lineargradient id="secondary-green-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: rgb(138, 88, 52);"></stop>
-                <stop offset="100%" style="stop-color: rgb(109, 67, 37);"></stop>
-              </lineargradient>
-              <lineargradient id="secondary-green-stroke" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: rgb(138, 88, 52);"></stop>
-                <stop offset="100%" style="stop-color: rgb(109, 67, 37);"></stop>
-              </lineargradient>
-
+             
               <!-- RED -->
               <lineargradient id="secondary-red-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: #8a1313; stop-opacity: 0.8;"></stop>
@@ -73,7 +65,24 @@
                 <stop offset="0%" style="stop-color: #d51414; stop-opacity: 0.8;"></stop>
                 <stop offset="100%" style="stop-color: #8c1413; stop-opacity: 0.8;"></stop>
               </lineargradient>
-             
+              <!-- GREEN -->
+              <lineargradient id="secondary-green-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" style="stop-color: #0f661d; stop-opacity: 0.8;"></stop>
+                <stop offset="100%" style="stop-color: #163e12; stop-opacity: 0.8;"></stop>
+              </lineargradient>
+               <lineargradient id="secondary-green-stroke" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" style="stop-color: #188d4d;stop-opacity: 0.8;"></stop>
+                <stop offset="100%" style="stop-color: #0f812b;stop-opacity: 0.8;"></stop>
+              </lineargradient>
+              <!-- <lineargradient id="secondary-green-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" style="stop-color: rgb(138, 88, 52);"></stop>
+                <stop offset="100%" style="stop-color: rgb(109, 67, 37);"></stop>
+              </lineargradient>
+              <lineargradient id="secondary-green-stroke" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" style="stop-color: rgb(138, 88, 52);"></stop>
+                <stop offset="100%" style="stop-color: rgb(109, 67, 37);"></stop>
+              </lineargradient> -->
+
             </defs>
             <!-- LEFT -->
             <g class="place-bet" id="p-pair">
@@ -91,12 +100,16 @@
 
             <!-- MIDDLE 214-->
             <g class="place-bet" id="player">
-              <rect x="103" y="0" width="105" height="124" rx="3"  fill="url(#secondary-blue-fill)" stroke="url(#secondary-blue-stroke)" class="bet bet-left" />
-              <text x="154" y="20" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="700" fill="#fff">PLAYER</text>
+              <rect x="103" y="0" width="80" height="124" rx="3"  fill="url(#secondary-blue-fill)" stroke="url(#secondary-blue-stroke)" class="bet bet-left" />
+              <text x="143" y="20" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="700" fill="#fff">PLAYER</text>
+            </g>
+            <g class="place-bet" id="tie">
+              <rect x="186" y="0" width="47" height="124" rx="3"  fill="url(#secondary-green-fill)" stroke="url(#secondary-green-stroke)" class="bet bet-left" />
+              <text x="209" y="20" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="700" fill="#fff">TIE</text>
             </g>
             <g class="place-bet" id="banker">
-              <rect x="211" y="0" width="105" height="124" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
-              <text x="266" y="20" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="700" fill="#fff">BANKER</text>
+              <rect x="236" y="0" width="80" height="124" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
+              <text x="277" y="20" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="700" fill="#fff">BANKER</text>
             </g>
 
             <!-- RIGHT -->
@@ -123,6 +136,42 @@
       <div class="hud-panel">
         <svg id="fourroad" class="roadmap" preserveAspectRatio="xMidYMid meet"  viewBox="0 0 420 120">
         </svg>
+      </div>
+    </div>
+    <div class="common-ui">
+      <div class="top-gradient"></div>
+      <div class="top-left">top-left</div>
+      <div class="top-right">
+        <div class="top-right-menu">
+          <a href="#" class="common-btn"><i class="icon-message"></i></a>
+          <a href="#" class="common-btn"><i class="icon-game"></i></a>
+          <a href="#" class="common-btn"><i class="icon-history"></i></a>
+          <a href="#" class="common-btn"><i class="icon-jackpot"></i></a>
+          <a href="#" class="common-btn"><i class="icon-linelock"></i></a>
+          <a href="#" class="common-btn"><i class="icon-promos"></i></a>
+          <a href="#" class="common-btn"><i class="icon-slots"></i></a>
+          <a href="#" class="common-btn"><i class="icon-withdraw"></i></a>
+        </div>
+      </div>
+      <div class="bottom-left">
+         <div class="bottom-right-menu">
+            <a href="#" class="common-btn"><i class="icon-casino"></i></a>
+            <a href="#" class="common-btn wallet-data">
+              <div>Balance</div>
+              <div>PHP 100</div>
+            </a>
+            <a href="#" class="common-btn wallet-data">
+              <div>Total Bet</div>
+              <div>PHP 100</div>
+            </a>
+          </div>
+      </div>
+      <div class="bottom-right">
+        <div class="bottom-right-menu">
+          <a href="#" class="common-btn"><i class="icon-casino"></i></a>
+          <a href="#" class="common-btn"><i class="icon-deposit"></i><span>Table</span></a>
+          <a href="#" class="common-btn"><i class="icon-withdraw"></i><span>Lobby</span></a>
+        </div>
       </div>
     </div>
   </div>

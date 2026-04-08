@@ -47,7 +47,7 @@ html, body {
   /* aspect-ratio: 16/ 9; */
   width: 100%;
   height: 100%;
-  background-color: rgb(28, 27, 27);
+  /* background-color: rgb(28, 27, 27); */
  
 }
 /* HUD */
@@ -57,10 +57,12 @@ html, body {
   bottom: 0;
   display: flex;
   padding-inline: 4px;
+  padding-bottom: 1rem;
   /* gap: 4px; */
   box-sizing: border-box;
   width: 100%;
   justify-content: space-between;
+  align-items:center;
   background: linear-gradient(rgba(21, 21, 21, 0) 0%, rgba(21, 21, 21, 0.75) 39.04%, rgb(21, 21, 21) 100%);
   /* background: linear-gradient(180deg, #0000, #181818d9 45%, #181818d9 70%, #18181880); */
 }
@@ -103,12 +105,15 @@ svg.roadmap .grid-line{
 }
 
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
   .wrapper {
     display: grid;
-    grid-template-rows: 1fr 1fr;
+    /* grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr auto; */
+    grid-template-rows: auto 1fr;
     width: 100%;
-    height: unset;
+    /* height: unset; */
+    height: 100%;
   }
   .hud {
     position: sticky;
@@ -121,6 +126,7 @@ svg.roadmap .grid-line{
   .hud-panel {
     padding-block: 2px;
     padding-inline: 0px !important;
+    align-self: stretch;
   }
   .hud-panel:nth-child(1) {
     order: 2;
@@ -129,7 +135,114 @@ svg.roadmap .grid-line{
     /* order: 2; */
   }
 }
-@media (max-width: 768px) and (max-height: 700px) {
+
+.common-ui {
+  /* position: absolute */
+}
+.common-ui > div{
+  position: absolute;
+  box-sizing: border-box;
+}
+.top-gradient {
+    --rem-migration-size: 4.225px;
+    --color: 0, 0, 0;
+    background: linear-gradient(-11.3deg, #0000 73%, rgba(var(--color), .5) 89%), linear-gradient(11.3deg, #0000 73%, rgba(var(--color), .5) 89%);
+    height: calc(var(--rem-migration-size) * 12.5);
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+.top-left {
+  left: 0;
+  right: auto;
+  top: 0;
+}
+.top-right {
+  left: auto;
+  right: 0;
+  top: 0;
+}
+.bottom-left {
+  left: 0;
+  right: auto;
+  bottom: 0;
+}
+.bottom-right {
+    left: auto;
+    right: 0;
+    bottom: 0;
+}
+
+
+.top-right-menu {
+  display: flex;
+  gap: 4px;
+  padding: .5rem;
+}
+.top-right-menu a{
+  --buttonSize: clamp(22px,3vw,32px);
+    width: var(--buttonSize);
+    height: var(--buttonSize);
+    display: grid;
+    place-items: center;
+    border-radius: 5px;
+    font-size: 14;
+    
+} 
+.top-right-menu a:hover{
+  background-color: #ffffff56;
+}
+
+.bottom-right-menu {
+  display: flex;
+  gap: 4px;
+  padding: .5rem;
+}
+
+.bottom-right-menu a{
+    /* width: var(--buttonSize);
+    height: var(--buttonSize); */
+    display: flex;
+    border-radius: 50px;
+    /* font-size: 14px; */
+    background-color: #0606066b;
+    padding: 6px 1.2rem;
+    font-family: var(--font-main);
+    gap: 4px;
+    align-items: center;
+} 
+
+.common-btn {
+  font-weight: 500;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: #0606066b;
+  font-size: clamp(10px,1.4vw,18px);
+  min-height: 18px;
+}
+.common-btn:hover{
+  background-color: #ffffff56;
+}
+
+.common-btn.wallet-data   {
+  display: grid;
+  line-height: 1;
+  font-weight: 500;
+  place-items: center;
+  line-height: 0.7;
+}
+.common-btn.wallet-data :nth-child(1)  {
+  font-size: clamp(6px,1.4vw,10px);
+}
+.common-btn.wallet-data :nth-child(2)  {
+  color: #fbdc01;
+  font-size: clamp(10px,1.4vw,14px);
+}
+
+@media (max-width: 768px) and (max-height: 500px) {
   .wrapper {
     display: unset;
     grid-template-rows: 1fr 1fr;
