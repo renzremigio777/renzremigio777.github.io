@@ -105,7 +105,7 @@ svg.roadmap .grid-line{
 
 
 .place-bet:hover rect {
-  opacity: .92;
+  /* opacity: .92; */
   cursor: pointer;
 }
 
