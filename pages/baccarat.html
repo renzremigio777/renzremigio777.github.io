@@ -45,89 +45,84 @@
         <svg id="betting" class="betting" preserveAspectRatio="xMidYMid meet"  viewBox="0 0 420 125">
             <defs>
 
-              <lineargradient id="secondary-blue-fill"  x1="50%" y1="0%" x2="50%" y2="100%" y2="100" gradientUnits="userSpaceOnUse">
+              <lineargradient id="blue-fill"  x1="50%" y1="0%" x2="50%" y2="100%" y2="100" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: #054bad; stop-opacity:.8;"></stop>
                 <!-- <stop offset="100%" style="stop-color: #113c7c; stop-opacity:.8;"></stop> -->
                 <stop offset="100%" style="stop-color: #0d203b; stop-opacity:.8;"></stop>
               </lineargradient>
-              <lineargradient id="secondary-blue-stroke" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
+              <lineargradient id="blue-stroke" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: #065bd8;stop-opacity: 0.8;"></stop>
                 <stop offset="100%" style="stop-color: #0f3d81;stop-opacity: 0.8;"></stop>
               </lineargradient>
 
 
               <!-- RED -->
-              <lineargradient id="secondary-red-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
+              <lineargradient id="red-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: #8a1313; stop-opacity: 0.8;"></stop>
                 <stop offset="100%" style="stop-color: #3e1212; stop-opacity: 0.8;"></stop>
               </lineargradient>
-              <lineargradient id="secondary-red-stroke" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
+              <lineargradient id="red-stroke" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: #d51414; stop-opacity: 0.8;"></stop>
                 <stop offset="100%" style="stop-color: #8c1413; stop-opacity: 0.8;"></stop>
               </lineargradient>
               <!-- GREEN -->
-              <lineargradient id="secondary-green-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
+              <lineargradient id="green-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: #0f661d; stop-opacity: 0.8;"></stop>
                 <stop offset="100%" style="stop-color: #163e12; stop-opacity: 0.8;"></stop>
               </lineargradient>
-               <lineargradient id="secondary-green-stroke" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
+               <lineargradient id="green-stroke" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: #188d4d;stop-opacity: 0.8;"></stop>
                 <stop offset="100%" style="stop-color: #0f812b;stop-opacity: 0.8;"></stop>
               </lineargradient>
-              <!-- <lineargradient id="secondary-green-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: rgb(138, 88, 52);"></stop>
-                <stop offset="100%" style="stop-color: rgb(109, 67, 37);"></stop>
-              </lineargradient>
-              <lineargradient id="secondary-green-stroke" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: rgb(138, 88, 52);"></stop>
-                <stop offset="100%" style="stop-color: rgb(109, 67, 37);"></stop>
-              </lineargradient> -->
 
             </defs>
             <!-- LEFT -->
             <g class="place-bet" id="p-pair">
-              <rect  x="0" y="0" width="100" height="39" rx="3"  fill="url(#secondary-blue-fill)" stroke="url(#secondary-blue-stroke)" class="bet bet-left" />
+              <rect  x="0" y="0" width="100" height="39" rx="3"  fill="url(#blue-fill)" stroke="url(#blue-stroke)" class="bet bet-left" />
               <text x="50" y="20" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">P PAIR</text>
             </g>
             <g class="place-bet" id="p-bonus">
-              <rect x="0" y="42" width="100" height="39" rx="3"  fill="url(#secondary-blue-fill)" stroke="url(#secondary-blue-stroke)" class="bet bet-left" />
+              <rect x="0" y="42" width="100" height="39" rx="3"  fill="url(#blue-fill)" stroke="url(#blue-stroke)" class="bet bet-left" />
               <text x="50"  y="61.5" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">P BONUS </text>
             </g>
             <g class="place-bet" id="perfect-pair">
-              <rect  x="0" y="84.5" width="100" height= "39" rx="3"  fill="url(#secondary-green-fill)" stroke="url(#secondary-green-stroke)" class="bet bet-left" />
+              <rect  x="0" y="84.5" width="100" height= "39" rx="3"  fill="url(#green-fill)" stroke="url(#green-stroke)" class="bet bet-left" />
               <text x="50" y="107" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">PERFECT PAIR</text>
             </g>
 
-            <!-- MIDDLE 214-->
+            <!-- MIDDLE width:214-->
             <g class="place-bet" id="player">
-              <rect x="103" y="0" width="80" height="124" rx="3"  fill="url(#secondary-blue-fill)" stroke="url(#secondary-blue-stroke)" class="bet bet-left" />
-              <text x="143" y="20" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="700" fill="#fff">PLAYER</text>
-            </g>
-            <g class="place-bet" id="tie">
-              <rect x="186" y="0" width="47" height="124" rx="3"  fill="url(#secondary-green-fill)" stroke="url(#secondary-green-stroke)" class="bet bet-left" />
-              <text x="209" y="20" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="700" fill="#fff">TIE</text>
+              <path d="M209 8 A42 42 0 0 0 168 46 V124 H103 V0 H209" fill="url(#blue-fill)" stroke="url(#blue-stroke)"/>
+              <!-- <rect x="103" y="0" width="80" height="124" rx="3"  fill="url(#blue-fill)" stroke="url(#blue-stroke)" class="bet bet-left" /> -->
+              <text x="137" y="100" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="700" fill="#fff">PLAYER</text>
             </g>
             <g class="place-bet" id="banker">
-              <rect x="236" y="0" width="80" height="124" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
-              <text x="277" y="20" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="700" fill="#fff">BANKER</text>
+              <path d="M211 8 A42 42 0 0 1 252 46 V124 H317 V0 H211 Z" fill="url(#red-fill)" stroke="url(#red-stroke)"/>
+              <!-- <rect x="236" y="0" width="80" height="124" rx="3"  fill="url(#red-fill)" stroke="url(#red-stroke)" class="bet bet-left" /> -->
+              <text x="280" y="100" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="700" fill="#fff">BANKER</text>
+            </g>
+            <g class="place-bet" id="tie" >
+              <path d="M170 50 A40 40 0 0 1 250 50 V124 H170 Z" fill="url(#green-fill)" stroke="url(#green-stroke)"/>
+              <!-- <rect x="186" y="0" width="47" height="124" rx="3"   class="bet bet-left" /> -->
+              <text x="209" y="100" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="700" fill="#fff">TIE</text>
             </g>
 
             <!-- RIGHT -->
             <g class="place-bet" id="b-pair">
-              <rect x="319" y="0" width="100" height="39" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
+              <rect x="319" y="0" width="100" height="39" rx="3"  fill="url(#red-fill)" stroke="url(#red-stroke)" class="bet bet-left" />
               <text x="371" y="20" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">B PAIR</text>
             </g>
             <g class="place-bet" id="b-bonus">
-              <rect x="319" y="42" width="100" height="39" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
+              <rect x="319" y="42" width="100" height="39" rx="3"  fill="url(#red-fill)" stroke="url(#red-stroke)" class="bet bet-left" />
               <text x="371" y="61.5" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">B BONUS </text>
             </g>
             <g class="place-bet" id="either-pair">
-              <rect  x="319" y="84.5" width="100" height= "39" rx="3"  fill="url(#secondary-green-fill)" stroke="url(#secondary-green-stroke)" class="bet bet-left" />
+              <rect  x="319" y="84.5" width="100" height= "39" rx="3"  fill="url(#green-fill)" stroke="url(#green-stroke)" class="bet bet-left" />
               <text x="371" y="107" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">EITHER PAIR</text>
             </g>
 
              <!-- <g class="place-bet" id="b-pair">
-              <rect x="306" y="0" width="100" height="39" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
+              <rect x="306" y="0" width="100" height="39" rx="3"  fill="url(#red-fill)" stroke="url(#red-stroke)" class="bet bet-left" />
               <text x="306" y="20" font-size="11" font-weight="700" fill="#fff">B PAIR</text>
             </g> -->
 

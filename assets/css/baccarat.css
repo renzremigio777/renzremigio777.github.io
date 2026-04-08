@@ -85,6 +85,16 @@ html, body {
   font-family: var(--font-main);
 }
 
+.hud-panel:has(svg.betting) {
+  perspective: 900px;
+}
+svg.betting{
+  transition: all 1s ease-in-out;
+}
+svg.betting.disabled{
+  transform: rotateX(30deg) scale(.9);
+  }
+
 svg.roadmap {
   /* background: #fff; */
 }
@@ -99,9 +109,12 @@ svg.roadmap .grid-line{
 }
 
 
-.place-bet:hover rect {
-  /* opacity: .92; */
+.place-bet {
   cursor: pointer;
+}
+.place-bet:hover > :where(path,rect) {
+  /* stroke: url(#blue-stroke) */
+  stroke: #fff
 }
 
 
