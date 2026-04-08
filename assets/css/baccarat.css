@@ -114,7 +114,10 @@ svg.roadmap .grid-line{
 }
 .place-bet:hover > :where(path,rect) {
   /* stroke: url(#blue-stroke) */
-  stroke: #fff
+  stroke: #ffffffa1
+}
+.place-bet:hover > :where(text) {
+  text-shadow: 0 0 10px #ffffff81;
 }
 
 
