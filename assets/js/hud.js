@@ -78,6 +78,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   }
+
+  const placeBetButtons = document.querySelectorAll('svg.betting > .place-bet');
+  for (let i = 0; i < placeBetButtons.length; i++) {
+    const btn = placeBetButtons[i];
+
+    btn.addEventListener('click', () => {
+      alert(btn.id);
+    });
+  }
+ 
  
   renderBeadRoad();
   renderFourRoad();

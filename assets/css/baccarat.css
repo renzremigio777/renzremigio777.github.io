@@ -71,7 +71,7 @@ html, body {
   bottom: 0;
   display: flex;
   padding-inline: 4px;
-  gap: 4px;
+  /* gap: 4px; */
   box-sizing: border-box;
   width: 100%;
   justify-content: space-between;
@@ -83,7 +83,7 @@ html, body {
 
 .hud-panel:nth-child(2) {
  flex: 1.25;
-  padding-inline: .25rem;
+  padding-inline: 4px;
 
 }
 .hud-panel > svg {
@@ -110,7 +110,7 @@ svg.roadmap .grid-line{
 
 
 .place-bet:hover rect {
-  opacity: .5;
+  opacity: .92;
   cursor: pointer;
 }
 
