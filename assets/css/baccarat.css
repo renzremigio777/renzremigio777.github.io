@@ -57,7 +57,8 @@ html, body {
   /* aspect-ratio: 16/ 9; */
   width: 100%;
   height: 100%;
-  background-color: black;
+  background-color: rgb(28, 27, 27);
+ 
 }
 /* HUD */
 
@@ -65,31 +66,49 @@ html, body {
   position: absolute;
   bottom: 0;
   display: flex;
-  padding-inline: 8px;
-  gap: 8px;
+  padding-inline: 4px;
+  gap: 4px;
   box-sizing: border-box;
   width: 100%;
+  justify-content: space-between;
 }
 .hud-panel {
-  padding-block: 8px;
-  flex: 1 0 30%;
-}
-.hud-panel > svg {
-  background: #243b95b0;
-    width: 100%;
-    border: dotted 1px white;
+  flex: 1;
+  padding-block: 1rem;
 }
 
+.hud-panel:nth-child(2) {
+ flex: 1.25;
+  padding-inline: .25rem;
+
+}
+.hud-panel > svg {
+  width: 100%;
+}
 
 
 .hud svg text {
   font-family: var(--font-main);
-  fill: #fff;
-  /* font-size: clamp(12px, 4vw, 28px); */
-  font-weight:500;
 }
 
-.hud-panel > svg.white-road {
-  background: #ffffff4d;
+svg.roadmap {
+  /* background: #fff; */
 }
+svg.roadmap text{
+  fill: black;
+}
+svg.roadmap .grid-line{
+  /* stroke: rgba(179, 179, 179, 0.5);
+  stroke-width: 0.05; */
+  stroke-width: 0.15;
+  stroke: #000;
+}
+
+
+.place-bet:hover rect {
+  opacity: .5;
+  cursor: pointer;
+}
+
+
 
