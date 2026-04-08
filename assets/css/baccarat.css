@@ -8,12 +8,7 @@ html {
 }
 body {
   background:linear-gradient(0deg, #151a20 100%, #184378 16%);
-  /* width: 100%;
-  position: relative;
-  display: grid;
-  height: 100%;
-  align-content: center;
-  place-items: center; */
+
 
       position: relative;
     width: 100vw;
@@ -115,4 +110,31 @@ svg.roadmap .grid-line{
 }
 
 
-
+@media (max-width: 800px) {
+  .wrapper {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    width: 100%;
+    height: unset;
+  }
+  .hud {
+    position: sticky;
+    bottom: 0;
+    align-self: start;
+  }
+  .hud {
+    flex-direction: column;
+    bottom: 0;
+    
+  }
+  .hud-panel {
+    padding-block: 2px;
+    padding-inline: 0px !important;
+  }
+  .hud-panel:nth-child(1) {
+    order: 2;
+  }
+  .hud-panel:nth-child(2) {
+    /* order: 2; */
+  }
+}
