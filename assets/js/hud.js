@@ -40,9 +40,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   }
-  function renderFourRoad() {
-    const fourRode = document.querySelector('svg#fourroad');
-    fourRode.setAttribute('viewBox', `0 0 ${wrapperWidth} ${wrapperHeight}`);
+  function renderBigRoad() {
+    const fourRoad = document.querySelector('svg#fourroad');
+    fourRoad.setAttribute('viewBox', `0 0 ${wrapperWidth} ${wrapperHeight}`);
+    
+
+    const bigRoad = document.querySelector('#big-road');
+    // bigRoad.setAttribute('transform', 'scale(.9)');
 
     const whiteBg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     whiteBg.setAttribute('width', wrapperWidth);
@@ -52,28 +56,139 @@ document.addEventListener('DOMContentLoaded', async () => {
     whiteBg.setAttribute('rx', '4');
     whiteBg.setAttribute('ry', '4');
     whiteBg.setAttribute('fill', '#ffffff');
-    fourRode.appendChild(whiteBg)
+    // fourRoad.appendChild(whiteBg)
+    // bigRoad.appendChild(whiteBg)
 
-    const columnCount = 26, rowCount = 6, cellSize = 20;
+    const columnCount = 39, rowCount = 6, cellSize = 13.3;  
     for (let x = 0; x <= columnCount; x++) {
       const vLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
       vLine.setAttribute('x1', x * cellSize);
       vLine.setAttribute('y1', '0');
       vLine.setAttribute('x2', x * cellSize);
-      vLine.setAttribute('y2', wrapperHeight);
-      // vLine.setAttribute('style', 'stroke:#000; stroke-width: 0.1px;');
+      vLine.setAttribute('y2', 79);
+   
       vLine.classList.add('grid-line');
-      fourRode.appendChild(vLine);
+      bigRoad.appendChild(vLine);
+      if (x === columnCount || x === 0) {
+        vLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
     }
     for (let y = 0; y <= rowCount; y++) {
       const hLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
       hLine.setAttribute('x1', '0');
       hLine.setAttribute('y1', y * cellSize);
-      hLine.setAttribute('x2', wrapperWidth);
+      hLine.setAttribute('x2', wrapperWidth -1);
       hLine.setAttribute('y2', y * cellSize);
       // hLine.setAttribute('style', 'stroke:#000; stroke-width: 0.1px;');
       hLine.classList.add('grid-line');
-      fourRode.appendChild(hLine);
+      bigRoad.appendChild(hLine);
+      if (y === 6 || y === 0) {
+        hLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
+    }
+
+
+  }
+  function renderBigEye() {
+
+    const bigEye = document.querySelector('#big-eye');
+    // bigEye.setAttribute('transform', 'scale(.9)');
+
+    const columnCount = 13, rowCount = 3, cellSize = 13.32;  
+    for (let x = 0; x <= columnCount; x++) {
+      const vLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      vLine.setAttribute('x1', x * cellSize);
+      vLine.setAttribute('y1', '0');
+      vLine.setAttribute('x2', x * cellSize);
+      vLine.setAttribute('y2', 40);
+   
+      vLine.classList.add('grid-line');
+      bigEye.appendChild(vLine);
+      if (x === columnCount || x === 0) {
+        vLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
+    }
+    for (let y = 0; y <= rowCount; y++) {
+      const hLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      hLine.setAttribute('x1', '0');
+      hLine.setAttribute('y1', y * cellSize);
+      hLine.setAttribute('x2', '33.3%');
+      hLine.setAttribute('y2', y * cellSize);
+      // hLine.setAttribute('style', 'stroke:#000; stroke-width: 0.1px;');
+      hLine.classList.add('grid-line');
+      bigEye.appendChild(hLine);
+      if (y === 3) {
+        hLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
+    }
+
+
+  }
+  function renderSmallRoad() {
+
+    const smallRoad = document.querySelector('#small-road');
+
+    const columnCount = 13, rowCount = 3, cellSize = 13.32;  
+    for (let x = 0; x <= columnCount; x++) {
+      const vLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      vLine.setAttribute('x1', x * cellSize);
+      vLine.setAttribute('y1', '0');
+      vLine.setAttribute('x2', x * cellSize);
+      vLine.setAttribute('y2', 40);
+   
+      vLine.classList.add('grid-line');
+      smallRoad.appendChild(vLine);
+      if (x === columnCount) {
+        vLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
+    }
+    for (let y = 0; y <= rowCount; y++) {
+      const hLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      hLine.setAttribute('x1', '0');
+      hLine.setAttribute('y1', y * cellSize);
+      hLine.setAttribute('x2', '33.3%');
+      hLine.setAttribute('y2', y * cellSize);
+      // hLine.setAttribute('style', 'stroke:#000; stroke-width: 0.1px;');
+      hLine.classList.add('grid-line');
+      smallRoad.appendChild(hLine);
+      if (y === 3) {
+        hLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
+    }
+
+
+  }
+  function renderCockcroach() {
+
+    const cockroach = document.querySelector('#cockroach');
+
+    const columnCount = 13, rowCount = 3, cellSize = 13.32;  
+    for (let x = 0; x <= columnCount; x++) {
+      const vLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      vLine.setAttribute('x1', x * cellSize);
+      vLine.setAttribute('y1', '0');
+      vLine.setAttribute('x2', x * cellSize);
+      vLine.setAttribute('y2', 40);
+   
+      vLine.classList.add('grid-line');
+      cockroach.appendChild(vLine);
+      
+      if (x === columnCount) {
+        vLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
+    }
+    for (let y = 0; y <= rowCount; y++) {
+      const hLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      hLine.setAttribute('x1', '0');
+      hLine.setAttribute('y1', y * cellSize);
+      hLine.setAttribute('x2', '33.3%');
+      hLine.setAttribute('y2', y * cellSize);
+      // hLine.setAttribute('style', 'stroke:#000; stroke-width: 0.1px;');
+      hLine.classList.add('grid-line');
+      cockroach.appendChild(hLine);
+      if (y === 3) {
+        hLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
     }
 
 
@@ -99,5 +214,8 @@ document.addEventListener('DOMContentLoaded', async () => {
  
  
   renderBeadRoad();
-  renderFourRoad();
+  renderBigRoad();
+  renderBigEye();
+  renderSmallRoad();
+  renderCockcroach();
 });

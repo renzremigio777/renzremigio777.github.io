@@ -69,10 +69,11 @@ html, body {
 .hud-panel {
   flex: 1;
   padding-block: 1rem;
+  margin-inline: 4px;
 }
 
 .hud-panel:nth-child(2) {
- flex: 1.25;
+ /* flex: 1.25; */
   padding-inline: 4px;
 
 }
@@ -96,7 +97,10 @@ svg.betting.disabled{
   }
 
 svg.roadmap {
-  /* background: #fff; */
+  background: #fff;
+  padding: 6px;
+  box-sizing: border-box;
+  border-radius: 4px;
 }
 svg.roadmap text{
   fill: black;
@@ -131,6 +135,9 @@ svg.roadmap .grid-line{
 .chip:hover > :where(text) {
   text-shadow: 0 0 10px #ffffff81;
 }
+.chip circle {
+  opacity: .5;
+}
 
 @media (max-width: 768px) {
   .wrapper {
@@ -154,12 +161,13 @@ svg.roadmap .grid-line{
     padding-block: 2px;
     padding-inline: 0px !important;
     align-self: stretch;
+    margin-inline: 0;
   }
   .hud-panel:nth-child(1) {
     order: 2;
   }
-  .hud-panel:nth-child(2) {
-    /* order: 2; */
+  .hud-panel:nth-child(3) {
+    order: 3;
   }
 }
 
