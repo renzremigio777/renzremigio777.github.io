@@ -63,8 +63,8 @@ html, body {
   width: 100%;
   justify-content: space-between;
   align-items:center;
-  background: linear-gradient(rgba(21, 21, 21, 0) 0%, rgba(21, 21, 21, 0.75) 39.04%, rgb(21, 21, 21) 100%);
-  /* background: linear-gradient(180deg, #0000, #181818d9 45%, #181818d9 70%, #18181880); */
+  /* background: linear-gradient(rgba(21, 21, 21, 0) 0%, rgba(21, 21, 21, 0.75) 39.04%, rgb(21, 21, 21) 100%); */
+  background: linear-gradient(180deg, #0000, #181818d9 45%, #181818d9 70%, #18181880);
 }
 .hud-panel {
   flex: 1;
