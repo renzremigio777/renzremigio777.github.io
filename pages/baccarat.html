@@ -13,7 +13,7 @@
   </style>
 </head>
 <body >
-  <div id="loading-overlay" class="loader">
+  <div id="loading-overlay" class="loader" style="display: none;">
     <svg width="100" height="100">
       <defs>
         
@@ -35,7 +35,7 @@
   </div>
   <div class="wrapper">
 
-    <video id="video"  controlsList="nodownload nofullscreen noremoteplayback" playsinline webkit-playsinline></video>
+    <video id="video" poster="/assets/images/sample-livestream.png"  controlsList="nodownload nofullscreen noremoteplayback" playsinline webkit-playsinline></video>
     <div class="hud">
       <div class="hud-panel">
         <svg id="beadroad" class="roadmap" preserveAspectRatio="xMidYMid meet" viewBox="0 0 420 120">
@@ -45,35 +45,33 @@
         <svg id="betting" class="betting" preserveAspectRatio="xMidYMid meet"  viewBox="0 0 420 125">
             <defs>
             
-              <lineargradient id="secondary-blue-fill" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: rgb(0, 68, 221);"></stop>
-                <stop offset="100%" style="stop-color: rgb(0, 58, 136);"></stop>
+              <lineargradient id="secondary-blue-fill"  x1="50%" y1="0%" x2="50%" y2="100%" y2="100" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" style="stop-color: #10223c; stop-opacity:.8;"></stop>
+                <stop offset="100%" style="stop-color: #113c7c; stop-opacity:.8;"></stop>
               </lineargradient>
-              <lineargradient id="secondary-blue-stroke" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: rgb(0, 68, 221);"></stop>
-                <stop offset="100%" style="stop-color: rgb(0, 58, 136);"></stop>
+              <lineargradient id="secondary-blue-stroke" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" style="stop-color: #065bd8;stop-opacity: 0.8;"></stop>
+                <stop offset="100%" style="stop-color: #0f3d81;stop-opacity: 0.8;"></stop>
               </lineargradient>
 
               
-              <lineargradient id="secondary-green-fill" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+              <lineargradient id="secondary-green-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: rgb(138, 88, 52);"></stop>
                 <stop offset="100%" style="stop-color: rgb(109, 67, 37);"></stop>
               </lineargradient>
-              <lineargradient id="secondary-green-stroke" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+              <lineargradient id="secondary-green-stroke" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" style="stop-color: rgb(138, 88, 52);"></stop>
                 <stop offset="100%" style="stop-color: rgb(109, 67, 37);"></stop>
               </lineargradient>
 
-              <lineargradient id="secondary-red" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="44%" stop-color="#7D070F"></stop>
-                <stop offset="100%" stop-color="#B52B35"></stop>
+              <!-- RED -->
+              <lineargradient id="secondary-red-fill" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" style="stop-color: #8a1313; stop-opacity: 0.8;"></stop>
+                <stop offset="100%" style="stop-color: #3e1212; stop-opacity: 0.8;"></stop>
               </lineargradient>
-              <lineargradient id="secondary-red-fill" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: rgb(236, 0, 0);"></stop>
-                <stop offset="100%" style="stop-color: rgb(189, 0, 0);"></stop>
-              </lineargradient>
-              <lineargradient id="secondary-red-stroke" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" style="stop-color: rgb(255, 37, 37);"></stop>
+              <lineargradient id="secondary-red-stroke" x1="50%" y1="0%" x2="50%"" y2="100" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" style="stop-color: #d51414; stop-opacity: 0.8;"></stop>
+                <stop offset="100%" style="stop-color: #8c1413; stop-opacity: 0.8;"></stop>
               </lineargradient>
              
             </defs>
@@ -103,15 +101,15 @@
 
             <!-- RIGHT -->
             <g class="place-bet" id="b-pair">
-              <rect x="320" y="0" width="100" height="39" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
+              <rect x="319" y="0" width="100" height="39" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
               <text x="371" y="20" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">B PAIR</text>
             </g>
             <g class="place-bet" id="b-bonus">
-              <rect x="320" y="42" width="100" height="39" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
+              <rect x="319" y="42" width="100" height="39" rx="3"  fill="url(#secondary-red-fill)" stroke="url(#secondary-red-stroke)" class="bet bet-left" />
               <text x="371" y="61.5" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">B BONUS </text>
             </g>
             <g class="place-bet" id="either-pair">
-              <rect  x="320" y="84.5" width="100" height= "39" rx="3"  fill="url(#secondary-green-fill)" stroke="url(#secondary-green-stroke)" class="bet bet-left" />
+              <rect  x="319" y="84.5" width="100" height= "39" rx="3"  fill="url(#secondary-green-fill)" stroke="url(#secondary-green-stroke)" class="bet bet-left" />
               <text x="371" y="107" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#fff">EITHER PAIR</text>
             </g>
             
