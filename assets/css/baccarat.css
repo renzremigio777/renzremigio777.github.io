@@ -120,6 +120,17 @@ svg.roadmap .grid-line{
   text-shadow: 0 0 10px #ffffff81;
 }
 
+.chip {
+  cursor: pointer;
+}
+
+.chip:hover > :where(circle) {
+  stroke: #fff;
+}
+
+.chip:hover > :where(text) {
+  text-shadow: 0 0 10px #ffffff81;
+}
 
 @media (max-width: 768px) {
   .wrapper {

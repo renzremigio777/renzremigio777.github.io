@@ -87,6 +87,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert(btn.id);
     });
   }
+
+  const betChipButtons = document.querySelectorAll('svg.bet-chips > .chip');
+  for (let i = 0; i < betChipButtons.length; i++) {
+    const btn = betChipButtons[i];
+
+    btn.addEventListener('click', () => {
+      alert(btn.id.replace('chip-',''));
+    });
+  }
  
  
   renderBeadRoad();
