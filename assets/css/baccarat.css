@@ -38,8 +38,7 @@ html, body {
     height: min(100vh, calc(100vw * (9 / 16)));
     width: min(100dvw, calc(100dvh * (16 / 9)));
     height: min(100dvh, calc(100dvw * (9 / 16)));
-    /* background: black; */
-    background: linear-gradient(180deg,rgb(10, 7, 1) 0%, rgb(158, 114, 20) 50%, rgb(190, 135, 25) 100%);
+    /* background: linear-gradient(180deg,rgb(10, 7, 1) 0%, rgb(158, 114, 20) 50%, rgb(190, 135, 25) 100%); */
     position: relative;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
@@ -403,8 +402,7 @@ svg.roadmap .grid-line{
     align-self: start;
     flex-direction: column;
     bottom: 0;
-      background: linear-gradient(180deg, #0000, #181818d9 45%, #181818d9 70%, #18181880);
-      background: linear-gradient(180deg, #0000, #181818 45%, #1818188f 70%, #1818188a);
+    background: none;
   }
   
   .hud-panel {
