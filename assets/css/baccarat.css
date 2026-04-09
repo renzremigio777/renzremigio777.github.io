@@ -401,6 +401,7 @@ svg.roadmap .grid-line{
     align-self: start;
     flex-direction: column;
     bottom: 0;
+    background: black;
   }
   
   .hud-panel {
