@@ -325,16 +325,16 @@ svg.roadmap .grid-line{
 
 .common-btn {
   font-weight: 500;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   text-decoration: none;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: #0606066b;
   background-color: #1a1a1a99;
   background-color: #1a1a1a99;
-  font-size: clamp(10px,1.4vw,18px);
-  font-size: clamp(10px,1.4dvw,18px);
+  font-size: clamp(10px,1.4vw,14px);
+  font-size: clamp(10px,1.4dvw,14px);
   font-weight: 500;
-  min-height: 18px;
+  min-height: 24px;
   
 }
 .common-btn:hover{
@@ -351,7 +351,8 @@ svg.roadmap .grid-line{
 
 }
 .common-btn.wallet-data :nth-child(1)  {
-  font-size: clamp(8px,1.4vw,10px);
+  font-size: clamp(6px,1vw,10px);
+
   font-weight: 700;
 
 }
