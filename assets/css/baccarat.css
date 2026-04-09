@@ -125,7 +125,7 @@ svg.roadmap .grid-line{
   cursor: pointer;
 }
 .place-bet:where(#player,#banker,#tie) text {
-  font-family: var(--font-table) !important;
+  /* font-family: var(--font-table) !important; */
 }
 .place-bet > :where(path,rect) {
   stroke-width: 1px;
