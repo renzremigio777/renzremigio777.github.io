@@ -42,7 +42,7 @@ a {
   margin-left: 1rem;
   text-decoration: none;
   color: var(--tc-main);
-  font-size: clamp(20px, 2vw, 1.6rem);
+  font-size: clamp(20px, 2dvw, 1.6rem);
   margin-block: 1rem;
   animation: neonGlow 2s ease-in-out  alternate;
   animation-delay: .5s;
@@ -177,12 +177,12 @@ aside nav a span {
    display: block;
 }
 aside nav a span i {
-    font-size: clamp(30px,2vw, 1em);
+    font-size: clamp(30px,2dvw, 1em);
 }
 aside nav a span:nth-child(2) {
   text-transform: uppercase;
   font-weight: 700;
-  font-size:  clamp(9px, 1.1vw, 0.725rem);
+  font-size:  clamp(9px, 1.1dvw, 0.725rem);
   display: flex;
   position: relative;
   justify-content: center;
@@ -212,7 +212,7 @@ aside nav a:active{
 } */
 
 .wallet-info {
-  font-size: clamp(9px, 3vw, 0.8rem);
+  font-size: clamp(9px, 3dvw, 0.8rem);
   grid-area: wallet;
   align-self: center;
   justify-self: end;
@@ -414,7 +414,7 @@ article.typography *>span{
 }
 .topbar h1{
   margin: 0;
-  font-size: clamp(26px,2vw,1rem);
+  font-size: clamp(26px,2dvw,1rem);
 }
 .extra {
   min-height: 20px;
@@ -512,7 +512,7 @@ article.typography *>span{
     
   }
   .bz-search {
-    /* max-width: 20vw; */
+    /* max-width: 20dvw; */
   }
   .bz-search .bz-search-input{
     border-bottom: none;
