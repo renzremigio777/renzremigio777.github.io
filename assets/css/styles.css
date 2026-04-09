@@ -2,12 +2,21 @@
     font-family: 'Oxanium';
     src: url('../fonts/Oxanium-VariableFont_wght.ttf') format('truetype');
 }
+@font-face {
+    font-family: 'Interroman';
+    src: url('../fonts/Interroman.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Evosources';
+    src: url('../fonts/Evosources.woff2') format('woff2');
+}
 
 :root {
   --tc-main: #ffffff;
   --bg-main: #151140;
   --bg-aside: #090532;
-  --font-main: 'Oxanium', cursive;
+  --font-main: 'Interroman',sans-serif;
+  --font-table: 'Evosources',sans-serif;
   --bg-placeholder: #090531;
   --bg-brand: #f76d09;
   --bg-brand: #49a1ff;

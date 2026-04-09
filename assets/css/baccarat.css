@@ -57,6 +57,7 @@ html, body {
 /* HUD */
 
 .hud {
+  z-index: 1;
   position: absolute;
   bottom: 0;
   display: flex;
@@ -121,6 +122,9 @@ svg.roadmap .grid-line{
 .place-bet {
   cursor: pointer;
 }
+.place-bet:where(#player,#banker) text {
+  font-family: var(--font-table) !important;
+}
 .place-bet > :where(path,rect) {
   stroke-width: 1px;
   fill-opacity: .8; 
@@ -174,6 +178,83 @@ svg.roadmap .grid-line{
   right: auto;
   top: 0;
 }
+
+.left {
+  top: 53px;
+  max-width: 200px;
+  width: 100%;
+}
+.message-box {
+  margin-left: .5rem;
+  font-family: var(--font-main);
+  display: grid;
+  height: 70vh;
+  grid-template-rows: auto 1fr 1fr;
+  gap: 5px;
+  max-width: 32vw;
+
+}
+
+.chat-form {
+  background: #1a1a1a99;
+  padding: 4px 20px;
+  border: 1px solid #ffffff56;
+  border-radius: 50px; 
+  margin-bottom: 5px;
+}
+.chat-input {
+  background: transparent;
+  border: none;
+  color: #ffffff9c;
+  outline: none;
+  font-size: clamp(9px, 1vw, 13px);
+  font-size: clamp(9px, dvw, 13px);
+  width: 100%;
+}
+
+.chats {
+  font-family: var(--font-main);
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 2px;
+  overflow: auto;
+}
+.chat-row {
+  padding: 5px;
+  border-radius: 4px;
+  background:rgba(0, 0, 0, 0.6);
+  line-height: 1
+}
+.chat-row.me {
+  background: rgba(79, 79, 79, 0.6);
+}
+.chat-row .sender {
+  color: yellow;
+  font-size:7px;
+  font-weight:400;
+}
+.chat-row.me .sender {
+  color: #fff;
+}
+.chat-row .message {
+  font-size:clamp(7px,1vw,9px);
+  font-weight:500;
+  max-width: 180px;
+}
+
+.game-messages {
+  overflow: auto;
+}
+
+.gm-row {
+  text-shadow: rgba(0, 0, 0, 0.6) 1px 1px 0px;
+  font-size: clamp(9px,1vw,13px);
+}
+.gm-row .prize {
+  color: yellow;
+}
+
 .top-right {
   left: auto;
   right: 0;
@@ -183,11 +264,13 @@ svg.roadmap .grid-line{
   left: 0;
   right: auto;
   bottom: 0;
+  z-index: 38;
 }
 .bottom-right {
     left: auto;
     right: 0;
     bottom: 0;
+    z-index: 38;
 }
 
 
@@ -246,11 +329,13 @@ svg.roadmap .grid-line{
   text-decoration: none;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: #0606066b;
-  background-color: #3d3b3bab;
+  background-color: #1a1a1a99;
+  background-color: #1a1a1a99;
   font-size: clamp(10px,1.4vw,18px);
   font-size: clamp(10px,1.4dvw,18px);
-  font-weight: 800;
+  font-weight: 500;
   min-height: 18px;
+  
 }
 .common-btn:hover{
   background-color: #ffffff56;
@@ -273,7 +358,7 @@ svg.roadmap .grid-line{
 .common-btn.wallet-data :nth-child(2)  {
   color: #fbdc01;
   font-size: clamp(12px,1.4vw,14px);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .circle-button {
@@ -289,8 +374,8 @@ svg.roadmap .grid-line{
 .game-header {
   font-family: var(--font-main);
   font-weight: 600;
-  font-size: clamp(11px, 2vw, 24px);
-  font-size: clamp(11px, 2dvw, 24px);
+  font-size: clamp(11px, 1.4vw, 18px);
+  font-size: clamp(11px, 1.4dvw, 18px);
   /* text-shadow: 0 0 5px rgba(0, 0, 0, 0.363); */
   text-shadow: rgba(0, 0, 0, 0.6) 1px 1px 0px;
 }
@@ -330,7 +415,12 @@ svg.roadmap .grid-line{
     order: 3;
   }
 
-  
+  .message-box {
+   height: 24.4vh;
+display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
 }
 
 @media (max-width: 768px) and (max-height: 600px) {
