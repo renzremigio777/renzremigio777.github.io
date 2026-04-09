@@ -193,18 +193,19 @@ svg.roadmap .grid-line{
 
 .top-right-menu {
   display: flex;
-  gap: 4px;
-  padding: .5rem;
+  gap: 8px;
+  margin: .5rem;
 }
-.top-right-menu a{
-  --buttonSize: clamp(22px,3vw,32px);
+
+
+.top-right-menu a {
+  --buttonSize: clamp(22px,3vw,38px);
     width: var(--buttonSize);
     height: var(--buttonSize);
     display: grid;
     place-items: center;
     border-radius: 5px;
-    font-size: 14;
-    
+    border-radius: 50%;
 } 
 .top-right-menu a:hover{
   background-color: #ffffff56;
@@ -215,6 +216,15 @@ svg.roadmap .grid-line{
   gap: 4px;
   padding: .5rem;
 }
+
+
+.top-left-menu {
+  display: flex;
+  align-items: center;
+  padding: .5rem;
+  gap: .5rem;
+}
+
 
 .bottom-right-menu a{
     /* width: var(--buttonSize);
@@ -229,15 +239,16 @@ svg.roadmap .grid-line{
     align-items: center;
 } 
 
+
 .common-btn {
   font-weight: 500;
   text-transform: uppercase;
   text-decoration: none;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: #0606066b;
+  background-color: #3d3b3bab;
   font-size: clamp(10px,1.4vw,18px);
   font-weight: 800;
-
   min-height: 18px;
 }
 .common-btn:hover{
@@ -260,6 +271,28 @@ svg.roadmap .grid-line{
   color: #fbdc01;
   font-size: clamp(12px,1.4vw,14px);
   font-weight: 800;
+}
+
+.circle-button {
+  --buttonSize: clamp(22px,3vw,38px);
+    border-radius: 50%;
+    width: var(--buttonSize);
+    height: var(--buttonSize);
+    display: grid;
+    place-items: center;
+    font-size: 10;
+}
+
+.game-header {
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: clamp(11px, 2vw, 24px);
+  font-size: clamp(11px, 2dvw, 24px);
+  /* text-shadow: 0 0 5px rgba(0, 0, 0, 0.363); */
+  text-shadow: rgba(0, 0, 0, 0.6) 1px 1px 0px;
+}
+.game-header span{
+  color:  yellow;
 }
 
 
@@ -332,12 +365,15 @@ svg.roadmap .grid-line{
 
 }
 
-@media (max-width: 400px) {
-.common-ui > div {
-  position: relative;
+@media (max-width: 500px) {
+  .top-right-menu {
+      flex-direction: column;
+      gap: 4px;
+    }
 }
 
-.bottom-right-menu { {
-}
+@media (max-width: 400px) {
+  .bottom-right-menu { 
+  }
   
 }
