@@ -432,6 +432,7 @@ article.typography *>span{
     top: 0;
     height: 100vh;
     height: 100dvh;
+      padding-bottom: env(safe-area-inset-bottom);
     z-index: 999;
     grid-template-areas: 'logo' 'search' 'nav' 'wallet' ;
     background: var(--bg-aside);
