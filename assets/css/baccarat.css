@@ -17,7 +17,6 @@ body {
     align-items: center;
     justify-content: center;
     background: black;
-    padding-bottom: env(safe-area-inset-bottom);
 }
 
 html, body {
@@ -297,7 +296,6 @@ svg.roadmap .grid-line{
     height: min(100vh, calc(100vw * (9 / 16)));
     width: min(100dvw, calc(100dvh * (16 / 9)));
     height: min(100dvh, calc(100dvw * (9 / 16)));
-    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .hud {
