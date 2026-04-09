@@ -41,6 +41,7 @@ html, body {
     background: black;
     background: linear-gradient(180deg,rgb(10, 7, 1) 0%, rgb(158, 114, 20) 50%, rgb(190, 135, 25) 100%);
     position: relative;
+    padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
 }
 
