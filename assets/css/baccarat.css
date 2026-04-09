@@ -100,6 +100,8 @@ svg.betting{
 }
 svg.betting.disabled{
   transform: rotateX(30deg) scale(.9);
+  bottom: -29px;
+  position: relative;
   }
 
 svg.roadmap {
