@@ -262,6 +262,8 @@ svg.roadmap .grid-line{
   font-weight: 500;
   place-items: center;
   line-height: 0.7;
+  text-shadow: rgba(0, 0, 0, 0.6) 1px 1px 0px;
+
 }
 .common-btn.wallet-data :nth-child(1)  {
   font-size: clamp(8px,1.4vw,10px);
