@@ -444,6 +444,8 @@ display: flex;
     grid-template-rows: auto auto; */
     padding-bottom: 3rem;
     align-items: end;
+  background: linear-gradient(180deg, #0000, #181818d9 45%, #181818d9 70%, #18181880);
+
   }
   .hud-panel {
     padding-block: 2px;
