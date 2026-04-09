@@ -346,18 +346,19 @@ svg.roadmap .grid-line{
   .hud {
     position: absolute;
     bottom: 0;
-    flex-direction: column;
-    display: grid;
+    flex-direction: row;
+    /* display: grid;
     grid-template-columns: auto auto;
-    grid-template-rows: auto auto;
-  padding-bottom: 3rem;
+    grid-template-rows: auto auto; */
+    padding-bottom: 3rem;
+    align-items: end;
   }
   .hud-panel {
     padding-block: 2px;
     padding-inline: 2px !important;
   }
   .hud-panel:nth-child(1) {
-    /* order: unset; */
+    order: unset;
   }
   .hud-panel:nth-child(2) {
     grid-area: 1 / 1 / 3 /2;
