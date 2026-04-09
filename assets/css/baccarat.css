@@ -248,6 +248,7 @@ svg.roadmap .grid-line{
   background-color: #0606066b;
   background-color: #3d3b3bab;
   font-size: clamp(10px,1.4vw,18px);
+  font-size: clamp(10px,1.4dvw,18px);
   font-weight: 800;
   min-height: 18px;
 }
