@@ -17,6 +17,7 @@ body {
     align-items: center;
     justify-content: center;
     background: black;
+    
 }
 
 html, body {
@@ -38,6 +39,7 @@ html, body {
     width: min(100vw, calc(100vh * (16 / 9)));
     height: min(100vh, calc(100vw * (9 / 16)));
     background: black;
+    background: linear-gradient(180deg,rgb(10, 7, 1) 0%, rgb(158, 114, 20) 50%, rgb(190, 135, 25) 100%);
     position: relative;
 }
 
@@ -74,7 +76,7 @@ html, body {
 }
 
 .hud-panel:nth-child(2) {
- /* flex: 1.25; */
+ flex: 1.28;
   padding-inline: 4px;
 
 }
@@ -117,6 +119,12 @@ svg.roadmap .grid-line{
 .place-bet {
   cursor: pointer;
 }
+.place-bet > :where(path,rect) {
+  stroke-width: 1px;
+  fill-opacity: .8; 
+  stroke-linecap: round; 
+  stroke-linejoin: round;
+}
 .place-bet:hover > :where(path,rect) {
   /* stroke: url(#blue-stroke) */
   stroke: #ffffffa1
@@ -124,9 +132,10 @@ svg.roadmap .grid-line{
 .place-bet:hover > :where(text) {
   text-shadow: 0 0 10px #ffffff81;
 }
-
-.chip {
-  cursor: pointer;
+.place-bet.hit rect{
+  fill: url(#blue-light-on)
+}
+.place-bet-outline stop {
 }
 
 .chip:hover > :where(circle) {

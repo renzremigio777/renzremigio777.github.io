@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     whiteBg.setAttribute('rx', '4');
     whiteBg.setAttribute('ry', '4');
     whiteBg.setAttribute('fill', '#ffffff');
+    // whiteBg.setAttribute('stroke', '#000000');
+    // whiteBg.setAttribute('stroke-width', '0.4');
     beadRoad.appendChild(whiteBg)
 
     const columnCount = 26, rowCount = 6, cellSize = 20;
@@ -26,6 +28,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       // vLine.setAttribute('style', 'stroke:#000; stroke-width: 0.1px;');
       vLine.classList.add('grid-line');
       beadRoad.appendChild(vLine);
+      if (x === columnCount || x === 0) {
+        vLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
     }
     for (let y = 0; y <= rowCount; y++) {
       const hLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -36,6 +41,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       // hLine.setAttribute('style', 'stroke:#000; stroke-width: 0.1px;');
       hLine.classList.add('grid-line');
       beadRoad.appendChild(hLine);
+      if (y === rowCount || y === 0) {
+        hLine.setAttribute('style', 'stroke:#000; stroke-width: .4;');
+      }
     }
 
 
