@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Betzone - Canvas Playground</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="../assets/css/icons.css" />
+  <style>
+    @font-face {
+      font-family: 'Interroman';
+      src: url('../assets/fonts/Interroman.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Evosources';
+      src: url('../fonts/Evosources.woff2') format('woff2');
+    }
+    * {
+      font-family: 'Interroman' ,sans-serif;
+      /* font-family: 'Evosources' ,sans-serif; */
+    }
+    
+    body {
+      /* background: rgb(37, 36, 36); */
+      /* background: rgb(37, 36, 36); */
+      color: #fff;
+      margin: 0;
+      box-sizing: border-box;
+    }
+    canvas {
+      box-sizing: border-box;
+      /* border: 1px dashed #000000; */
+      /* background: linear-gradient(#ffffff, #111cb8); */
+      /* background-color: #c1cbf31f; */
+      position: fixed;
+    }
+    canvas:hover {
+      /* border: 1px dashed #979cb1; */
+    }
+  </style>
+  <script src="/assets/js/gl-matrix-min.js" defer></script>
+  <script src="/assets/js/hud-webgl.js" defer></script>
+</head>
+<body>
+  <canvas id="hud" width="240" height="240"></canvas>
+</body>
+
+</html>

@@ -23,23 +23,13 @@
       </div>
       <nav>
         <ul>
-          <!-- <li>
-            <a href="#"  class="" >
-              <span class="icons">
-                <i class="icon-game"></i>
-              </span> 
-              <span>
-              SVG Playground
-              </span> 
-            </a>
-          </li> -->
           <li>
             <a href="/index.html"  >
               <span class="icons">
                 <i class="icon-game"></i>
               </span> 
               <span>
-                All Games
+                All Games 
               </span> 
             </a>
           </li>
@@ -113,6 +103,26 @@
               </span>
             </a>
           </li>
+          <li>
+            <a href="#"  class="active" >
+              <span class="icons">
+                <i class="icon-game"></i>
+              </span> 
+              <span>
+              SVG Playground
+              </span> 
+            </a>
+          </li>
+          <li>
+            <a href="/pages/canvas.html" class="">
+              <span class="icons">
+                <i class="icon-game"></i>
+              </span>
+              <span>
+                Canvas Playground
+              </span>
+            </a>
+          </li>
         </ul>
       </nav>
        <!-- Search -->
@@ -131,82 +141,130 @@
       </header>
       <section>
         <article>
-        <h2>Circle</h2>
-        <svg width="100" height="100">
-          <circle cx="50" cy="50" r="25" fill="none" stroke="#49a1ff" stroke-width="12"/>
-        </svg>
-      </article>
-      <article>
-        <h2>Rect</h2>
-        <svg width="100" height="100">
-          <rect width="50" height="50" x="25" y="25" fill="none" stroke="#49a1ff" stroke-width="12"/>
-        </svg>
-      </article>
-      <article class="viewbox">
-        <h2>View Box</h2>
-        <pre>&lt;svg viewBox=<span>"MinX MinY Width Height"</span>&gt;&lt;/svg&gt;</pre>
-        <svg width="100" height="100" viewBox="0 0 200 200">
-          <circle cx="100" cy="100" r="75" fill="#49a1ff" />
-        </svg>
-      </article>
-      <article>
-        <h2>Radial Gradient</h2>
-        <svg width="100" height="100">
-          <defs>
-            <radialgradient id="radialgradient" cx="50%" cy="50%" r="50%">
-              <stop offset="10%" stop-color="#49a1ff"></stop>
-              <stop offset="100%" stop-color="#184378"></stop>
-            </radialgradient>
-          </defs>
-          <rect width="50" height="50" x="25" y="25" fill="url(#radialgradient)"/>
-        </svg>
-      </article>
-      <article>
-        <h2>Linear Gradient</h2>
-        <svg width="100" height="100">
-          <defs>
-            <lineargradient id="lineargradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="20%" stop-color="#49a1ff"></stop>
-              <stop offset="100%" stop-color="#184378"></stop>
-            </lineargradient>
-          </defs>
-          <rect width="50" height="50" x="25" y="25" fill="url(#lineargradient)"/>
-        </svg>
-      </article>
-      <article class="text">
-        <h2>Text</h2>
-        <svg width="200" height="200">
-          <defs>
-            <lineargradient id="lineargradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#49a1ff"></stop>
-              <stop offset="100%" stop-color="#fff"></stop>
-            </lineargradient>
-          </defs>
-          <rect width="100" height="100" x="50" y="50" fill="url(#lineargradient2)"/>
-          <text x="55" y="80"z font-size="32" font-weight="700"  >.ara</text>
-        </svg>
-      </article>
-      <article class="text">
-        <h2>Path</h2>
-         <table>
-          <tbody>
-            <tr> <td>d</td><td>Draw</td></tr>
-            <tr> <td>M</td><td>Move</td></tr>
-            <tr> <td>L</td><td>Straight Lines</td></tr>
-          </tbody>
-         </table>
-         <br>
-         <pre>&lt;path d=<span>"M 10, 50 L 190, 50 M 10, 100 L 190, 100 M 10, 150 L 190, 150"</span>/&gt;</pre>
-        <svg width="200" height="200" viewBox="0 0 200 200">
+          <h2>Circle</h2>
+          <svg width="100" height="100">
+            <circle cx="50" cy="50" r="25" fill="none" stroke="#49a1ff" stroke-width="12"/>
+          </svg>
+        </article>
+        <article>
+          <h2>Rect</h2>
+          <svg width="100" height="100">
+            <rect width="50" height="50" x="25" y="25" fill="none" stroke="#49a1ff" stroke-width="12"/>
+          </svg>
+        </article>
+        <article class="viewbox">
+          <h2>View Box</h2>
+          <pre>&lt;svg viewBox=<span>"MinX MinY Width Height"</span>&gt;&lt;/svg&gt;</pre>
+          <svg width="100" height="100" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="75" fill="#49a1ff" />
+          </svg>
+        </article>
+        <article>
+          <h2>Radial Gradient</h2>
+          <svg width="100" height="100">
             <defs>
-            <lineargradient id="lineargradient3" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#49a1ff"></stop>
-              <stop offset="100%" stop-color="#fff"></stop>
-            </lineargradient>
-          </defs>
-          <path d="M 10, 50 L 190, 50 M 10, 100 L 190, 100 M 10, 150 L 190, 150" stroke="url(#lineargradient3)" stroke-width="20px"/>
-        </svg>
-      </article>
+              <radialgradient id="radialgradient" cx="50%" cy="50%" r="50%">
+                <stop offset="10%" stop-color="#49a1ff"></stop>
+                <stop offset="100%" stop-color="#184378"></stop>
+              </radialgradient>
+            </defs>
+            <rect width="50" height="50" x="25" y="25" fill="url(#radialgradient)"/>
+          </svg>
+        </article>
+        <article>
+          <h2>Linear Gradient</h2>
+          <svg width="100" height="100">
+            <defs>
+              <lineargradient id="lineargradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="20%" stop-color="#49a1ff"></stop>
+                <stop offset="100%" stop-color="#184378"></stop>
+              </lineargradient>
+            </defs>
+            <rect width="50" height="50" x="25" y="25" fill="url(#lineargradient)"/>
+          </svg>
+        </article>
+        <article class="text">
+          <h2>Text</h2>
+          <svg width="200" height="200">
+            <defs>
+              <lineargradient id="lineargradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#49a1ff"></stop>
+                <stop offset="100%" stop-color="#fff"></stop>
+              </lineargradient>
+            </defs>
+            <rect width="100" height="100" x="50" y="50" fill="url(#lineargradient2)"/>
+            <text x="55" y="80"z font-size="32" font-weight="700"  >.ara</text>
+          </svg>
+        </article>
+        <article>
+          <h2>Spade</h2>
+          <!-- <svg width="20" height="20" viewBox="0 0 200 200"> -->
+          <svg width="200" height="200">
+            <defs>
+              <lineargradient id="lineargradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#49a1ff"></stop>
+                <stop offset="100%" stop-color="#fff"></stop>
+              </lineargradient>
+            </defs>
+            <!-- <rect width="100" height="100" x="50" y="50" fill="url(#lineargradient2)"/> -->
+       
+            <!-- <path d="M208 8 A41 41 0 0 0 168 50 V124 H92 V1 H208 Z" fill="url(#lineargradient3)" stroke="url(#lineargradient3)" /> -->
+            <path d="
+            M25 95 
+            A20 20 0 0 0 100 170 
+            A50 50 0 0 1 80 195  
+            H120 120 
+            A50 50 0 0 1 100 170
+            A20 20 0 0 0 175 95 
+            A390 390 0 0 1 100 10
+            A390 390 0 0 1 25 95
+            Z" 
+            fill="url(#lineargradient3)" stroke="url(#lineargradient3)" />
+              
+          </svg>
+        </article>
+        <article>
+          <h2>Eyes</h2>
+          <svg width="200" height="200">
+            <defs>
+              <lineargradient id="lineargradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#49a1ff"></stop>
+                <stop offset="100%" stop-color="#fff"></stop>
+              </lineargradient>
+            </defs>
+            <!-- <rect width="100" height="100" x="50" y="50" fill="url(#lineargradient2)"/> -->
+       
+            <!-- <path d="M208 8 A41 41 0 0 0 168 50 V124 H92 V1 H208 Z" fill="url(#lineargradient3)" stroke="url(#lineargradient3)" /> -->
+            <path d="
+            M20 100 A25 25 0 0 0 80 150 
+            M80 150 A20 20 0 0 1 70 180 H70  
+            H110 120 A20 20 0 0 1 110 150
+            M110 150 A25 25 0 0 0 180 100 " 
+            fill="url(#lineargradient3)" stroke="url(#lineargradient3)" />
+              
+          </svg>
+        </article>
+        <article class="text">
+          <h2>Path</h2>
+          <table>
+            <tbody>
+              <tr> <td>d</td><td>Draw</td></tr>
+              <tr> <td>M</td><td>Move</td></tr>
+              <tr> <td>L</td><td>Straight Lines</td></tr>
+            </tbody>
+          </table>
+          <br>
+          <pre>&lt;path d=<span>"M 10, 50 L 190, 50 M 10, 100 L 190, 100 M 10, 150 L 190, 150"</span>/&gt;</pre>
+          <svg width="200" height="200" viewBox="0 0 200 200">
+              <defs>
+              <lineargradient id="lineargradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#49a1ff"></stop>
+                <stop offset="100%" stop-color="#fff"></stop>
+              </lineargradient>
+            </defs>
+            <path d="M 10, 50 L 190, 50 M 10, 100 L 190, 100 M 10, 150 L 190, 150" stroke="url(#lineargradient3)" stroke-width="20px"/>
+          </svg>
+        </article>
       </section>
     </main>
     
