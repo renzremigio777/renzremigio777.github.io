@@ -30,7 +30,7 @@ function spherePointCloud(pointCount) {
   return points
 }
 
-const vertexData = spherePointCloud(1e5)
+const vertexData = spherePointCloud(1e4 + 50000)
 
 function init() {
   console.log('init')
@@ -50,7 +50,7 @@ function init() {
     
     void main() {
       vColor = vec3(position.xy, 1);
-      gl_PointSize = 0.9;
+      gl_PointSize = 0.1;
       gl_Position = matrix * vec4(position,1);
     }
   `);
@@ -97,9 +97,9 @@ function init() {
   const mvMatrix = mat4.create();
   const mvpMatrix = mat4.create();
 
-  mat4.translate(modelMatrix, modelMatrix , [0, 0, 0]);
+  mat4.translate(modelMatrix, modelMatrix , [0, 0, 1]);
 
-  mat4.translate(viewMatrix, viewMatrix, [0, 0.1, 2]);
+  mat4.translate(viewMatrix, viewMatrix, [0, 0, 2]);
   mat4.invert(viewMatrix, viewMatrix);
   
   // mat4.scale(matrix, matrix, [0.25, 0.25, 0.25]);
