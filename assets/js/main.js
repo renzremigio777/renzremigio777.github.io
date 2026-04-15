@@ -24,6 +24,35 @@ window.addEventListener("load", () => {
       }
     }
   }
+
+  async function initGames() {
+    const res = await fetch("assets/data/all-games.json");
+    const allGames = await res.json();
+    allGames.forEach(game => {
+      console.log(game)
+      const a = `<a href="pages/baccarat.html" class="grid-item">
+        <div class="grid-item-media">
+          <img class="grid-item-thumbnail" src="${game.link}" alt="">
+          <img class="grid-item-road" src="assets/images/game-road.png" alt="">
+        </div>
+        <div>
+          <p class="grid-title">Speed Baccarat Live T1<img src="assets/images/flags/ph.svg" alt=""></p>
+          <div class="grid-summary">
+            <p><i class="icon-user"></i>100</p>
+            <p><i class="icon-casino"></i>100</p>
+          </div>
+        </div>
+      </a>`
+
+      const gridItem = document.createElement('a');
+      gridItem.setAttribute('href', game.link);
+      gridItem.className = 'grid-item';
+
+     
+           
+    });
+  } 
+
   function startProgress() {
     poll = setInterval(async () => {
       progressValue += 1;
@@ -41,9 +70,13 @@ window.addEventListener("load", () => {
         loadingOverlay.classList.add('fading');
         setTimeout(() => { loadingOverlay.remove() }, 900);
         startVideo();
+        initGames();
+
       }
     }, 2);
   }
+
+ 
 
   startProgress();
 

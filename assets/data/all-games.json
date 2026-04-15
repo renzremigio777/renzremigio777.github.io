@@ -1,0 +1,10 @@
+[
+  {
+    "title": "Speed Baccarat T1",
+    "country_code": "ph",
+    "players_count": 256,
+    "min_buy_in":  100,
+    "max_buy_in":  100,
+    "link":  "pages/baccara.html"
+  }
+]

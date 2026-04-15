@@ -2,6 +2,18 @@ const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl');
 const { mat4, vec3 } = glMatrix;
 
+const modelMatrix = mat4.create();
+const viewMatrix = mat4.create();
+const projectionMatrix = mat4.create();
+mat4.perspective(projectionMatrix,
+  75 * Math.PI / 180, // vertical field-of-view (angle, radians)
+  canvas.width / canvas.height, // aspect W/H
+  1e-4, // near cull distance
+  1e4, // far cull distance
+);
+const mvMatrix = mat4.create();
+const mvpMatrix = mat4.create();
+
 if (!gl) {
   throw new Error('WebGL not supportedf');
 }
@@ -30,7 +42,7 @@ function spherePointCloud(pointCount) {
   return points
 }
 
-const vertexData = spherePointCloud(1e4 + 50000)
+const vertexData = spherePointCloud(1e4)
 
 function init() {
   console.log('init')
@@ -85,17 +97,7 @@ function init() {
     matrix: gl.getUniformLocation(program, 'matrix')
   };
 
-  const modelMatrix = mat4.create();
-  const viewMatrix = mat4.create();
-  const projectionMatrix = mat4.create();
-  mat4.perspective(projectionMatrix,
-    75 * Math.PI/180, // vertical field-of-view (angle, radians)
-    canvas.width / canvas.height, // aspect W/H
-    1e-4, // near cull distance
-    1e4, // far cull distance
-  );
-  const mvMatrix = mat4.create();
-  const mvpMatrix = mat4.create();
+ 
 
   mat4.translate(modelMatrix, modelMatrix , [0, 0, 1]);
 
@@ -104,22 +106,23 @@ function init() {
   
   // mat4.scale(matrix, matrix, [0.25, 0.25, 0.25]);
 
-  function animate() {
-    requestAnimationFrame(animate);
+  
 
-    mat4.rotateY(modelMatrix, modelMatrix,  0.005);
+function animate() {
+  requestAnimationFrame(animate);
 
-    mat4.multiply(mvMatrix, viewMatrix, modelMatrix )
-    mat4.multiply(mvpMatrix, projectionMatrix, mvMatrix )
-    gl.uniformMatrix4fv(uniformLocation.matrix, false, mvpMatrix);
-    gl.drawArrays(gl.POINTS, 0, vertexData.length / 3);
-  }
+  mat4.rotateY(modelMatrix, modelMatrix, 0.005);
 
-  animate();
+  mat4.multiply(mvMatrix, viewMatrix, modelMatrix)
+  mat4.multiply(mvpMatrix, projectionMatrix, mvMatrix)
+  gl.uniformMatrix4fv(uniformLocation.matrix, false, mvpMatrix);
+  gl.drawArrays(gl.POINTS, 0, vertexData.length / 3);
 }
 
+animate();
 
-init();
+
+
 window.addEventListener('resize', resize);
 
 

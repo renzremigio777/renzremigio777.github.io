@@ -81,7 +81,7 @@ function pointCloudSphere(radius, n) {
   return new Float32Array(points);
 }
 
-const myVertices = pointCloudSphere(0.75, 1e5);
+const myVertices = pointCloudSphere(0.75, 1e4);
 
 const myIndices = new Int8Array([
   0, 1, 3, 2
