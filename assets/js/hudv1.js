@@ -99,6 +99,8 @@ const init = () => {
     `%c${layoutIndicator}`,
     `color: ${isMobile ? '#4e92ff' : '#ff4e4e'}; font-weight: 900;`
   );
+  ctx.font = `200 ${getFontSize(w / 2, h / 3)}px Arial`;
+
   ctx.fillStyle = "#ffffff60"
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -141,41 +143,44 @@ const init = () => {
         // let basePosY = h - layout[currentLayout].divHeight;
         let basePosY = y + gutter;
 
-        let buttonPosX = basePosX
-        let buttonPosY = basePosY
 
         let fsBig = getFontSize(buttonWidth + 100, buttonHeight + 100)
         let fsSmall = getFontSize(buttonWidth + 60, buttonHeight + 60)
 
-        const bgBlue = "rgba(20, 20, 118, 0.23)";
-        const bgGreen = "rgba(57, 91, 57, 0.23)";
-        const bgRed = "rgba(168, 38, 38, 0.23)";
+        
+        const bgBlue = "#0b0b8080";
+        const bgGreen = "rgba(57, 91, 57, 0.5)";
+        const bgRed = "rgba(168, 38, 38, 0.5)";
 
-        const borderBlue = "rgb(128, 128, 254)";
-        const borderGreen = "rgb(90, 215, 90)";
-        const borderRed = "rgb(250, 148, 148)";
-        const bgOpacity = 0.3;
+        const borderBlue = "rgba(128, 128, 254, 0.5)";
+        const borderGreen = "rgb(90, 215, 90, 0.5)";
+        const borderRed = "rgb(250, 148, 148, 0.5)";
+        
+        // const gradient = ctx.createLinearGradient(basePosX, basePosY, basePosX + buttonWidth, y);
+        const blueGradient = ctx.createLinearGradient(basePosX, basePosY, basePosX, 1000);
+        blueGradient.addColorStop(0, "#0d0d47");   // start color
+        blueGradient.addColorStop(1, "#0d39b3");   // end color
 
+        const redGradient = ctx.createLinearGradient(basePosX, basePosY, basePosX, 1000);
+        redGradient.addColorStop(0, "#470d0d");   // start color
+        redGradient.addColorStop(1, "#b30d0d");   // end color
+
+        const greenGradient = ctx.createLinearGradient(basePosX, basePosY, basePosX, 1000);
+        greenGradient.addColorStop(0, "#0d4724");   // start color
+        greenGradient.addColorStop(1, "#0db379");   // end color
         const buttons = [
-          { bgColor: bgBlue, borderColor: borderBlue, fontSize: fsBig, text: "PLAYER"},
-          { bgColor: bgGreen, borderColor: borderGreen, fontSize: fsBig, text: "TIE"},
-          { bgColor: bgRed, borderColor: borderRed, fontSize: fsBig, text: "BANKER"},
+          { bgColor: blueGradient, borderColor: borderBlue, fontSize: fsBig, text: "PLAYER"},
+          { bgColor: greenGradient, borderColor: borderGreen, fontSize: fsBig, text: "TIE"},
+          { bgColor: redGradient, borderColor: borderRed, fontSize: fsBig, text: "BANKER"},
 
-          { bgColor: bgBlue, borderColor: borderBlue, fontSize: fsSmall, text: "P PAIR"},
-          { bgColor: bgGreen, borderColor: borderGreen, fontSize: fsSmall, text: "PERFECT PAIR"},
-          { bgColor: bgRed, borderColor: borderRed, fontSize: fsSmall, text: "B BANKER"},
+          { bgColor: blueGradient, borderColor: borderBlue, fontSize: fsSmall, text: "P PAIR"},
+          { bgColor: greenGradient, borderColor: borderGreen, fontSize: fsSmall, text: "PERFECT PAIR"},
+          { bgColor: redGradient, borderColor: borderRed, fontSize: fsSmall, text: "B BANKER"},
 
-          { bgColor: bgBlue, borderColor: borderBlue, fontSize: fsSmall, text: "P PAIR"},
-          { bgColor: bgGreen, borderColor: borderGreen, fontSize: fsSmall, text: "EITHER PAIR"},
-          { bgColor: bgRed, borderColor: borderRed, fontSize: fsSmall, text: "B PAIR"},
+          { bgColor: blueGradient, borderColor: borderBlue, fontSize: fsSmall, text: "P PAIR"},
+          { bgColor: greenGradient, borderColor: borderGreen, fontSize: fsSmall, text: "EITHER PAIR"},
+          { bgColor: redGradient, borderColor: borderRed, fontSize: fsSmall, text: "B PAIR"},
         ]
-        ctx.fillStyle = "rgba(83, 82, 82, 0.42)";
-        ctx.strokeStyle = "#ffffff3d";
-        ctx.fillText(
-          layout[currentLayout].divHeight,
-          buttonPosX + buttonWidth / 2,
-          buttonPosY + buttonHeight / 2
-        );
 
         buttons.forEach((button, index) => {
           const rowIndex = Math.floor(index / 3);
@@ -184,10 +189,11 @@ const init = () => {
           const buttonPosX = basePosX + colIndex * (buttonWidth + gutter);
           const buttonPosY = basePosY + rowIndex * (buttonHeight + gutter);
 
-          ctx.lineWidth = 0.5;
+          ctx.lineWidth = 3;
           ctx.strokeStyle = button.borderColor;
           ctx.strokeRect(buttonPosX, buttonPosY, buttonWidth, buttonHeight);
 
+          
           ctx.fillStyle = button.bgColor;
           ctx.fillRect(buttonPosX, buttonPosY, buttonWidth, buttonHeight);
 
