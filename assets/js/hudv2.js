@@ -124,12 +124,12 @@ function drawLayout() {
       // bg: "rgb(46, 43, 43)"
     },
     
-    resultBar: {
+    "": { //resultBar
       x: (canvas.width - containerWidth) / 2 ,
       y: hudY + topH * 0.1,
       w: containerWidth,
       h: topH * 0.3,
-      bg: "rgb(46, 43, 43)"
+      bg: "rgb(26, 22, 22)"
     },
 
     // "p result": {
