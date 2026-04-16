@@ -57,11 +57,11 @@ function drawLayout() {
 
 
   const gap = 5;
-  const aspect = 9 / 18;
+  const aspect = 9 / 16;
 
   // max allowed space
   const maxCardHeight = topH * 0.28 - 20;
-  const maxCardWidth = containerWidth / 9.5; // adjust depending on how tight you want layout
+  const maxCardWidth = containerWidth / 12; // adjust depending on how tight you want layout
 
   // derive safe height from width constraint
   const widthBasedHeight = maxCardWidth / aspect;
@@ -76,15 +76,18 @@ function drawLayout() {
   const totalWidth = cardWidth * 2 + gap;
 
   const cardStartX = (canvas.width - containerWidth) / 2;
-  // const cardStartY = hudY + topH * 0.15;
-  const cardStartY = hudY + topH * 0.1 + (topH * 0.05);
+
+  const resultBarY = hudY + topH * 0.1;
+  const resultBarH = topH * 0.3;
+
+  const cardStartY = resultBarY + (resultBarH - cardHeight) / 2;
 
   // center reference
   const midX = canvas.width / 2;
 
 
   // start positions (left group ends at center gap)
-  const centerGap = 5;
+  const centerGap = 100;
 
 
   const leftStartX = midX - centerGap / 2 - groupWidth;
@@ -93,9 +96,9 @@ function drawLayout() {
   const leftGroupEnd = midX - centerGap / 2;
 
 
-  const p1x = leftStartX;
-  const p2x = leftStartX + cardWidth + gap;
-  const p3x = leftStartX + (cardWidth * 2 + gap) + 24+ gap;
+  const p1x = leftStartX + (cardWidth * 2) - gap ;
+  const p2x = leftStartX + (cardWidth * 3) + gap * 3.3;
+  const p3x = leftStartX + 24;
 
   const mirror = (x) => midX + (midX - (x + cardWidth));
 
@@ -107,7 +110,7 @@ function drawLayout() {
     BLUE: "rgba(46, 34, 156, 0.5)",
     RED: " rgba(105, 14, 14, 0.5)",
     GREEN: " rgba(30, 97, 33, 0.5)",
-    WHITE: " rgba(255, 255, 255, 0.0)",
+    WHITE: " rgba(255, 255, 255, 1)",
   }
 
 
@@ -135,13 +138,13 @@ function drawLayout() {
       // bg: "rgb(46, 43, 43)"
     },
     
-    "": { //resultBar
-      x: (canvas.width - containerWidth) / 2 ,
-      y: hudY + topH * 0.1,
-      w: containerWidth,
-      h: topH * 0.3,
-      bg: "rgb(26, 22, 22)"
-    },
+    // "resultBar": { //resultBar
+    //   x: (canvas.width - containerWidth) / 2 ,
+    //   y: hudY + topH * 0.1,
+    //   w: containerWidth,
+    //   h: topH * 0.3,
+    //   bg: "rgb(51, 41, 41)"
+    // },
 
     // "p result": {
     //   x: (canvas.width - containerWidth) / 2 ,
@@ -162,15 +165,14 @@ function drawLayout() {
       y: cardStartY,
       w: cardWidth,
       h: cardHeight,
-      bg: colors.WHITE,
+      // bg: colors.WHITE,
       border: "rgb(255, 255, 255)",
     },
     "p3": {
-      x: p3x,
       y: cardStartY,
       w: cardWidth,
+      x: p3x,
       h: cardHeight,
-      bg: colors.WHITE,
       border: "rgb(255, 255, 255)",
       rotate: true
     },
@@ -179,8 +181,7 @@ function drawLayout() {
       y: cardStartY,
       w: cardWidth,
       h: cardHeight,
-      bg: colors.WHITE,
-      border: "rgb(255, 255, 255)",
+      border: "rgb(15, 13, 13)",
       rotate: true,
       mirror: true
     },
@@ -189,7 +190,7 @@ function drawLayout() {
       y: cardStartY,
       w: cardWidth,
       h: cardHeight,
-      bg: colors.WHITE,
+      // bg: colors.WHITE,
       border: "rgb(255, 255, 255)",
     },
     "b1": {
@@ -197,7 +198,7 @@ function drawLayout() {
       y: cardStartY,
       w: cardWidth,
       h: cardHeight,
-      bg: colors.WHITE,
+      // bg: colors.WHITE,
       border: "rgb(255, 255, 255)",
     },
     "b2": {
@@ -205,7 +206,7 @@ function drawLayout() {
       y: cardStartY,
       w: cardWidth,
       h: cardHeight,
-      bg: colors.WHITE,
+      // bg: colors.WHITE,
       border: "rgb(255, 255, 255)",
     },
 
@@ -296,7 +297,7 @@ function drawLayout() {
     }
   };
   for (const [index, obj] of Object.entries(layout)) {
-    ctx.fillStyle = obj.bg ?? "rgba(61, 58, 58, 0.18)";
+    ctx.fillStyle = obj.bg ?? "rgb(19, 17, 17)";
     ctx.lineWidth = 0.2;
     if(obj.border) {
       ctx.strokeStyle = "rgba(255, 255, 255, 0.33)"
