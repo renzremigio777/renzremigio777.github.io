@@ -18,6 +18,13 @@ function resize() {
   
 }
 
+function getFontSize(width, height) {
+  const base = Math.min(width, height);
+
+  // safe scaling factor (tune this)
+  return Math.max(15, Math.floor(base * 0.20));
+}
+
 function drawLayout() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -290,8 +297,7 @@ function drawLayout() {
   };
   for (const [index, obj] of Object.entries(layout)) {
     ctx.fillStyle = obj.bg ?? "rgba(61, 58, 58, 0.18)";
-
-    ctx.lineWidth = 0.1;
+    ctx.lineWidth = 0.2;
     if(obj.border) {
       ctx.strokeStyle = "rgba(255, 255, 255, 0.33)"
       ctx.strokeStyle = "white";
@@ -314,7 +320,8 @@ function drawLayout() {
       ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
 
     }
-    ctx.font = `${13 * scale}px Courier`;
+    // ctx.font = `${13 * scale}px Courier`;
+    ctx.font = `${getFontSize(obj.w, obj.h)}px Courier`;
     ctx.fillStyle = obj.c ?? "rgba(248, 244, 244, 0.51)";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
