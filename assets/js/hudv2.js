@@ -6,12 +6,16 @@ const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
 
 const dpr = window.devicePixelRatio || 1;
+const scale = 1;
 
 function resize() {
   canvas.width = innerWidth * dpr;
   canvas.height = innerHeight * dpr;
+
   canvas.style.width = innerWidth + 'px';
   canvas.style.height = innerHeight + 'px';
+
+  
 }
 
 function drawLayout() {
@@ -310,7 +314,7 @@ function drawLayout() {
       ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
 
     }
-    ctx.font = "13px Courier "
+    ctx.font = `${13 * scale}px Courier`;
     ctx.fillStyle = obj.c ?? "rgba(248, 244, 244, 0.51)";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
