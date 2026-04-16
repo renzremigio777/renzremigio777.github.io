@@ -32,7 +32,6 @@ const init = () => {
   canvas.width = innerWidth * dpr;
   canvas.height = innerHeight * dpr;
 
-
   canvas.style.width = innerWidth + 'px';
   canvas.style.height = innerHeight + 'px';
 
@@ -91,7 +90,6 @@ const init = () => {
 
   let isMobile = w < 700;
   let currentLayout = isMobile ? 'mobile' : 'desktop'
-
 
 
   let layoutIndicator = `${isMobile ? 'Mobile' :'Desktop'} W:${w}px H:${h}px`;

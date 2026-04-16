@@ -1,128 +1,184 @@
+// =========================
+// CANVAS & GL SETUP
+// =========================
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl');
+
+if (!gl) throw new Error('WebGL not supported');
+
 const { mat4, vec3 } = glMatrix;
 
+
+// =========================
+// MATRICES
+// =========================
 const modelMatrix = mat4.create();
 const viewMatrix = mat4.create();
 const projectionMatrix = mat4.create();
-mat4.perspective(projectionMatrix,
-  75 * Math.PI / 180, // vertical field-of-view (angle, radians)
-  canvas.width / canvas.height, // aspect W/H
-  1e-4, // near cull distance
-  1e4, // far cull distance
-);
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 
-if (!gl) {
-  throw new Error('WebGL not supportedf');
-}
 
+// =========================
+// RESIZE
+// =========================
 function resize() {
-  console.log('resize')
   const dpr = window.devicePixelRatio || 1;
+
   canvas.width = innerWidth * dpr;
   canvas.height = innerHeight * dpr;
 
-  // keep CSS display size the same
   canvas.style.width = innerWidth + 'px';
   canvas.style.height = innerHeight + 'px';
 
   gl.viewport(0, 0, canvas.width, canvas.height);
+
+  mat4.perspective(
+    projectionMatrix,
+    75 * Math.PI / 180,
+    canvas.width / canvas.height,
+    0.0001,
+    10000
+  );
 }
 
-function spherePointCloud(pointCount) {
-  let points = [];
-  for(let i = 0; i < pointCount;i++) {
-    const r = () => Math.random() - 0.5; // -.5 < x < 0.5
-    const inputPoint = [r(), r(), r()];
-    const outputPoint = vec3.normalize(vec3.create(), inputPoint);
-    points.push(...outputPoint)
+
+// =========================
+// GEOMETRY
+// =========================
+function spherePointCloud(count) {
+  const points = [];
+
+  for (let i = 0; i < count; i++) {
+    const r = () => Math.random() - 0.5;
+    const p = vec3.normalize(vec3.create(), [r(), r(), r()]);
+    points.push(...p);
   }
-  return points
+
+  return new Float32Array(points);
 }
 
-const vertexData = spherePointCloud(1e4)
+const vertexData = spherePointCloud(1e4);
+
+
+// =========================
+// SHADERS
+// =========================
+const vertexShaderSource = `
+  precision mediump float;
+
+  attribute vec3 position;
+  uniform mat4 matrix;
+
+  varying vec3 vColor;
+
+  void main() {
+    vColor = vec3(position.xy, 1.0);
+    gl_PointSize = 1.0;
+    gl_Position = matrix * vec4(position, 1.0);
+  }
+`;
+
+const fragmentShaderSource = `
+  precision mediump float;
+
+  varying vec3 vColor;
+
+  void main() {
+    gl_FragColor = vec4(vColor, 1.0);
+  }
+`;
+
+
+// =========================
+// HELPERS
+// =========================
+function createShader(type, source) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  return shader;
+}
+
+function createProgram(vs, fs) {
+  const program = gl.createProgram();
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+  gl.linkProgram(program);
+  return program;
+}
+
+
+// =========================
+// INIT
+// =========================
+let program;
+let positionLocation;
+let matrixLocation;
+let positionBuffer;
 
 function init() {
-  console.log('init')
   resize();
-  const positionBuffer = gl.createBuffer();
+
+  // --- Buffers ---
+  positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
 
-  const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  gl.shaderSource(vertexShader, `
-    precision mediump float;
+  // --- Shaders ---
+  const vs = createShader(gl.VERTEX_SHADER, vertexShaderSource);
+  const fs = createShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
 
-    attribute vec3 position;
-    uniform mat4 matrix;
+  program = createProgram(vs, fs);
+  gl.useProgram(program);
 
-    varying vec3 vColor;
-    
-    void main() {
-      vColor = vec3(position.xy, 1);
-      gl_PointSize = 0.1;
-      gl_Position = matrix * vec4(position,1);
-    }
-  `);
-  gl.compileShader(vertexShader);
-
-  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-  gl.shaderSource(fragmentShader, `
-    precision mediump float;
-
-    varying vec3 vColor;
-
-    void main() {
-      gl_FragColor = vec4(vColor, 1);
-    }
-  `);
-  gl.compileShader(fragmentShader);
-
-  const program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-
-  const positionLocation = gl.getAttribLocation(program, `position`);
+  // --- Attributes ---
+  positionLocation = gl.getAttribLocation(program, 'position');
   gl.enableVertexAttribArray(positionLocation);
+
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
-  
-  gl.useProgram(program);
+
+  // --- Uniforms ---
+  matrixLocation = gl.getUniformLocation(program, 'matrix');
+
+  // --- GL State ---
   gl.enable(gl.DEPTH_TEST);
 
-  const uniformLocation = {
-    matrix: gl.getUniformLocation(program, 'matrix')
-  };
+  // --- Camera setup ---
+  mat4.identity(modelMatrix);
+  mat4.identity(viewMatrix);
+  mat4.translate(viewMatrix, viewMatrix, [0, 0, -1]);
+}
 
- 
 
-  mat4.translate(modelMatrix, modelMatrix , [0, 0, 1]);
+// =========================
+// RENDER LOOP
+// =========================
+function render() {
+  requestAnimationFrame(render);
 
-  mat4.translate(viewMatrix, viewMatrix, [0, 0, 2]);
-  mat4.invert(viewMatrix, viewMatrix);
-  
-  // mat4.scale(matrix, matrix, [0.25, 0.25, 0.25]);
+  // Clear
+  gl.clearColor(0, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  
-
-function animate() {
-  requestAnimationFrame(animate);
-
+  // Animate
   mat4.rotateY(modelMatrix, modelMatrix, 0.005);
 
-  mat4.multiply(mvMatrix, viewMatrix, modelMatrix)
-  mat4.multiply(mvpMatrix, projectionMatrix, mvMatrix)
-  gl.uniformMatrix4fv(uniformLocation.matrix, false, mvpMatrix);
+  // MVP
+  mat4.multiply(mvMatrix, viewMatrix, modelMatrix);
+  mat4.multiply(mvpMatrix, projectionMatrix, mvMatrix);
+
+  gl.uniformMatrix4fv(matrixLocation, false, mvpMatrix);
+
+  // Draw
   gl.drawArrays(gl.POINTS, 0, vertexData.length / 3);
 }
 
-animate();
 
-
-
+// =========================
+// START
+// =========================
+init();
+render();
 window.addEventListener('resize', resize);
-
-
