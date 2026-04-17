@@ -10,12 +10,12 @@ const scale = 1;
 
 
 const colors = {
-  NEONRED: "rgb(252, 70, 70)",
+  NEONRED: "rgb(241, 48, 48)",
   NEONBLUE: "rgb(88, 70, 252)",
   BLUE: "rgba(46, 34, 156, 0.5)",
   RED: " rgba(105, 14, 14, 0.5)",
   GREEN: " rgba(30, 97, 33, 0.5)",
-  HOVERBLUE: "rgb(46, 34, 156)",
+  HOVERBLUE: "rgba(46, 34, 156, 0.53)",
   HOVERRED: " rgb(105, 14, 14)",
   HOVERGREEN: " rgb(30, 97, 33)",
   ACTIVEBLUE: "rgb(50, 34, 192)",
@@ -50,9 +50,9 @@ function getFontSize(width, height) {
   return Math.max(15, Math.floor(base * 0.20));
 }
 
-function buildButtons(layout) {
+function buildButtons(components) {
   buttons = [];
-  for (const [key, obj] of Object.entries(layout)) {
+  for (const [key, obj] of Object.entries(components)) {
     if (obj.isButton) {
       buttons.push({
         id: key,
@@ -102,7 +102,7 @@ function drawVideo(ctx, video, x, y, w, h) {
 //======================================================
 function drawUI() {
   //=================================================================================
-  //  LAYOUT VARIABLES
+  //  components VARIABLES
   //=================================================================================
   buttons = [];
   ctx.fillStyle = `rgb(32, 32, 32)`
@@ -146,7 +146,7 @@ function drawUI() {
   const aspect = 9/ 14;
   // max allowed space
   const maxCardHeight = topH * 0.25 - 21;
-  const maxCardWidth = containerWidth / 8; // adjust depending on how tight you want layout
+  const maxCardWidth = containerWidth / 8; // adjust depending on how tight you want components
 
   // derive safe height from width constraint
   const widthBasedHeight = maxCardWidth / aspect;
@@ -184,7 +184,7 @@ function drawUI() {
 
  
   
-  const layout = {
+  const components = {
     video: {
       x: (canvas.width - containerWidth) / 2,
       y: layoutPadding,
@@ -206,31 +206,21 @@ function drawUI() {
       y: hudY,
       w: containerWidth,
       h: topH * 0.1,
-      // bg: "rgb(46, 43, 43)"
+      bg: "rgba(119, 119, 119, 0.12)"
     },
     
     // "resultBar": { //resultBar
+    //   id: "result bar",
     //   x: (canvas.width - containerWidth) / 2 ,
     //   y: hudY + topH * 0.1,
     //   w: containerWidth,
-    //   h: topH * 0.3,
-    //   bg: "rgb(51, 41, 41)"
+    //   h: resultBarH,
+    //   bg: "rgb(63, 52, 52)"
     // },
 
-    // "p result": {
-    //   x: (canvas.width - containerWidth) / 2 ,
-    //   y: hudY + topH * 0.1,
-    //   w: containerWidth * 0.5,
-    //   h: topH * 0.3,
-    // },
-
-    // "b result": {
-    //   x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.5),
-    //   y: hudY + topH * 0.1,
-    //   w: containerWidth * 0.5,
-    //   h: topH * 0.3,
-    // },
-
+    //=============================================
+    // CARDS
+    //=============================================
     "p1": {
       x: p1x,
       y: cardStartY,
@@ -240,7 +230,7 @@ function drawUI() {
       border: "rgb(255, 255, 255)",
     },
     "p": {
-      x: midX - 20,
+      x: midX - 22,
       y: cardStartY + cardHeight / 2.5,
       // x: p1x,
       // y: cardStartY - 20,
@@ -249,10 +239,10 @@ function drawUI() {
       bg: colors.TRANSPARENT,
       c: colors.NEONBLUE,
       fontWeight: '900',
-      fontSize: '900',
+      fontSize: getFontSize(containerWidth, resultBarH-40),
     },
     "b": {
-      x: midX + 5.5,
+      x: midX + 12,
       y: cardStartY + cardHeight / 2.5,
       // x: p1x,
       // y: cardStartY - 20,
@@ -261,6 +251,7 @@ function drawUI() {
       bg: colors.TRANSPARENT,
       c: colors.NEONRED,
       fontWeight: '900',
+      fontSize: getFontSize(containerWidth, resultBarH - 40),
     },
     "p3": {
       x: p3x,
@@ -305,9 +296,6 @@ function drawUI() {
     },
 
 
-
-
-
     // placeBets: {
     //   x: (canvas.width - containerWidth) / 2 ,
     //   y: hudY + topH * 0.4,
@@ -315,52 +303,52 @@ function drawUI() {
     //   h: topH * 0.6,
     // },
 
+    //=============================================
+    // PLACE BET
+    //=============================================
     "player": { 
       id: "player",
       x: (canvas.width - containerWidth) / 2,
       y: betRow1Y,
       w: containerWidth * 0.3332,
       h: betRow1H,
-      bg: colors.BLUE,
+      // bg: colors.BLUE,
       hoverBg: colors.HOVERBLUE,
       activeBg: colors.ACTIVEBLUE,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
-
     "tie": {
       id: "tie",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
       y: betRow1Y,
       w: containerWidth * 0.3332,
       h: betRow1H,
-      bg: colors.GREEN,
+      // bg: colors.GREEN,
       hoverBg: colors.HOVERGREEN,
       activeBg: colors.ACTIVEGREEN,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
-
     "banker": {
       id: "banker",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
       y: betRow1Y,
       w: containerWidth * 0.3332,
       h: betRow1H,
-      bg: colors.RED,
+      // bg: colors.RED,
       hoverBg: colors.HOVERRED,
       activeBg: colors.ACTIVERED,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
-
     "p pair": {
       id: "p pair",
       x: (canvas.width - containerWidth) / 2,
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.BLUE,
+      // bg: colors.BLUE,
       hoverBg: colors.HOVERBLUE,
       activeBg: colors.ACTIVEBLUE,
       border: "rgb(255, 255, 255)",
@@ -372,7 +360,7 @@ function drawUI() {
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.GREEN,
+      // bg: colors.GREEN,
       hoverBg: colors.HOVERGREEN,
       activeBg: colors.ACTIVEGREEN,
       border: "rgb(255, 255, 255)",
@@ -384,7 +372,7 @@ function drawUI() {
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.RED,
+      // bg: colors.RED,
       hoverBg: colors.HOVERRED,
       activeBg: colors.ACTIVERED,
       border: "rgb(255, 255, 255)",
@@ -396,7 +384,7 @@ function drawUI() {
       y: hudY + topH * 0.85,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.BLUE,
+      // bg: colors.BLUE,
       hoverBg: colors.HOVERBLUE,
       activeBg: colors.ACTIVEBLUE,
       border: "rgb(255, 255, 255)",
@@ -408,7 +396,7 @@ function drawUI() {
       y: hudY + topH * 0.85,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.GREEN,
+      // bg: colors.GREEN,
       hoverBg: colors.HOVERGREEN,
       activeBg: colors.ACTIVEGREEN,
       border: "rgb(255, 255, 255)",
@@ -420,7 +408,7 @@ function drawUI() {
       y: hudY + topH * 0.85,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.RED,
+      // bg: colors.RED,
       hoverBg: colors.HOVERRED,
       activeBg: colors.ACTIVERED,
       border: "rgb(255, 255, 255)",
@@ -437,7 +425,7 @@ function drawUI() {
     }
   };
 
-  buildButtons(layout); 
+  buildButtons(components); 
 
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -445,16 +433,16 @@ function drawUI() {
   //  VIDEO
   //=================================================================================
 
-  const v = layout.video;
+  const v = components.video;
 
   if (video.readyState >= 2) {
     // ctx.drawImage(video, v.x, v.y, v.w, v.h);
     ctx.fillStyle = "black";
     ctx.fillRect(v.x, v.y, v.w, v.h);
-    drawVideo(ctx, video, v.x, v.y, v.w, v.h);
+    // drawVideo(ctx, video, v.x, v.y, v.w, v.h);
   } 
  
-  for (const [index, obj] of Object.entries(layout)) {
+  for (const [index, obj] of Object.entries(components)) {
 
     //===================================
     // BORDER
@@ -473,7 +461,7 @@ function drawUI() {
     // FONT WEIGHT
     //===================================
     
-    let fontWeight = obj.fontWeight ?? 'normal'
+    let fontWeight = obj.fontWeight ?? '100'
     
     
     let bg = obj.bg ?? "rgb(19, 17, 17)";
@@ -482,21 +470,26 @@ function drawUI() {
     const isHovered = index === hovered;
 
     if (isClicked) {
-      bg = obj.activeBg ?? "rgb(19, 17, 17)";
+      bg = obj.activeBg ;
+      bg = "rgb(15, 14, 14)";
+      ctx.fillStyle = bg ;
+      ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
     } else if (isHovered) {
-      bg = obj.hoverBg ?? "rgb(80, 120, 255)";
+      // bg = obj.hoverBg;
+      bg = "rgb(24, 23, 23)";
+      ctx.fillStyle = bg ;
+      ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
     }
 
-    ctx.fillStyle = bg ?? "rgb(19, 17, 17)";
-
     if(obj.bg) {
+      // ctx.fillStyle = bg;
       // ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
     }
 
 
- 
-    ctx.fillStyle = obj.c ?? "rgba(248, 244, 244, 0.51)";
-    ctx.font = `${fontWeight} ${getFontSize(obj.w, obj.h)}px Courier`;
+
+    ctx.fillStyle = obj.c ?? (isHovered ? "rgba(255, 255, 255, 0.75)" : "rgba(255, 255, 255, 0.35)");
+    ctx.font = `${fontWeight} ${obj.fontSize ?? getFontSize(obj.w, obj.h) }px Trebuchet MS`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(
@@ -504,7 +497,6 @@ function drawUI() {
       obj.x + obj.w / 2,
       obj.y + obj.h / 2
     );
-
     
   }
 
@@ -525,15 +517,18 @@ canvas.addEventListener("mousemove", (e) => {
     mouseY <= btn.y + btn.h
   );
   hovered = null
+
   canvas.style.cursor = null; 
   if(found) {
+
     canvas.style.cursor = 'pointer'
     hovered = found.id
   }
 
 });
 
-canvas.addEventListener("click", (e) => {
+
+canvas.addEventListener("pointerdown", (e) => {
   const rect = canvas.getBoundingClientRect();
 
   const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
@@ -546,15 +541,16 @@ canvas.addEventListener("click", (e) => {
     mouseY <= btn.y + btn.h
   );
 
-  clicked = null
   if (found) {
-    hovered = null
     clicked = found.id
     console.log("%c" + found.id, `background-color: ${found.activeBg};padding: 0.5rem 1rem`);
   }
-  
-
 });
+canvas.addEventListener("pointerup", (e) => {
+  clicked = null;
+});
+
+
 
 
 function loop() {
