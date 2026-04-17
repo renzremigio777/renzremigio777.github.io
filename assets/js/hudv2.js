@@ -39,9 +39,14 @@ function drawLayout() {
   const layoutGap =0;
 
   const containerAvailableWidth = canvas.width - layoutPadding * 2;
-  const containerMaxWidth = 1000;
+  const containerMaxWidth = 980;
 
-  const containerWidth = Math.min(containerAvailableWidth, containerMaxWidth);
+  const isMobile = canvas.width <= 980; // adjust breakpoint if needed
+
+  const containerWidth = isMobile
+  ? containerAvailableWidth   // full width on phone
+  : Math.min(containerAvailableWidth, containerMaxWidth);
+  // const containerWidth = Math.min(containerAvailableWidth, containerMaxWidth);
 
   const videoWidth = containerWidth;
   const videoHeight = videoWidth * 9 / 16;
@@ -52,16 +57,16 @@ function drawLayout() {
   const topRatio = 0.7;   // 40%
   const bottomRatio = 0.3; // 60%
 
-  const topH = hudHeight * topRatio - layoutGap / 2;
+  const topH = hudHeight * topRatio - layoutGap / 1;
   const bottomH = hudHeight * bottomRatio - layoutGap / 2;
 
 
   const gap = 5;
-  const aspect = 9 / 16;
+  const aspect = 9/ 14;
 
   // max allowed space
-  const maxCardHeight = topH * 0.28 - 20;
-  const maxCardWidth = containerWidth / 12; // adjust depending on how tight you want layout
+  const maxCardHeight = topH * 0.25 - 21;
+  const maxCardWidth = containerWidth / 8; // adjust depending on how tight you want layout
 
   // derive safe height from width constraint
   const widthBasedHeight = maxCardWidth / aspect;
@@ -78,8 +83,11 @@ function drawLayout() {
   const cardStartX = (canvas.width - containerWidth) / 2;
 
   const resultBarY = hudY + topH * 0.1;
-  const resultBarH = topH * 0.3;
+  const resultBarH = topH * 0.25;
 
+  const betRow1Y = hudY + topH * 0.35;
+  const betRow1H = topH * 0.35;
+  
   const cardStartY = resultBarY + (resultBarH - cardHeight) / 2;
 
   // center reference
@@ -87,7 +95,7 @@ function drawLayout() {
 
 
   // start positions (left group ends at center gap)
-  const centerGap = 100;
+  const centerGap = 10;
 
 
   const leftStartX = midX - centerGap / 2 - groupWidth;
@@ -95,10 +103,10 @@ function drawLayout() {
 
   const leftGroupEnd = midX - centerGap / 2;
 
-
-  const p1x = leftStartX + (cardWidth * 2) - gap ;
-  const p2x = leftStartX + (cardWidth * 3) + gap * 3.3;
-  const p3x = leftStartX + 24;
+  // const p1x = leftStartX + (cardWidth * 2) - gap ;
+  const p1x = leftStartX + (cardWidth) + (gap * 2);
+  const p2x = leftStartX + (cardWidth * 2) + (gap * 4);
+  const p3x = leftStartX
 
   const mirror = (x) => midX + (midX - (x + cardWidth));
 
@@ -107,13 +115,16 @@ function drawLayout() {
   const b3x = mirror(p3x);
 
   const colors = {
+    NEONRED: "rgb(252, 70, 70)",
+    NEONBLUE: "rgb(88, 70, 252)",
     BLUE: "rgba(46, 34, 156, 0.5)",
     RED: " rgba(105, 14, 14, 0.5)",
     GREEN: " rgba(30, 97, 33, 0.5)",
     WHITE: " rgba(255, 255, 255, 1)",
+    TRANSPARENT: " rgba(255, 255, 255, 0)" ,
   }
 
-
+ 
   const layout = {
     video: {
       x: (canvas.width - containerWidth) / 2,
@@ -168,21 +179,44 @@ function drawLayout() {
       // bg: colors.WHITE,
       border: "rgb(255, 255, 255)",
     },
+    "p": {
+      x: midX - 20,
+      y: cardStartY + cardHeight / 2.5,
+      // x: p1x,
+      // y: cardStartY - 20,
+      w: 12,
+      h: 12,
+      bg: colors.TRANSPARENT,
+      c: colors.NEONBLUE,
+      fontWeight: '900',
+      fontSize: '900',
+    },
+    "b": {
+      x: midX + 5.5,
+      y: cardStartY + cardHeight / 2.5,
+      // x: p1x,
+      // y: cardStartY - 20,
+      w: 12,
+      h: 12,
+      bg: colors.TRANSPARENT,
+      c: colors.NEONRED,
+      fontWeight: '900',
+    },
     "p3": {
+      x: p3x,
       y: cardStartY,
       w: cardWidth,
-      x: p3x,
       h: cardHeight,
       border: "rgb(255, 255, 255)",
-      rotate: true
+      // rotate: true
     },
     "b3": {
       x: b3x,
       y: cardStartY,
       w: cardWidth,
       h: cardHeight,
-      border: "rgb(15, 13, 13)",
-      rotate: true,
+      border: "rgb(255, 255, 255)",
+      // rotate: true,
       mirror: true
     },
     "p2": {
@@ -223,26 +257,29 @@ function drawLayout() {
 
     "player": {
       x: (canvas.width - containerWidth) / 2,
-      y: hudY + topH * 0.4,
+      y: betRow1Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.3,
-      bg: colors.BLUE
+      h: betRow1H,
+      bg: colors.BLUE,
+      border: "rgb(255, 255, 255)",
     },
 
     "tie": {
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
-      y: hudY + topH * 0.4,
+      y: betRow1Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.3,
-      bg: colors.GREEN
+      h: betRow1H,
+      bg: colors.GREEN,
+      border: "rgb(255, 255, 255)",
     },
 
     "banker": {
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
-      y: hudY + topH * 0.4,
+      y: betRow1Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.3,
-      bg: colors.RED
+      h: betRow1H,
+      bg: colors.RED,
+      border: "rgb(255, 255, 255)",
     },
 
     "p pair": {
@@ -250,35 +287,40 @@ function drawLayout() {
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.BLUE
+      bg: colors.BLUE,
+      border: "rgb(255, 255, 255)",
     },
     "perfect pair": {
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.GREEN
+      bg: colors.GREEN,
+      border: "rgb(255, 255, 255)",
     },
     "b pair": {
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.RED
+      bg: colors.RED,
+      border: "rgb(255, 255, 255)",
     },
     "p bonus": {
       x: (canvas.width - containerWidth) / 2,
       y: hudY + topH * 0.85,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.BLUE
+      bg: colors.BLUE,
+      border: "rgb(255, 255, 255)",
     },
     "either pair": {
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
       y: hudY + topH * 0.85,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
-      bg: colors.GREEN
+      bg: colors.GREEN,
+      border: "rgb(255, 255, 255)",
     },
     "b bonus": {
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
@@ -298,12 +340,30 @@ function drawLayout() {
   };
   for (const [index, obj] of Object.entries(layout)) {
     ctx.fillStyle = obj.bg ?? "rgb(19, 17, 17)";
-    ctx.lineWidth = 0.2;
+    ctx.lineWidth = 0.1;
+
+    //============
+    // BORDER
+    //============
     if(obj.border) {
       ctx.strokeStyle = "rgba(255, 255, 255, 0.33)"
-      ctx.strokeStyle = "white";
+      ctx.strokeStyle =  obj.border;
       ctx.setLineDash([5, 5]); // 5px line, 5px gap
+      ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
     }
+    else {
+      ctx.setLineDash([]); // reset
+    }
+    //============
+    // FONT WEIGHT
+    //============
+    
+    let fontWeight = obj.fontWeight ?? 'normal'
+    
+    //============
+    // ROTATION
+    //============
+
     if (obj.rotate) {
       ctx.save();
 
@@ -312,17 +372,16 @@ function drawLayout() {
       ctx.rotate(Math.PI / 2);
 
       ctx.fillRect(-obj.w / 2, -obj.h / 2, obj.w, obj.h);
-      ctx.strokeRect(-obj.w / 2, -obj.h / 2, obj.w, obj.h);
 
       ctx.restore();
     } else {
       ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
 
-      ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+   
 
     }
     // ctx.font = `${13 * scale}px Courier`;
-    ctx.font = `${getFontSize(obj.w, obj.h)}px Courier`;
+    ctx.font = `${fontWeight} ${getFontSize(obj.w, obj.h)}px Courier`;
     ctx.fillStyle = obj.c ?? "rgba(248, 244, 244, 0.51)";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -352,6 +411,16 @@ function init() {
 
   drawLayout();
 }
+
+
+const mouse = { x: 0, y: 0 };
+
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+});
 
 init();
 window.addEventListener('resize', () => {
