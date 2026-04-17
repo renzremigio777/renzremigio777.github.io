@@ -1,11 +1,10 @@
 //===========================
 //  SETUP CANVAS
 //===========================
+let hovered = null;
 
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
-
-const dpr = window.devicePixelRatio || 1;
 const scale = 1;
 
 
@@ -19,14 +18,15 @@ const colors = {
   TRANSPARENT: " rgba(255, 255, 255, 0)",
 }
 
+
 function resize() {
+  const dpr = window.devicePixelRatio || 1;
   canvas.width = innerWidth * dpr;
   canvas.height = innerHeight * dpr;
 
-  canvas.style.width = innerWidth + 'px';
-  canvas.style.height = innerHeight + 'px';
+  canvas.style.width = innerWidth + "px";
+  canvas.style.height = innerHeight + "px";
 
-  
 }
 
 function getFontSize(width, height) {
@@ -37,9 +37,27 @@ function getFontSize(width, height) {
 }
 
 let buttons = [];
+
+function buildButtons(layout) {
+  buttons = [];
+
+  for (const [key, obj] of Object.entries(layout)) {
+    if (obj.isButton) {
+      buttons.push({
+        id: key,
+        x: obj.x,
+        y: obj.y,
+        w: obj.w,
+        h: obj.h,
+        bg: obj.bg
+      });
+    }
+  }
+}
+
+
 function drawLayout() {
   buttons = [];
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   ctx.fillStyle = `rgb(32, 32, 32)`
 
@@ -258,7 +276,8 @@ function drawLayout() {
     //   h: topH * 0.6,
     // },
 
-    "player": {
+    "player": { 
+      id: "player",
       x: (canvas.width - containerWidth) / 2,
       y: betRow1Y,
       w: containerWidth * 0.3332,
@@ -269,73 +288,90 @@ function drawLayout() {
     },
 
     "tie": {
+      id: "tie",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
       y: betRow1Y,
       w: containerWidth * 0.3332,
       h: betRow1H,
       bg: colors.GREEN,
       border: "rgb(255, 255, 255)",
+      isButton: true
     },
 
     "banker": {
+      id: "banker",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
       y: betRow1Y,
       w: containerWidth * 0.3332,
       h: betRow1H,
       bg: colors.RED,
       border: "rgb(255, 255, 255)",
+      isButton: true
     },
 
     "p pair": {
+      id: "p pair",
       x: (canvas.width - containerWidth) / 2,
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.BLUE,
       border: "rgb(255, 255, 255)",
+      isButton: true
     },
     "perfect pair": {
+      id: "perfect pair",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.GREEN,
       border: "rgb(255, 255, 255)",
+      isButton: true
     },
     "b pair": {
+      id: "b pair",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
       y: hudY + topH * 0.7,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.RED,
       border: "rgb(255, 255, 255)",
+      isButton: true
     },
     "p bonus": {
+      id: "p bonus",
       x: (canvas.width - containerWidth) / 2,
       y: hudY + topH * 0.85,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.BLUE,
       border: "rgb(255, 255, 255)",
+      isButton: true
     },
     "either pair": {
+      id: "either pair",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
       y: hudY + topH * 0.85,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.GREEN,
       border: "rgb(255, 255, 255)",
+      isButton: true
     },
     "b bonus": {
+      id: "b bonus",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
       y: hudY + topH * 0.85,
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.RED,
       border: "rgb(255, 255, 255)",
+      isButton: true
     },
 
     "bottom bar": {
+      id: "bottom bar",
       x: (canvas.width - containerWidth) / 2,
       y: hudY + topH + layoutGap,
       w: containerWidth ,
@@ -343,14 +379,17 @@ function drawLayout() {
       bg: "rgba(255,255,255,0.3)",
     }
   };
+
+  buildButtons(layout); 
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
   for (const [index, obj] of Object.entries(layout)) {
-    ctx.fillStyle = obj.bg ?? "rgb(19, 17, 17)";
-    ctx.lineWidth = 0.1;
 
     //===================================
     // BORDER
     //===================================
     if(obj.border) {
+      ctx.lineWidth = 0.1;
       ctx.strokeStyle = "rgba(255, 255, 255, 0.33)"
       ctx.strokeStyle =  obj.border;
       ctx.setLineDash([5, 5]); // 5px line, 5px gap
@@ -365,24 +404,13 @@ function drawLayout() {
     
     let fontWeight = obj.fontWeight ?? 'normal'
     
-
-    
-    let bg = obj.bg;
-    if (hovered === index) {
-      bg = "rgb(80, 120, 255)"; // lighter blue hover
-    }
-
-     if(obj.isButton) {
-      buttons.push(obj)
-     }
-
-    // ctx.fillStyle = bg;
+   
+    ctx.fillStyle = obj.bg ?? "rgb(19, 17, 17)";
     ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
 
  
-    // ctx.font = `${13 * scale}px Courier`;
-    ctx.font = `${fontWeight} ${getFontSize(obj.w, obj.h)}px Courier`;
     ctx.fillStyle = obj.c ?? "rgba(248, 244, 244, 0.51)";
+    ctx.font = `${fontWeight} ${getFontSize(obj.w, obj.h)}px Courier`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(
@@ -390,52 +418,42 @@ function drawLayout() {
       obj.x + obj.w / 2,
       obj.y + obj.h / 2
     );
+
+    
   }
 
 }
 
+
+
+
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+  const found = buttons.find(btn =>
+    mouseX >= btn.x &&
+    mouseX <= btn.x + btn.w &&
+    mouseY >= btn.y &&
+    mouseY <= btn.y + btn.h
+  );
+
+  if(found) {
+    console.log("%c" + found.id, `background-color: ${found.bg};padding: 0.5rem 1rem`);
+  }
+});
+
 function init() {
   resize();
-
   drawLayout();
 }
 
 
-// const mouse = { x: 0, y: 0 };
-
-// canvas.addEventListener("mousemove", (e) => {
-//   const rect = canvas.getBoundingClientRect();
-
-//   mouse.x = e.clientX - rect.left;
-//   mouse.y = e.clientY - rect.top;
-// });
-
-
-let hovered = null;
-
-canvas.addEventListener("mousemove", (e) => {
-  const rect = canvas.getBoundingClientRect();
-
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-
-  let isInside = false 
-  buttons.forEach((btn) => {
-    isInside =
-      mouseX >= btn.x &&
-      mouseX <= btn.x + btn.w &&
-      mouseY >= btn.y &&
-      mouseY <= btn.y + btn.h;
-
-  });
-  console.log("%c isInside: " + isInside, `color: ${colors.NEONBLUE}; font-weight: bold;`);
-
-});
-
-
-init();
+resize();
+drawLayout();
 window.addEventListener('resize', () => {
-  init();
+  resize();
+  drawLayout();
 });
 
 
