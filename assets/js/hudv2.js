@@ -96,8 +96,8 @@ function drawLayout() {
   const vw = window.visualViewport?.width || window.innerWidth;
   const vh = window.visualViewport?.height || window.innerHeight;
 
+  // const containerAvailableWidth = canvas.width - layoutPadding * 2;
   const containerAvailableWidth = canvas.width - layoutPadding * 2;
-  // const containerAvailableWidth = vw - layoutPadding * 2;
   const containerMaxWidth = 980;
 
   const isMobile = canvas.width <= 980; // adjust breakpoint if needed
