@@ -4,19 +4,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HUD</title>
   <style>
-    body {
-      background: rgb(31, 30, 30);
+    html, body {
       margin: 0;
-
+      padding: 0;
+      overflow: hidden; /* ❌ disables page scroll */
+      height: 100%;
+      background: rgb(31, 30, 30);
     }
     canvas {
-  box-sizing: border-box;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-}
+        box-sizing: border-box;
+        position: fixed;
+        touch-action: none; /* ✅ prevents drag/scroll gestures */
+    }
   </style>
 </head>
 <body>
