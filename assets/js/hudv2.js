@@ -26,14 +26,7 @@ const colors = {
 }
 
 
-// function resize() {
-//   const dpr = window.devicePixelRatio || 1;
-//   canvas.width = innerWidth * dpr;
-//   canvas.height = innerHeight * dpr;
-
-//   canvas.style.width = innerWidth + "px";
-//   canvas.style.height = innerHeight + "px";
-// }
+let buttons = [];
 
 function resize() {
   const dpr = window.devicePixelRatio || 1;
@@ -57,11 +50,8 @@ function getFontSize(width, height) {
   return Math.max(15, Math.floor(base * 0.20));
 }
 
-let buttons = [];
-
 function buildButtons(layout) {
   buttons = [];
-
   for (const [key, obj] of Object.entries(layout)) {
     if (obj.isButton) {
       buttons.push({
@@ -79,17 +69,46 @@ function buildButtons(layout) {
 }
 
 
-function drawLayout() {
+//======================================================
+// VIDEO
+//======================================================
+const video = document.createElement("video");
+
+video.src = "https://www.w3schools.com/tags/movie.mp4";
+video.autoplay = true;
+video.loop = true;
+video.muted = true; // REQUIRED for autoplay on mobile
+video.playsInline = true; // IMPORTANT for iOS Safari
+
+video.play();
+
+function drawVideo(ctx, video, x, y, w, h) {
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+
+  const scale = Math.min(w / vw, h / vh);
+
+  const dw = vw * scale;
+  const dh = vh * scale;
+
+  const dx = x + (w - dw) / 2;
+  const dy = y + (h - dh) / 2;
+
+  ctx.drawImage(video, dx, dy, dw, dh);
+}
+
+//======================================================
+// UI
+//======================================================
+function drawUI() {
+  //=================================================================================
+  //  LAYOUT VARIABLES
+  //=================================================================================
   buttons = [];
-
   ctx.fillStyle = `rgb(32, 32, 32)`
-
   const spacing = 10 ;
   const buttonGap = spacing / 2;
 
-  //===========================
-  //  HUD HEADER
-  //===========================
   const layoutPadding =0;
   const layoutGap =0;
 
@@ -106,7 +125,7 @@ function drawLayout() {
   ? containerAvailableWidth   // full width on phone
   : Math.min(containerAvailableWidth, containerMaxWidth);
   // const containerWidth = Math.min(containerAvailableWidth, containerMaxWidth);
-
+  
   const videoWidth = containerWidth;
   const videoHeight = videoWidth * 9 / 16;
 
@@ -120,9 +139,11 @@ function drawLayout() {
   const bottomH = hudHeight * bottomRatio - layoutGap / 2;
 
 
+  //=================================================================================
+  //  CARDS - VARIABLES
+  //=================================================================================
   const gap = 2;
   const aspect = 9/ 14;
-
   // max allowed space
   const maxCardHeight = topH * 0.25 - 21;
   const maxCardWidth = containerWidth / 8; // adjust depending on how tight you want layout
@@ -136,31 +157,21 @@ function drawLayout() {
 
   // 3 cards per group
   const groupWidth = (cardWidth * 2) + cardHeight + (gap * 4);
-
-  const totalWidth = cardWidth * 2 + gap;
-
-  const cardStartX = (canvas.width - containerWidth) / 2;
-
   const resultBarY = hudY + topH * 0.1;
   const resultBarH = topH * 0.25;
-
   const betRow1Y = hudY + topH * 0.35;
   const betRow1H = topH * 0.35;
-  
   const cardStartY = resultBarY + (resultBarH - cardHeight) / 2;
 
   // center reference
   const midX = canvas.width / 2;
 
-
   // start positions (left group ends at center gap)
+
   const centerGap = 10;
-
   const leftStartX = midX - centerGap / 2 - groupWidth;
-
-  const leftGroupEnd = midX - centerGap / 2;
-
-  // const p1x = leftStartX + (cardWidth * 2) - gap ;
+  
+  
   const p1x = leftStartX + (cardWidth) + (gap * 2);
   const p2x = leftStartX + (cardWidth * 2) + (gap * 4);
   const p3x = leftStartX
@@ -171,15 +182,16 @@ function drawLayout() {
   const b2x = mirror(p2x);
   const b3x = mirror(p3x);
 
-
  
+  
   const layout = {
     video: {
       x: (canvas.width - containerWidth) / 2,
       y: layoutPadding,
       w: videoWidth,
       h: videoHeight,
-      bg: "rgba(0, 0, 0, 1)"
+      bg: "rgba(0, 0, 0, 1)",
+      isVideo: true
     },
 
     // topBar: {
@@ -426,8 +438,22 @@ function drawLayout() {
   };
 
   buildButtons(layout); 
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  //=================================================================================
+  //  VIDEO
+  //=================================================================================
+
+  const v = layout.video;
+
+  if (video.readyState >= 2) {
+    // ctx.drawImage(video, v.x, v.y, v.w, v.h);
+    ctx.fillStyle = "black";
+    ctx.fillRect(v.x, v.y, v.w, v.h);
+    drawVideo(ctx, video, v.x, v.y, v.w, v.h);
+  } 
+ 
   for (const [index, obj] of Object.entries(layout)) {
 
     //===================================
@@ -442,12 +468,13 @@ function drawLayout() {
     }
     else {
       ctx.setLineDash([]); // reset
-    } layout
+    } 
     //===================================
     // FONT WEIGHT
     //===================================
     
     let fontWeight = obj.fontWeight ?? 'normal'
+    
     
     let bg = obj.bg ?? "rgb(19, 17, 17)";
 
@@ -461,7 +488,11 @@ function drawLayout() {
     }
 
     ctx.fillStyle = bg ?? "rgb(19, 17, 17)";
-    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+
+    if(obj.bg) {
+      // ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+    }
+
 
  
     ctx.fillStyle = obj.c ?? "rgba(248, 244, 244, 0.51)";
@@ -484,6 +515,7 @@ function drawLayout() {
 
 canvas.addEventListener("mousemove", (e) => {
   const rect = canvas.getBoundingClientRect();
+
   const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
   const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
   const found = buttons.find(btn =>
@@ -493,13 +525,12 @@ canvas.addEventListener("mousemove", (e) => {
     mouseY <= btn.y + btn.h
   );
   hovered = null
-
+  canvas.style.cursor = null; 
   if(found) {
     canvas.style.cursor = 'pointer'
     hovered = found.id
   }
 
-  drawLayout();
 });
 
 canvas.addEventListener("click", (e) => {
@@ -521,15 +552,19 @@ canvas.addEventListener("click", (e) => {
     clicked = found.id
     console.log("%c" + found.id, `background-color: ${found.activeBg};padding: 0.5rem 1rem`);
   }
-  drawLayout();
+  
 
 });
 
-resize();
-drawLayout();
-window.addEventListener('resize', () => {
+
+function loop() {
   resize();
-  drawLayout();
+  drawUI();
+  requestAnimationFrame(loop);
+}
+
+loop();
+window.addEventListener('resize', () => {
 });
 
 
