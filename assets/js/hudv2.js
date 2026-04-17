@@ -26,14 +26,28 @@ const colors = {
 }
 
 
+// function resize() {
+//   const dpr = window.devicePixelRatio || 1;
+//   canvas.width = innerWidth * dpr;
+//   canvas.height = innerHeight * dpr;
+
+//   canvas.style.width = innerWidth + "px";
+//   canvas.style.height = innerHeight + "px";
+// }
+
 function resize() {
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = innerWidth * dpr;
-  canvas.height = innerHeight * dpr;
+  const vw = window.visualViewport?.width || window.innerWidth;
+  const vh = window.visualViewport?.height || window.innerHeight;
 
-  canvas.style.width = innerWidth + "px";
-  canvas.style.height = innerHeight + "px";
+  canvas.width = vw * dpr;
+  canvas.height = vh * dpr;
 
+  canvas.style.width = vw + "px";
+  canvas.style.height = vh + "px";
+
+  // ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // ctx.scale(dpr, dpr);
 }
 
 function getFontSize(width, height) {
@@ -79,7 +93,11 @@ function drawLayout() {
   const layoutPadding =0;
   const layoutGap =0;
 
+  const vw = window.visualViewport?.width || window.innerWidth;
+  const vh = window.visualViewport?.height || window.innerHeight;
+
   const containerAvailableWidth = canvas.width - layoutPadding * 2;
+  // const containerAvailableWidth = vw - layoutPadding * 2;
   const containerMaxWidth = 980;
 
   const isMobile = canvas.width <= 980; // adjust breakpoint if needed

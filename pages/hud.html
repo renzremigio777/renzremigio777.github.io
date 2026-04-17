@@ -11,6 +11,16 @@
       height: 100%;
       background: rgb(31, 30, 30);
     }
+
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: rgb(31, 30, 30);
+
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
     canvas {
         box-sizing: border-box;
         position: fixed;
