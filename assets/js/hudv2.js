@@ -2,6 +2,7 @@
 //  SETUP CANVAS
 //===========================
 let hovered = null;
+let clicked = null;
 
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
@@ -14,6 +15,12 @@ const colors = {
   BLUE: "rgba(46, 34, 156, 0.5)",
   RED: " rgba(105, 14, 14, 0.5)",
   GREEN: " rgba(30, 97, 33, 0.5)",
+  HOVERBLUE: "rgb(46, 34, 156)",
+  HOVERRED: " rgb(105, 14, 14)",
+  HOVERGREEN: " rgb(30, 97, 33)",
+  ACTIVEBLUE: "rgb(50, 34, 192)",
+  ACTIVERED: " rgb(150, 3, 3)",
+  ACTIVEGREEN: " rgb(35, 116, 39)",
   WHITE: " rgba(255, 255, 255, 1)",
   TRANSPARENT: " rgba(255, 255, 255, 0)",
 }
@@ -49,7 +56,9 @@ function buildButtons(layout) {
         y: obj.y,
         w: obj.w,
         h: obj.h,
-        bg: obj.bg
+        bg: obj.bg,
+        hoverBg: obj.hoverBg,
+        activeBg: obj.activeBg,
       });
     }
   }
@@ -283,6 +292,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: betRow1H,
       bg: colors.BLUE,
+      hoverBg: colors.HOVERBLUE,
+      activeBg: colors.ACTIVEBLUE,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -294,6 +305,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: betRow1H,
       bg: colors.GREEN,
+      hoverBg: colors.HOVERGREEN,
+      activeBg: colors.ACTIVEGREEN,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -305,6 +318,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: betRow1H,
       bg: colors.RED,
+      hoverBg: colors.HOVERRED,
+      activeBg: colors.ACTIVERED,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -316,6 +331,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.BLUE,
+      hoverBg: colors.HOVERBLUE,
+      activeBg: colors.ACTIVEBLUE,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -326,6 +343,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.GREEN,
+      hoverBg: colors.HOVERGREEN,
+      activeBg: colors.ACTIVEGREEN,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -336,6 +355,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.RED,
+      hoverBg: colors.HOVERRED,
+      activeBg: colors.ACTIVERED,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -346,6 +367,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.BLUE,
+      hoverBg: colors.HOVERBLUE,
+      activeBg: colors.ACTIVEBLUE,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -356,6 +379,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.GREEN,
+      hoverBg: colors.HOVERGREEN,
+      activeBg: colors.ACTIVEGREEN,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -366,6 +391,8 @@ function drawLayout() {
       w: containerWidth * 0.3332,
       h: topH * 0.15,
       bg: colors.RED,
+      hoverBg: colors.HOVERRED,
+      activeBg: colors.ACTIVERED,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
@@ -404,8 +431,18 @@ function drawLayout() {
     
     let fontWeight = obj.fontWeight ?? 'normal'
     
-   
-    ctx.fillStyle = obj.bg ?? "rgb(19, 17, 17)";
+    let bg = obj.bg ?? "rgb(19, 17, 17)";
+
+    const isClicked = index === clicked;
+    const isHovered = index === hovered;
+
+    if (isClicked) {
+      bg = obj.activeBg ?? "rgb(19, 17, 17)";
+    } else if (isHovered) {
+      bg = obj.hoverBg ?? "rgb(80, 120, 255)";
+    }
+
+    ctx.fillStyle = bg ?? "rgb(19, 17, 17)";
     ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
 
  
@@ -437,17 +474,38 @@ canvas.addEventListener("mousemove", (e) => {
     mouseY >= btn.y &&
     mouseY <= btn.y + btn.h
   );
+  hovered = null
 
   if(found) {
-    console.log("%c" + found.id, `background-color: ${found.bg};padding: 0.5rem 1rem`);
+    canvas.style.cursor = 'pointer'
+    hovered = found.id
   }
+
+  drawLayout();
 });
 
-function init() {
-  resize();
-  drawLayout();
-}
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
 
+  const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+  const found = buttons.find(btn =>
+    mouseX >= btn.x &&
+    mouseX <= btn.x + btn.w &&
+    mouseY >= btn.y &&
+    mouseY <= btn.y + btn.h
+  );
+
+  clicked = null
+  if (found) {
+    hovered = null
+    clicked = found.id
+    console.log("%c" + found.id, `background-color: ${found.activeBg};padding: 0.5rem 1rem`);
+  }
+  drawLayout();
+
+});
 
 resize();
 drawLayout();
