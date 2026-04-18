@@ -48,8 +48,8 @@ class Chip {
 
     let formattedValue = this.value > 900 ? formatter.format(this.value) : this.value.toString();
     ctx.fillStyle = this.isHovered 
-        ? "rgba(255, 255, 255, 0.84)"
-      : "rgba(255, 255, 255, 0.35)";
+        ? "rgba(255, 255, 255, 0.75)"
+      : "rgba(255, 255, 255, 0.45)";
     ctx.fillText(formattedValue, this.x, this.y);
   }
 }
@@ -628,7 +628,7 @@ function drawUI() {
       // ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
     }
 
-    ctx.fillStyle = obj.c ?? (isHovered ? "rgba(255, 255, 255, 0.75)" : "rgba(255, 255, 255, 0.35)");
+    ctx.fillStyle = obj.c ?? (isHovered ? "rgba(255, 255, 255, 0.75)" : "rgba(255, 255, 255, 0.45)");
     ctx.font = `${fontWeight} ${obj.fontSize ?? getFontSize(obj.w, obj.h) }px Trebuchet MS`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
