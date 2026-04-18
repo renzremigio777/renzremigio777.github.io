@@ -551,26 +551,18 @@ function drawUI() {
     //   bg: "rgba(255,255,255,0.3)",
     // },
     //=============================================
-    // CHIPS
+    // CHIPS CONTAINER
     //=============================================
-    "": {
-      id: "chips",
-      x: (canvas.width - containerWidth) / 2,
-      y: hudY + topH + layoutGap,
-      w: containerWidth ,
-      h: bottomH / 2,
-      border: "rgb(255, 255, 255)",
-      bg: "rgba(255,255,255,0.3)",
-    },
-    // "c1": {
-    //   id: "c1",
-    //   type: "circle",
+    // "chips_container": {
+    //   id: "chips_container",
     //   x: (canvas.width - containerWidth) / 2,
     //   y: hudY + topH + layoutGap,
     //   w: containerWidth ,
     //   h: bottomH / 2,
     //   border: "rgb(255, 255, 255)",
-    // }
+    //   bg: "rgba(255,255,255,0.3)",
+    // },
+    
   };
 
 
@@ -590,7 +582,7 @@ function drawUI() {
   const v = components.video;
 
   if (video.readyState >= 2) {
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "rgba(15, 15, 15, 0.39)";
     ctx.fillRect(v.x, v.y, v.w, v.h);
     drawVideo(ctx, video, v.x, v.y, v.w, v.h);
   }
