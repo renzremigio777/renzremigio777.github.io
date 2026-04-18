@@ -1,5 +1,5 @@
 class Chip {
-  constructor(value, x, y, size) {
+  constructor(value, x, y, size, background) {
     this.value = value;
     this.x = x;
     this.y = y;
@@ -7,6 +7,7 @@ class Chip {
 
     this.isHovered = false;
     this.isActive = false;
+    this.background = background ?? null;
   }
   get radius() {
     return this.size / 2; // ✅ single source of truth
@@ -24,33 +25,82 @@ class Chip {
 
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
-
+    
+    ctx.fillStyle = this.background ?? "rgb(255, 255, 255)";
+    ctx.fill();
     ctx.strokeStyle = "rgb(255, 255, 255)";
     // 🎨 visual states
 
     if (this.isActive) {
-      ctx.fillStyle = "rgb(14, 14, 14)";
+      console.log(this.value)      
+      ctx.fillStyle = colors.ACTIVEBG;
       ctx.fill();
     }
 
     ctx.setLineDash([5, 5]);
-    ctx.lineWidth = "0.1"
+    ctx.lineWidth = 0.1;
 
-    ctx.stroke();
+    // ctx.stroke();
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `900 ${Math.max(14, radius / 2)}px Trebuchet MS`;
+    ctx.font = `900 ${Math.max(14, this.size / 2.5)}px Trebuchet MS`;
 
     const formatter = new Intl.NumberFormat('en', {
       notation: 'compact'
     });
 
     let formattedValue = this.value > 900 ? formatter.format(this.value) : this.value.toString();
-    ctx.fillStyle = this.isHovered 
+    ctx.fillStyle = this.isHovered
         ? "rgba(255, 255, 255, 0.75)"
       : "rgba(255, 255, 255, 0.45)";
     ctx.fillText(formattedValue, this.x, this.y);
+  }
+}
+class QuickButton {
+  constructor(value, symbol, x, y, size, background) {
+    this.value = value;
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.symbol = symbol ?? '☺︎'
+    this.isHovered = false;
+    this.isActive = false;
+    this.background = background;
+  }
+  // 🔥 detect click inside rect
+  isInside(mx, my) {
+    return mx >= this.x &&
+      mx <= this.x + this.size &&
+      my >= this.y &&
+      my <= this.y + this.size;
+  }
+  draw(ctx) {
+
+
+    ctx.fillStyle = this.background;
+    ctx.strokeStyle = "rgb(255, 255, 255)";
+    ctx.fillRect(this.x, this.y, this.size, this.size);
+
+    if (this.isActive) {
+      ctx.fillStyle = colors.ACTIVEBG;
+      ctx.fillRect(this.x, this.y, this.size, this.size);
+    }
+
+    ctx.lineWidth = 0.1;
+    ctx.setLineDash([5, 5]);
+    // ctx.strokeRect(this.x, this.y, this.size, this.size);
+
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `900 ${Math.max(14, this.size / 2)}px Trebuchet MS`;
+
+    ctx.fillStyle = this.isHovered
+      ? "rgba(255, 255, 255, 0.75)"
+      : "rgba(255, 255, 255, 0.45)";
+
+    ctx.fillText(this.symbol, this.x + this.size / 2, this.y + this.size / 2);
   }
 }
 
@@ -87,6 +137,7 @@ const colors = {
 //=================================================================================
 const buttons = [];
 const chips = [];
+const quicktools = [];
 //======================================
 //  DRAW CONTAINER
 //======================================
@@ -127,7 +178,7 @@ function resize() {
 
   // ctx.setTransform(1, 0, 0, 1, 0, 0);
   // ctx.scale(dpr, dpr);
-  
+
   //=========================================
   //  MOBILE BREAKPOINT
   //=========================================
@@ -140,7 +191,7 @@ function resize() {
   containerMaxWidth = 980;
   containerWidth = isMobile ? containerAvailableWidth   // full width on phone
     : Math.min(containerAvailableWidth, containerMaxWidth);
-  
+
   videoW = containerWidth;
   videoH = videoW * 9 / 16;
 
@@ -179,7 +230,7 @@ function buildButtons(components) {
     }
   }
 }
-function buildChips() {
+function buildChipController() {
   const chipsContainer =
   {
     id: "chips",
@@ -188,12 +239,22 @@ function buildChips() {
     w: containerWidth,
     h: bottomH / 2,
   }
+  const items = [
+    { type: "chip", value: 100, bg: "rgba(108, 117, 125, 0.25)" },
+    { type: "chip", value: 200, bg: "rgba(0, 123, 255, 0.25)" },
+    { type: "chip", value: 500, bg: "rgba(40, 167, 69, 0.25)" },
+    { type: "chip", value: 1000, bg: "rgba(255, 193, 7, 0.25)" },
+    { type: "chip", value: 2000, bg: "hsl(27, 98%, 54%, 0.25)" },
+    { type: "chip", value: 5000, bg: "rgb(220, 53, 69, 0.25)" },
 
+    { type: "tool", value: "undo", bg: "rgba(85, 85, 85, 0.25)" },
+    { type: "tool", value: "rebet", bg: "rgba(85, 85, 85, 0.25)" },
+    { type: "tool", value: "cancel", bg: "rgba(85, 85, 85, 0.25)" },
+  ];
 
-  const chipValues = [100, 200, 500, 1000, 2000, 5000];
-  const count = chipValues.length;
+  const count = items.length;
 
-  const chipG = -20;
+  const chipG = -30;
   // 1. max size that fits WIDTH
   const radiusByWidth = (chipsContainer.w - (count - 1) * chipG) / (2 * count);
 
@@ -208,25 +269,60 @@ function buildChips() {
   const chipTotalW = count * chipD + (count - 1) * chipG;
 
   // ✅ correct starting X (left edge of centered group)
-  let chipStartX =
+  let startX =
     chipsContainer.x + (chipsContainer.w - chipTotalW) / 2;
 
   // ✅ vertical center inside container
   const centerY = chipsContainer.y + chipsContainer.h / 2;
 
   chips.length = 0;
-  chipValues.forEach((value) => {
-    const centerX = chipStartX + chipR; // convert left → center
-    const chip = new Chip(value, centerX, centerY, chipR);
-    chip.draw(ctx);
-    chips.push(chip)
-    // ✅ move by full diameter
-    chipStartX += chipD + chipG;
+  quicktools.length = 0;
+  items.forEach((item, index) => {
+    const centerX = startX + chipR;
+
+    if (item.type === "chip") {
+      const chip = new Chip(item.value, centerX, centerY, chipR, item.bg);
+      chips.push(chip);
+    }
+
+    if (item.type === "tool") {
+      
+      const symbol =
+        item.value === "undo" ? "↺" :
+          item.value === "rebet" ? "↻" :
+            "×";
+
+      const btn = new QuickButton(
+        item.value,
+        symbol,
+        centerX - chipR /2,   // ✅ center → top-left ONLY
+        centerY - chipR /2,   // ✅ same vertical alignment
+        chipR,              // ✅ use diameter, not radius
+        item.bg
+      );
+
+      quicktools.push(btn);
+    }
+
+    startX += chipD + chipG + (index === 5? 8: 0);
   });
 
+  // quickTools.forEach((item) => {
+  //   const centerX = startX + chipR - chipR / 2;
+  //   const boxCenterY = chipsContainer.y + chipsContainer.h / 2 - chipR / 2;
+  //   let symbol = null
+  //   switch (item.value) {
+  //     case 'rebet': symbol = '↻'; break;
+  //     case 'undo': symbol = '↺'; break;
+  //     case 'cancel': symbol = '×'; break;
+  //   }
+  //   const btn = new QuickButton(item.value, symbol, centerX, boxCenterY, chipR);
+  //   btn.draw(ctx);
+  //   quicktools.push(btn);
+  //   // ✅ move by full diameter
+  //   startX += chipD + chipG;
+  // });
 }
-
-
 
 
 
@@ -264,7 +360,7 @@ function drawVideo(ctx, video, x, y, w, h) {
 
 
 function drawUI() {
- 
+
 
 
   //=================================================================================
@@ -310,7 +406,7 @@ function drawUI() {
   const b2x = mirror(p2x);
   const b3x = mirror(p3x);
 
- 
+
   const components = {
     video: {
       x: (canvas.width - containerWidth) / 2,
@@ -553,16 +649,28 @@ function drawUI() {
     //=============================================
     // CHIPS CONTAINER
     //=============================================
-    // "chips_container": {
-    //   id: "chips_container",
+    "": {
+      id: "chips_container",
+      x: (canvas.width - containerWidth) / 2,
+      y: hudY + topH + layoutGap,
+      w: containerWidth ,
+      h: bottomH / 2,
+      border: "rgb(255, 255, 255)",
+      bg: "rgba(255,255,255,0.3)",
+    },
+    //=============================================
+    // chiptools CONTAINER
+    //=============================================
+    // "chiptools_container": {
+    //   id: "chiptools_container",
     //   x: (canvas.width - containerWidth) / 2,
-    //   y: hudY + topH + layoutGap,
+    //   y: hudY + topH + layoutGap + bottomH / 2,
     //   w: containerWidth ,
     //   h: bottomH / 2,
     //   border: "rgb(255, 255, 255)",
     //   bg: "rgba(255,255,255,0.3)",
     // },
-    
+
   };
 
 
@@ -571,10 +679,11 @@ function drawUI() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   //=================================================================================
-  //  CHIPS
+  //  CHIPS CONTROLLER
   //=================================================================================
   chips.forEach(chip => chip.draw(ctx));
-  
+  quicktools.forEach(chip => chip.draw(ctx));
+
   //=================================================================================
   //  VIDEO
   //=================================================================================
@@ -620,7 +729,7 @@ function drawUI() {
       ctx.fillStyle = bg ;
       ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
     } else if (isHovered) {
-      
+
     }
 
     if(obj.bg) {
@@ -659,9 +768,7 @@ canvas.addEventListener("mousemove", (e) => {
   // =========================
   // CHIPS
   // =========================
-  chips.forEach((chip) => {
-    chip.isHovered = false
-  });
+  chips.forEach(c => c.isHovered = false);
 
   const chipHovered = chips.find(chip => chip.isInside(mX, mY));
   if(chipHovered) {
@@ -669,21 +776,34 @@ canvas.addEventListener("mousemove", (e) => {
     isHovering = true;
   }
   // =========================
-  // BUTTONS
+  // QUICK TOOLS
   // =========================
-  const placeBetFound = buttons.find(btn =>
-    mX >= btn.x &&
-    mX <= btn.x + btn.w &&
-    mY >= btn.y &&
-    mY <= btn.y + btn.h
-  );
-
-  hovered = null;
-
-  if (placeBetFound) {
-    hovered = placeBetFound.id;
+  quicktools.forEach(b => b.isHovered = false);
+  const toolHovered = quicktools.find(tool => tool.isInside(mX, mY));
+  if (toolHovered) {
+    toolHovered.isHovered = true;
     isHovering = true;
   }
+
+
+  // =========================
+  // BUTTONS
+  // =========================
+
+
+  // const placeBetFound = buttons.find(btn =>
+  //   mX >= btn.x &&
+  //   mX <= btn.x + btn.w &&
+  //   mY >= btn.y &&
+  //   mY <= btn.y + btn.h
+  // );
+
+  // hovered = null;
+
+  // if (placeBetFound) {
+  //   hovered = placeBetFound.id;
+  //   isHovering = true;
+  // }
 
   canvas.style.cursor = isHovering ? "pointer" : "default";
 });
@@ -701,10 +821,20 @@ canvas.addEventListener("pointerdown", (e) => {
   if (chipFound) {
     chipFound.isActive = !chipFound.isActive;
     console.log(
-      "%cPHP " + chipFound.value,
+      "%c$ " + chipFound.value,
       "background-color: #222; color: #ac9b02; padding: 0.5rem 1rem;"
     );
-    return; //optional: stop if chip clicked
+    return;
+  }
+  const toolFound = quicktools.find(tool => tool.isInside(mX, mY));
+
+  if (toolFound) {
+    toolFound.isActive = !toolFound.isActive;
+    console.log(
+      "%c" + toolFound.value,
+      "background-color: #222; color: #ffffff; padding: 0.5rem 1rem;"
+    );
+    return;
   }
 
   //=========================
@@ -727,9 +857,8 @@ canvas.addEventListener("pointerdown", (e) => {
 });
 canvas.addEventListener("pointerup", (e) => {
   clicked = null;
-  chips.forEach(chip => {
-    chip.isActive = false;
-  });
+  chips.forEach(chip =>  chip.isActive = false);
+  quicktools.forEach(tool =>  tool.isActive = false);
 });
 
 
@@ -745,11 +874,11 @@ function loop() {
 initVideo();
 
 resize();
-buildChips();
+buildChipController();
 
 window.addEventListener("resize", () => {
   resize();
-  buildChips();
+  buildChipController();
 });
 
 loop();
