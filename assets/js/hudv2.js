@@ -27,7 +27,7 @@ class Chip {
     ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
     
     ctx.fillStyle = this.background ?? "rgb(255, 255, 255)";
-    ctx.fill();
+    // ctx.fill();
     ctx.strokeStyle = "rgb(255, 255, 255)";
     // 🎨 visual states
 
@@ -40,7 +40,7 @@ class Chip {
     ctx.setLineDash([5, 5]);
     ctx.lineWidth = 0.1;
 
-    // ctx.stroke();
+    ctx.stroke();
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -51,9 +51,7 @@ class Chip {
     });
 
     let formattedValue = this.value > 900 ? formatter.format(this.value) : this.value.toString();
-    ctx.fillStyle = this.isHovered
-        ? "rgba(255, 255, 255, 0.75)"
-      : "rgba(255, 255, 255, 0.45)";
+    ctx.fillStyle = colors.WHITE;
     ctx.fillText(formattedValue, this.x, this.y);
   }
 }
@@ -80,16 +78,16 @@ class QuickButton {
 
     ctx.fillStyle = this.background;
     ctx.strokeStyle = "rgb(255, 255, 255)";
-    ctx.fillRect(this.x, this.y, this.size, this.size);
+    // ctx.fillRect(this.x, this.y, this.size, this.size);
 
     if (this.isActive) {
       ctx.fillStyle = colors.ACTIVEBG;
       ctx.fillRect(this.x, this.y, this.size, this.size);
     }
 
-    ctx.lineWidth = 0.1;
-    ctx.setLineDash([5, 5]);
-    // ctx.strokeRect(this.x, this.y, this.size, this.size);
+    ctx.lineWidth = 0.02;
+    ctx.setLineDash([]);
+    ctx.strokeRect(this.x, this.y, this.size, this.size);
 
 
     ctx.textAlign = "center";
@@ -240,16 +238,16 @@ function buildChipController() {
     h: bottomH / 2,
   }
   const items = [
-    { type: "chip", value: 100, bg: "rgba(108, 117, 125, 0.25)" },
-    { type: "chip", value: 200, bg: "rgba(0, 123, 255, 0.25)" },
-    { type: "chip", value: 500, bg: "rgba(40, 167, 69, 0.25)" },
-    { type: "chip", value: 1000, bg: "rgba(255, 193, 7, 0.25)" },
-    { type: "chip", value: 2000, bg: "hsl(27, 98%, 54%, 0.25)" },
-    { type: "chip", value: 5000, bg: "rgb(220, 53, 69, 0.25)" },
+    { type: "chip", value: 100, bg: "rgb(110, 124, 136)" },
+    { type: "chip", value: 200, bg: "rgb(53, 119, 189)" },
+    { type: "chip", value: 500, bg: "rgb(28, 167, 60)" },
+    { type: "chip", value: 1000, bg: "rgb(206, 160, 22)" },
+    { type: "chip", value: 2000, bg: "rgb(90, 151, 21)" },
+    { type: "chip", value: 5000, bg: "rgb(204, 46, 62)" },
 
-    { type: "tool", value: "undo", bg: "rgba(85, 85, 85, 0.25)" },
-    { type: "tool", value: "rebet", bg: "rgba(85, 85, 85, 0.25)" },
-    { type: "tool", value: "cancel", bg: "rgba(85, 85, 85, 0.25)" },
+    { type: "tool", value: "undo", bg: "rgba(85, 85, 85, 1)" },
+    { type: "tool", value: "rebet", bg: "rgba(85, 85, 85, 1)" },
+    { type: "tool", value: "cancel", bg: "rgba(85, 85, 85, 1)" },
   ];
 
   const count = items.length;
@@ -304,7 +302,7 @@ function buildChipController() {
       quicktools.push(btn);
     }
 
-    startX += chipD + chipG + (index === 5? 8: 0);
+    startX += chipD + chipG + (index === 5? 8 : 0);
   });
 
   // quickTools.forEach((item) => {
