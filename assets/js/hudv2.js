@@ -1,5 +1,46 @@
+class StatusBar {
+  constructor(value, x, y, w, h, bg) {
+    this.value = value;
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    // this.bg = bg ?? "#414be2"
+    this.bg = bg
+  }
+  // 🔥 detect click inside rect
+  isInside(mx, my) {
+    return mx >= this.x &&
+      mx <= this.x + this.w &&
+      my >= this.y &&
+      my <= this.y + this.h;
+  }
+  setStatus(value, bg) {
+    this.value = value;
+    this.bg = bg;
+  }
+  draw(ctx) {
+
+    ctx.fillStyle = this.bg ?? "#106650";
+    ctx.fillRect(this.x, this.y, this.w, this.h);
+
+    ctx.strokeStyle = "rgb(199, 196, 196)";
+    ctx.lineWidth = 0.1;
+    ctx.setLineDash([]);
+    // ctx.strokeRect(this.x, this.y, this.w, this.h);
+
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `900 ${Math.max(14, getFontSize(this.w, this.h))}px Trebuchet MS`;
+
+    ctx.fillStyle = colors.WHITE;
+    ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
+  }
+}
+
 class Chip {
-  constructor(value, x, y, size, background) {
+  constructor(value, x, y, size, bg) {
     this.value = value;
     this.x = x;
     this.y = y;
@@ -7,7 +48,7 @@ class Chip {
 
     this.isHovered = false;
     this.isActive = false;
-    this.background = background ?? null;
+    this.bg = bg ?? null;
   }
   get radius() {
     return this.size / 2; // ✅ single source of truth
@@ -26,13 +67,12 @@ class Chip {
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
     
-    ctx.fillStyle = this.background ?? "rgb(255, 255, 255)";
+    ctx.fillStyle = this.bg ?? "rgb(255, 255, 255)";
     // ctx.fill();
     ctx.strokeStyle = "rgb(255, 255, 255)";
     // 🎨 visual states
 
     if (this.isActive) {
-      console.log(this.value)      
       ctx.fillStyle = colors.ACTIVEBG;
       ctx.fill();
     }
@@ -56,7 +96,7 @@ class Chip {
   }
 }
 class QuickButton {
-  constructor(value, symbol, x, y, size, background) {
+  constructor(value, symbol, x, y, size, bg) {
     this.value = value;
     this.x = x;
     this.y = y;
@@ -64,7 +104,7 @@ class QuickButton {
     this.symbol = symbol ?? '☺︎'
     this.isHovered = false;
     this.isActive = false;
-    this.background = background;
+    this.bg = bg;
   }
   // 🔥 detect click inside rect
   isInside(mx, my) {
@@ -76,7 +116,7 @@ class QuickButton {
   draw(ctx) {
 
 
-    ctx.fillStyle = this.background;
+    ctx.fillStyle = this.bg;
     ctx.strokeStyle = "rgb(255, 255, 255)";
     // ctx.fillRect(this.x, this.y, this.size, this.size);
 
@@ -102,6 +142,7 @@ class QuickButton {
   }
 }
 
+
 //===========================
 //  SETUP CANVAS
 //===========================
@@ -122,20 +163,22 @@ const colors = {
   HOVERBLUE: "rgba(46, 34, 156, 0.53)",
   HOVERRED: " rgb(105, 14, 14)",
   HOVERGREEN: " rgb(30, 97, 33)",
-  ACTIVEBLUE: "rgb(50, 34, 192)",
-  ACTIVERED: " rgb(150, 3, 3)",
-  ACTIVEGREEN: " rgb(35, 116, 39)",
+  ACTIVEBLUE: "rgb(76, 57, 252)",
+  ACTIVERED: " rgba(197, 54, 54, 1)",
+  ACTIVEGREEN: " rgb(59, 161, 65)",
   WHITE: " rgba(255, 255, 255, 1)",
   TRANSPARENT: " rgba(255, 255, 255, 0)",
 }
 
 
 //=================================================================================
-//  VARIABLES
+//  COMPONENTS
 //=================================================================================
 const buttons = [];
 const chips = [];
 const quicktools = [];
+let statusBar = null;
+
 //======================================
 //  DRAW CONTAINER
 //======================================
@@ -209,6 +252,22 @@ function getFontSize(width, height) {
 
   // safe scaling factor (tune this)
   return Math.max(15, Math.floor(base * 0.20));
+}
+function buildStatusBar() {
+  let statusBarContainer= {
+    x: (canvas.width - containerWidth) / 2 ,
+    y: hudY,
+    w: containerWidth,
+    h: topH * 0.1,
+  };
+
+  statusBar = new StatusBar(
+    'PLACE YOUR BET',
+    statusBarContainer.x,
+    statusBarContainer.y,
+    statusBarContainer.w,
+    statusBarContainer.h
+  );
 }
 
 function buildButtons(components) {
@@ -304,24 +363,7 @@ function buildChipController() {
 
     startX += chipD + chipG + (index === 5? 8 : 0);
   });
-
-  // quickTools.forEach((item) => {
-  //   const centerX = startX + chipR - chipR / 2;
-  //   const boxCenterY = chipsContainer.y + chipsContainer.h / 2 - chipR / 2;
-  //   let symbol = null
-  //   switch (item.value) {
-  //     case 'rebet': symbol = '↻'; break;
-  //     case 'undo': symbol = '↺'; break;
-  //     case 'cancel': symbol = '×'; break;
-  //   }
-  //   const btn = new QuickButton(item.value, symbol, centerX, boxCenterY, chipR);
-  //   btn.draw(ctx);
-  //   quicktools.push(btn);
-  //   // ✅ move by full diameter
-  //   startX += chipD + chipG;
-  // });
 }
-
 
 
 
@@ -356,10 +398,7 @@ function drawVideo(ctx, video, x, y, w, h) {
   ctx.drawImage(video, dx, dy, dw, dh);
 }
 
-
 function drawUI() {
-
-
 
   //=================================================================================
   //  CARDS - VARIABLES
@@ -422,13 +461,13 @@ function drawUI() {
     //   h: topH
     // },
 
-    statusBar: {
-      x: (canvas.width - containerWidth) / 2 ,
-      y: hudY,
-      w: containerWidth,
-      h: topH * 0.1,
-      bg: "rgba(212, 191, 191, 0.97)"
-    },
+    // statusBar: {
+    //   x: (canvas.width - containerWidth) / 2 ,
+    //   y: hudY,
+    //   w: containerWidth,
+    //   h: topH * 0.1,
+    //   bg: "rgba(212, 191, 191, 0.97)"
+    // },
 
     // "resultBar": { //resultBar
     //   id: "result bar",
@@ -679,6 +718,10 @@ function drawUI() {
   //=================================================================================
   //  CHIPS CONTROLLER
   //=================================================================================
+  statusBar.draw(ctx)
+  //=================================================================================
+  //  CHIPS CONTROLLER
+  //=================================================================================
   chips.forEach(chip => chip.draw(ctx));
   quicktools.forEach(chip => chip.draw(ctx));
 
@@ -783,7 +826,6 @@ canvas.addEventListener("mousemove", (e) => {
     isHovering = true;
   }
 
-
   // =========================
   // BUTTONS
   // =========================
@@ -822,6 +864,8 @@ canvas.addEventListener("pointerdown", (e) => {
       "%c$ " + chipFound.value,
       "background-color: #222; color: #ac9b02; padding: 0.5rem 1rem;"
     );
+
+    statusBar.setStatus(`You pressed $${chipFound.value}`)
     return;
   }
   const toolFound = quicktools.find(tool => tool.isInside(mX, mY));
@@ -832,6 +876,7 @@ canvas.addEventListener("pointerdown", (e) => {
       "%c" + toolFound.value,
       "background-color: #222; color: #ffffff; padding: 0.5rem 1rem;"
     );
+    statusBar.setStatus(`You pressed ${toolFound.value.toUpperCase()}`)
     return;
   }
 
@@ -848,9 +893,10 @@ canvas.addEventListener("pointerdown", (e) => {
   if (found) {
     clicked = found.id;
     console.log(
-      "%c" + found.id,
+      "%c" + found.activeBg,
       `background-color: ${found.activeBg}; padding: 0.5rem 1rem`
     );
+    statusBar.setStatus(`${found.id.toUpperCase()}`, found.activeBg)
   }
 });
 canvas.addEventListener("pointerup", (e) => {
@@ -873,10 +919,13 @@ initVideo();
 
 resize();
 buildChipController();
+buildStatusBar();
+
 
 window.addEventListener("resize", () => {
   resize();
   buildChipController();
+  buildStatusBar();
 });
 
 loop();
