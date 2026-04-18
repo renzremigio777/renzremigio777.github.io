@@ -32,7 +32,7 @@ class StatusBar {
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `900 ${Math.max(14, getFontSize(this.w, this.h))}px Trebuchet MS`;
+    ctx.font = `900 ${Math.max(18, getFontSize(this.w * 1.1 , this.h * 1.1))}px Trebuchet MS`;
 
     ctx.fillStyle = colors.WHITE;
     ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
@@ -127,18 +127,20 @@ class QuickButton {
 
     ctx.lineWidth = 0.1;
     ctx.setLineDash([]);
-    ctx.strokeRect(this.x, this.y, this.size, this.size);
+    // ctx.strokeRect(this.x, this.y, this.size, this.size);
 
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `900 ${Math.max(14, this.size / 2)}px Trebuchet MS`;
+    ctx.font = `100 ${Math.max(14, this.size / 2)}px Trebuchet MS`;
 
     ctx.fillStyle = this.isHovered
       ? "rgba(255, 255, 255, 0.75)"
-      : "rgba(255, 255, 255, 0.45)";
+      : "rgba(255, 255, 255, 0.29)";
 
-    ctx.fillText(this.symbol, this.x + this.size / 2, this.y + this.size / 2);
+    ctx.fillText(this.symbol, this.x + this.size / 2, this.y + this.size / 2 - 5);
+    ctx.font = `100 ${Math.min(10, this.size / 2)}px Trebuchet MS`;
+    ctx.fillText(this.value.toUpperCase(), this.x + this.size / 2, this.y + this.size - 9);
   }
 }
 
@@ -234,7 +236,7 @@ function resize() {
     : Math.min(containerAvailableWidth, containerMaxWidth);
 
   videoW = containerWidth;
-  videoH = videoW * 9 / 16;
+  videoH = videoW * 9 / 18;
 
   hudY = videoH + layoutGap * 2;
   hudH = canvas.height - hudY - layoutPadding;
