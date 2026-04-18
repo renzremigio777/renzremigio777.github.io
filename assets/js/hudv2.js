@@ -85,7 +85,7 @@ class QuickButton {
       ctx.fillRect(this.x, this.y, this.size, this.size);
     }
 
-    ctx.lineWidth = 0.02;
+    ctx.lineWidth = 0.1;
     ctx.setLineDash([]);
     ctx.strokeRect(this.x, this.y, this.size, this.size);
 
