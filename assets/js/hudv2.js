@@ -144,6 +144,52 @@ class QuickButton {
   }
 }
 
+class RoadMapGrid {
+  constructor(x,y,w,h, rows) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.rows = rows;
+
+    this.cellH = this.h / this.rows;
+    this.cellW = this.cellH;
+
+    this.cols = Math.floor(this.w / this.cellW);
+
+    // this.w = this.cols * this.cellW;
+    // 👇 shrink width to fit perfectly
+    this.gridWidth = this.cols * this.cellW + 2;
+    this.offsetX = (this.w - this.gridWidth) / 2;
+  }
+
+  draw(ctx) {
+    const startX = this.x + this.offsetX;
+    
+    ctx.fillStyle = "#795b5b2c";
+    ctx.fillRect(startX, this.y, this.gridWidth, this.h);
+
+    ctx.beginPath();
+    // horizontal
+    for (let i = 1; i < this.rows; i++) {
+      const y = Math.round(this.y + i * this.cellH) + 0.5;
+      ctx.moveTo(startX, y);
+      ctx.lineTo(startX + this.gridWidth, y);
+    }
+
+    // vertical
+    for (let i = 1; i < this.cols; i++) {
+      const x = Math.round(startX + i * this.cellW) + 0.5;
+      ctx.moveTo(x, this.y);
+      ctx.lineTo(x, this.y + this.h);
+    }
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+    ctx.lineWidth = 0.1;
+    ctx.stroke();
+
+  } 
+}
 
 //===========================
 //  SETUP CANVAS
@@ -178,8 +224,11 @@ const colors = {
 //=================================================================================
 const buttons = [];
 const chips = [];
-const quicktools = [];
+const quickTools = [];
 let statusBar = null;
+let beadRoad = null;
+let bigRoad = null;
+let bigEye = null;
 
 //======================================
 //  DRAW CONTAINER
@@ -203,6 +252,8 @@ let hudH = 0;
 let topRatio = 0;
 let bottomRatio = 0;
 
+// let topH = 0;
+// let bottomH = 0;
 let topH = 0;
 let bottomH = 0;
 //=================================================================================
@@ -226,7 +277,6 @@ function resize() {
   //  MOBILE BREAKPOINT
   //=========================================
   const isMobile = canvas.width <= 980;
-
   const spacing = 10;
   const buttonGap = spacing / 2;
 
@@ -234,19 +284,18 @@ function resize() {
   containerMaxWidth = 980;
   containerWidth = isMobile ? containerAvailableWidth   // full width on phone
     : Math.min(containerAvailableWidth, containerMaxWidth);
-
   videoW = containerWidth;
   videoH = videoW * 9 / 18;
 
   hudY = videoH + layoutGap * 2;
   hudH = canvas.height - hudY - layoutPadding;
 
-  topRatio = 0.7;   // 40%
-  bottomRatio = 0.3; // 60%
+  topRatio = 0.7;   // 70%
+  bottomRatio = 0.3; // 30%
 
   topH = hudH * topRatio - layoutGap / 1;
   bottomH = hudH * bottomRatio - layoutGap / 2;
-
+  
 }
 
 function getFontSize(width, height) {
@@ -272,6 +321,46 @@ function buildStatusBar() {
   );
 }
 
+function buildRoadMap() {
+  // roadMapGrid = new RoadMapGrid(
+  //   (canvas.width - containerWidth) / 2 ,
+  //   hudY + topH * 1.04 ,
+  //   containerWidth ,
+  //   bottomH - 15,
+  //   rows,
+  //   colums
+  // );
+  const rows = 9;
+  const startX = (canvas.width - containerWidth) * 0.5;
+  const halfHeight = bottomH * 0.43;
+  const gap = bottomH * 0.02; // optional spacing
+
+  beadRoad = new RoadMapGrid(
+    startX,
+    hudY + topH * 1.04,
+    containerWidth * 0.5,
+    bottomH * 0.88,
+    rows
+  );
+  
+  bigRoad = new RoadMapGrid(
+    startX + containerWidth * 0.5,
+    hudY + topH * 1.04,
+    containerWidth * 0.5,
+    halfHeight,
+    rows
+  );
+
+  bigEye = new RoadMapGrid(
+    startX + containerWidth * 0.5,
+    hudY + topH * 1.04 + halfHeight + gap, // 👈 move it down
+    containerWidth * 0.5,
+    halfHeight,
+    rows
+  );
+  
+}
+
 function buildButtons(components) {
   buttons.length = 0;
   for (const [key, obj] of Object.entries(components)) {
@@ -294,10 +383,11 @@ function buildChipController() {
   {
     id: "chips",
     x: (canvas.width - containerWidth) / 2,
-    y: hudY + topH + layoutGap,
+    y: hudY + topH * 0.90,
     w: containerWidth,
-    h: bottomH / 2,
-  }
+    h: bottomH / 3,
+  };
+  
   const items = [
     { type: "chip", value: 100, bg: "rgb(110, 124, 136)" },
     { type: "chip", value: 200, bg: "rgb(53, 119, 189)" },
@@ -313,7 +403,7 @@ function buildChipController() {
 
   const count = items.length;
 
-  const chipG = -30;
+  const chipG = -20;
   // 1. max size that fits WIDTH
   const radiusByWidth = (chipsContainer.w - (count - 1) * chipG) / (2 * count);
 
@@ -335,7 +425,7 @@ function buildChipController() {
   const centerY = chipsContainer.y + chipsContainer.h / 2;
 
   chips.length = 0;
-  quicktools.length = 0;
+  quickTools.length = 0;
   items.forEach((item, index) => {
     const centerX = startX + chipR;
 
@@ -360,7 +450,7 @@ function buildChipController() {
         item.bg
       );
 
-      quicktools.push(btn);
+      quickTools.push(btn);
     }
 
     startX += chipD + chipG + (index === 5? 8 : 0);
@@ -422,9 +512,16 @@ function drawUI() {
   const groupWidth = (cardWidth * 2) + cardHeight + (gap * 4);
   const resultBarY = hudY + topH * 0.1;
   const resultBarH = topH * 0.25;
-  const betRow1Y = hudY + topH * 0.35;
-  const betRow1H = topH * 0.35;
   const cardStartY = resultBarY + (resultBarH - cardHeight) / 2;
+
+  const betRow1Y = hudY + topH * 0.35;
+  const betRow1H = topH * 0.25;
+  const betRow2Y = hudY + topH * 0.6;
+  const betRow2H = topH * 0.15;
+  const betRow3Y = hudY + topH * 0.75;
+  const betRow3H = betRow2H
+
+  const chipRowY = hudY + topH * 0.90;
 
   // center reference
   const midX = canvas.width / 2;
@@ -464,6 +561,7 @@ function drawUI() {
     // },
 
     // statusBar: {
+    //   bg: "rgba(212, 191, 191, 0.97)"
     //   x: (canvas.width - containerWidth) / 2 ,
     //   y: hudY,
     //   w: containerWidth,
@@ -564,6 +662,7 @@ function drawUI() {
     //   w: containerWidth,
     //   h: topH * 0.6,
     // },
+   
 
     //=============================================
     // PLACE BET
@@ -607,9 +706,9 @@ function drawUI() {
     "p pair": {
       id: "p pair",
       x: (canvas.width - containerWidth) / 2,
-      y: hudY + topH * 0.7,
+      y: betRow2Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.15,
+      h: betRow2H,
       // bg: colors.BLUE,
       hoverBg: colors.HOVERBLUE,
       activeBg: colors.ACTIVEBLUE,
@@ -619,9 +718,9 @@ function drawUI() {
     "perfect pair": {
       id: "perfect pair",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
-      y: hudY + topH * 0.7,
+      y: betRow2Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.15,
+      h: betRow2H,
       // bg: colors.GREEN,
       hoverBg: colors.HOVERGREEN,
       activeBg: colors.ACTIVEGREEN,
@@ -631,9 +730,9 @@ function drawUI() {
     "b pair": {
       id: "b pair",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
-      y: hudY + topH * 0.7,
+      y: betRow2Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.15,
+      h: betRow2H,
       // bg: colors.RED,
       hoverBg: colors.HOVERRED,
       activeBg: colors.ACTIVERED,
@@ -643,9 +742,9 @@ function drawUI() {
     "p bonus": {
       id: "p bonus",
       x: (canvas.width - containerWidth) / 2,
-      y: hudY + topH * 0.85,
+      y: betRow3Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.15,
+      h: betRow2H,
       // bg: colors.BLUE,
       hoverBg: colors.HOVERBLUE,
       activeBg: colors.ACTIVEBLUE,
@@ -655,9 +754,9 @@ function drawUI() {
     "either pair": {
       id: "either pair",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
-      y: hudY + topH * 0.85,
+      y: betRow3Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.15,
+      h: betRow2H,
       // bg: colors.GREEN,
       hoverBg: colors.HOVERGREEN,
       activeBg: colors.ACTIVEGREEN,
@@ -667,33 +766,27 @@ function drawUI() {
     "b bonus": {
       id: "b bonus",
       x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
-      y: hudY + topH * 0.85,
+      y: betRow3Y,
       w: containerWidth * 0.3332,
-      h: topH * 0.15,
+      h: betRow2H,
       // bg: colors.RED,
       hoverBg: colors.HOVERRED,
       activeBg: colors.ACTIVERED,
       border: "rgb(255, 255, 255)",
       isButton: true
     },
+    
 
-    // "bottom bar": {
-    //   id: "bottom bar",
-    //   x: (canvas.width - containerWidth) / 2,
-    //   y: hudY + topH + layoutGap,
-    //   w: containerWidth ,
-    //   h: bottomH,
-    //   bg: "rgba(255,255,255,0.3)",
-    // },
+    
     //=============================================
     // CHIPS CONTAINER
     //=============================================
     "": {
       id: "chips_container",
       x: (canvas.width - containerWidth) / 2,
-      y: hudY + topH + layoutGap,
+      y: chipRowY,
       w: containerWidth ,
-      h: bottomH / 2,
+      h: bottomH / 3,
       border: "rgb(255, 255, 255)",
       bg: "rgba(255,255,255,0.3)",
     },
@@ -709,7 +802,15 @@ function drawUI() {
     //   border: "rgb(255, 255, 255)",
     //   bg: "rgba(255,255,255,0.3)",
     // },
-
+    // "bottom bar": {
+    //   id: "bottom bar",
+    //   x: (canvas.width - containerWidth) / 2,
+    //   y: chipRowY + bottomH / 3,
+    //   w: containerWidth ,
+    //   h: bottomH,
+    //   border: "rgb(255, 255, 255)",
+    //   bg: "rgba(255,255,255,0.3)",
+    // },
   };
 
 
@@ -718,14 +819,20 @@ function drawUI() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   //=================================================================================
-  //  CHIPS CONTROLLER
+  //  DRAW STATUS BAR 
   //=================================================================================
   statusBar.draw(ctx)
+  //=================================================================================
+  //  DRAW ROAD MAP GRID 
+  //=================================================================================
+  beadRoad.draw(ctx)
+  bigRoad.draw(ctx)
+  bigEye.draw(ctx)
   //=================================================================================
   //  CHIPS CONTROLLER
   //=================================================================================
   chips.forEach(chip => chip.draw(ctx));
-  quicktools.forEach(chip => chip.draw(ctx));
+  quickTools.forEach(chip => chip.draw(ctx));
 
   //=================================================================================
   //  VIDEO
@@ -821,8 +928,8 @@ canvas.addEventListener("mousemove", (e) => {
   // =========================
   // QUICK TOOLS
   // =========================
-  quicktools.forEach(b => b.isHovered = false);
-  const toolHovered = quicktools.find(tool => tool.isInside(mX, mY));
+  quickTools.forEach(b => b.isHovered = false);
+  const toolHovered = quickTools.find(tool => tool.isInside(mX, mY));
   if (toolHovered) {
     toolHovered.isHovered = true;
     isHovering = true;
@@ -870,7 +977,7 @@ canvas.addEventListener("pointerdown", (e) => {
     statusBar.setStatus(`You pressed $${chipFound.value}`)
     return;
   }
-  const toolFound = quicktools.find(tool => tool.isInside(mX, mY));
+  const toolFound = quickTools.find(tool => tool.isInside(mX, mY));
 
   if (toolFound) {
     toolFound.isActive = !toolFound.isActive;
@@ -904,7 +1011,7 @@ canvas.addEventListener("pointerdown", (e) => {
 canvas.addEventListener("pointerup", (e) => {
   clicked = null;
   chips.forEach(chip =>  chip.isActive = false);
-  quicktools.forEach(tool =>  tool.isActive = false);
+  quickTools.forEach(tool =>  tool.isActive = false);
 });
 
 
@@ -922,12 +1029,13 @@ initVideo();
 resize();
 buildChipController();
 buildStatusBar();
-
+buildRoadMap();
 
 window.addEventListener("resize", () => {
   resize();
   buildChipController();
   buildStatusBar();
+  buildRoadMap();
 });
 
 loop();
