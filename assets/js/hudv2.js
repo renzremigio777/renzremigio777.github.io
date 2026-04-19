@@ -371,7 +371,7 @@ class QuickButton {
 const values = ["P", "B", "T"];
 const resultData = []
 
-for (let i = 0; i < 35; i++) {
+for (let i = 0; i < 15; i++) {
   const randomValue = values[Math.floor(Math.random() * values.length)];
   resultData.push({ value: randomValue });
 }
