@@ -99,7 +99,7 @@ class HudTopBar {
         ctx.textAlign = "center";
         ctx.fillText(item.text, startX + radius, centerY);
 
-        
+
 
         startX += radius  + gap;
 
@@ -118,7 +118,7 @@ class HudTopBar {
     //========================================================================
     // PREDICTION
     //========================================================================
-    const gapBetweenPills = 10 * scale;
+    const gapBetweenPills = 20 * scale;
 
     const pills = [
       {
@@ -133,11 +133,11 @@ class HudTopBar {
       }
     ];
     const pillHeight = this.h * 0.5;   // height relative to bar
-    const pillWidth = this.w * 0.18;  // width relative to bar
+    const pillWidth = Math.min(this.w * 0.18, 80);// width relative to bar
     const pRadius = pillHeight * 0.25;
-    const endGap = 10; 
+    const endGap = 10;
     const pillX = this.w - pillWidth - endGap
-      
+
     pills.forEach((item, i) => {
       const x = this.x + this.w - (pillWidth * (i + 1)) - (gapBetweenPills * i) - endGap;
 
@@ -204,7 +204,7 @@ class HudTopBar {
 
       ctx.restore();
     });
-     
+
   }
 }
 class StatusBar {
@@ -288,7 +288,7 @@ class Chip {
 
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
-    
+
     ctx.fillStyle = this.bg ?? "rgb(255, 255, 255)";
     // ctx.fill();
     ctx.strokeStyle = "rgb(255, 255, 255)";
@@ -317,6 +317,8 @@ class Chip {
     ctx.fillText(formattedValue, this.x, this.y);
   }
 }
+
+
 class QuickButton {
   constructor(value, symbol, x, y, size, bg) {
     this.value = value;
@@ -366,8 +368,16 @@ class QuickButton {
   }
 }
 
-class RoadMapGrid {
-  constructor(x,y,w,h, rows) {
+const values = ["P", "B", "T"];
+const resultData = []
+
+for (let i = 0; i < 35; i++) {
+  const randomValue = values[Math.floor(Math.random() * values.length)];
+  resultData.push({ value: randomValue });
+}
+class ScoreBoard {
+  constructor(type, x,y,w,h, rows) {
+    this.type = type;
     this.x = x;
     this.y = y;
     this.w = w;
@@ -388,7 +398,7 @@ class RoadMapGrid {
 
   draw(ctx) {
     const startX = this.x + this.offsetX;
-    
+
     ctx.fillStyle = "#4a6d5f21";
     ctx.fillRect(startX, this.y, this.gridWidth, this.h);
 
@@ -411,7 +421,75 @@ class RoadMapGrid {
     ctx.lineWidth = 0.1;
     ctx.stroke();
 
-  } 
+    //================================================
+    // DATA
+    //================================================
+    const row = 0;
+    const col = 0;
+
+    const cx = startX + col * this.cellW + this.cellW / 2;
+    const cy = this.y + row * this.cellH + this.cellH / 2;
+
+    const radius = this.cellW * 0.4;
+    
+    let currentY = cy;
+    let currentX = cx;
+    resultData.forEach((result,index) => {
+      switch (this.type) {
+        case "beadroad":
+          // circle
+          ctx.beginPath();
+          ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
+          ctx.fillStyle = result.value === "P" ? colors.NEONBLUE:
+            result.value === "B" ? colors.NEONRED : 
+              result.value === "T" ? colors.NEONGREEN : "#0000";
+          ctx.strokeStyle = ctx.fillStyle
+          ctx.fill();      
+          ctx.lineWidth = 1;    
+          ctx.stroke();
+          // text
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          ctx.fillStyle = colors.WHITE;
+          const fontSize = radius * 1.4; // scale with circle
+          ctx.font = `900 ${fontSize}px Trebuchet MS`;
+          ctx.fillText(result.value, currentX, currentY); // ✅ centered
+
+          // SHIFT ROW
+          currentY += this.cellH + 0.25
+
+          // SHIFT COLUMN
+          if(index % 6 === 5 ) {
+            currentY = cy;
+            currentX += this.cellW + 0.25
+          }
+          break;
+        case "bigroad":
+          // SHIFT ROW
+
+          // SHIFT COLUMN
+          const previousValue = resultData[index - 1]?.value ?? null
+          if (index % 6 === 5 || (previousValue && previousValue !== result.value)) {
+            currentY = cy;
+            currentX += this.cellW + 0.25
+          }
+          ctx.beginPath();
+          ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
+          ctx.strokeStyle = result.value === "P" ? colors.NEONBLUE:
+            result.value === "B" ? colors.NEONRED : 
+              result.value === "T" ? colors.NEONGREEN : "#0000";
+          ctx.lineWidth = 1.5
+
+          ctx.stroke();
+ 
+          currentY += this.cellH + 0.25
+
+          
+          break;
+      }
+    });
+  }
 }
 
 //===========================
@@ -427,8 +505,8 @@ let clicked = null;
 const colors = {
   ACTIVEBG: "rgba(15, 14, 14,0.5)",
   NEONBLUE: "rgb(68, 133, 255)",
-  NEONRED: "rgb(253, 88, 88)",
-  NEONGREEN: " rgb(73, 212, 80)",
+  NEONRED: "rgb(243, 68, 68)",
+  NEONGREEN: " rgb(28, 161, 34)",
   BLUE: "rgba(46, 34, 156, 0.5)",
   RED: " rgba(105, 14, 14, 0.5)",
   GREEN: " rgba(30, 97, 33, 0.5)",
@@ -519,7 +597,7 @@ function resize() {
 
   topH = hudH * topRatio - layoutGap / 1;
   bottomH = hudH * bottomRatio - layoutGap / 2;
-  
+
 }
 
 function getFontSize(width, height) {
@@ -560,8 +638,8 @@ function buildHudTopBar() {
   );
 }
 
-function buildRoadMap() {
-  // roadMapGrid = new RoadMapGrid(
+function buildScoreBoard() {
+  // roadMapGrid = new ScoreBoard(
   //   (canvas.width - containerWidth) / 2 ,
   //   hudY + topH * 1.04 ,
   //   containerWidth ,
@@ -571,15 +649,17 @@ function buildRoadMap() {
   // );
   const startX = (canvas.width - containerWidth) * 0.5;
 
-  beadRoad = new RoadMapGrid(
+  beadRoad = new ScoreBoard(
+    'beadroad',
     startX,
     hudY + topH * 0.1,
     containerWidth * 0.5,
     topH * 0.3,
     6
   );
-  
-  bigRoad = new RoadMapGrid(
+
+  bigRoad = new ScoreBoard(
+    'bigroad',
     startX + (containerWidth * 0.5),
     hudY + topH * 0.1 ,
     containerWidth * 0.5,
@@ -616,7 +696,7 @@ function buildChipController() {
     w: containerWidth,
     h: bottomH / 3,
   };
-  
+
   const items = [
     { type: "chip", value: 100, bg: "rgb(110, 124, 136)" },
     { type: "chip", value: 200, bg: "rgb(53, 119, 189)" },
@@ -664,7 +744,7 @@ function buildChipController() {
     }
 
     if (item.type === "tool") {
-      
+
       const symbol =
         item.value === "undo" ? "↺" :
           item.value === "rebet" ? "↻" :
@@ -891,7 +971,7 @@ function drawUI() {
     //   w: containerWidth,
     //   h: topH * 0.6,
     // },
-   
+
 
     //=============================================
     // PLACE BET
@@ -1004,9 +1084,9 @@ function drawUI() {
       border: "rgb(255, 255, 255)",
       isButton: true
     },
-    
 
-    
+
+
     //=============================================
     // CHIPS CONTAINER
     //=============================================
@@ -1048,7 +1128,7 @@ function drawUI() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   //=================================================================================
-  //  DRAW HUD TOP BAR 
+  //  DRAW HUD TOP BAR
   //=================================================================================
   hudTopBar.draw(ctx)
   //=================================================================================
@@ -1127,7 +1207,7 @@ function drawUI() {
 
   }
   //=================================================================================
-  //  DRAW STATUS BAR 
+  //  DRAW STATUS BAR
   //=================================================================================
   statusBar.draw(ctx)
 
@@ -1262,7 +1342,7 @@ function main() {
   resize();
   buildChipController();
   buildStatusBar();
-  buildRoadMap();
+  buildScoreBoard();
   buildHudTopBar();
 }
 main();
