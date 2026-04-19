@@ -216,6 +216,7 @@ class StatusBar {
     this.h = h;
     // this.bg = bg ?? "#414be2"
     this.bg = bg
+    this.show =  false
   }
   // 🔥 detect click inside rect
   isInside(mx, my) {
@@ -227,24 +228,36 @@ class StatusBar {
   setStatus(value, bg) {
     this.value = value;
     this.bg = bg;
+    this.show = true;
+
+    // cancel previous timer
+    if (this._timer) {
+      clearTimeout(this._timer);
+    }
+
+    // start new timer
+    this._timer = setTimeout(() => {
+      this.show = false;
+    }, 1500);
   }
   draw(ctx) {
+    if(this.show) {
+      ctx.fillStyle = this.bg ?? "#106650";
+      ctx.fillRect(this.x, this.y, this.w, this.h);
 
-    ctx.fillStyle = this.bg ?? "#106650";
-    ctx.fillRect(this.x, this.y, this.w, this.h);
-
-    ctx.strokeStyle = "rgb(199, 196, 196)";
-    ctx.lineWidth = 0.1;
-    ctx.setLineDash([]);
-    // ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.strokeStyle = "rgb(199, 196, 196)";
+      ctx.lineWidth = 0.1;
+      ctx.setLineDash([]);
+      // ctx.strokeRect(this.x, this.y, this.w, this.h);
 
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = `900 ${Math.max(18, getFontSize(this.w * 1.1 , this.h * 1.1))}px Trebuchet MS`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `900 ${Math.max(18, getFontSize(this.w * 1.1, this.h * 1.1))}px Trebuchet MS`;
 
-    ctx.fillStyle = colors.WHITE;
-    ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
+      ctx.fillStyle = colors.WHITE;
+      ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
+    }
   }
 }
 
@@ -1035,12 +1048,11 @@ function drawUI() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   //=================================================================================
-  //  DRAW STATUS BAR 
+  //  DRAW HUD TOP BAR 
   //=================================================================================
-  // statusBar.draw(ctx)
   hudTopBar.draw(ctx)
   //=================================================================================
-  //  DRAW ROAD MAP GRID 
+  //  DRAW SCOREBOARD
   //=================================================================================
   beadRoad.draw(ctx)
   bigRoad.draw(ctx)
@@ -1114,6 +1126,10 @@ function drawUI() {
     );
 
   }
+  //=================================================================================
+  //  DRAW STATUS BAR 
+  //=================================================================================
+  statusBar.draw(ctx)
 
 }
 
