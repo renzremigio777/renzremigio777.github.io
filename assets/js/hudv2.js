@@ -166,7 +166,7 @@ class RoadMapGrid {
   draw(ctx) {
     const startX = this.x + this.offsetX;
     
-    ctx.fillStyle = "#795b5b2c";
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(startX, this.y, this.gridWidth, this.h);
 
     ctx.beginPath();
@@ -184,7 +184,7 @@ class RoadMapGrid {
       ctx.lineTo(x, this.y + this.h);
     }
 
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+    ctx.strokeStyle = "rgb(0, 0, 0)";
     ctx.lineWidth = 0.1;
     ctx.stroke();
 
@@ -229,6 +229,8 @@ let statusBar = null;
 let beadRoad = null;
 let bigRoad = null;
 let bigEye = null;
+let smallEye = null;
+let coackroach = null;
 
 //======================================
 //  DRAW CONTAINER
@@ -332,33 +334,51 @@ function buildRoadMap() {
   // );
   const rows = 9;
   const startX = (canvas.width - containerWidth) * 0.5;
-  const halfHeight = bottomH * 0.43;
-  const gap = bottomH * 0.02; // optional spacing
+  const halfHeight = bottomH * 0.45;
+  const rowGap = bottomH * 0.0; 
 
   beadRoad = new RoadMapGrid(
     startX,
     hudY + topH * 1.04,
-    containerWidth * 0.5,
-    bottomH * 0.88,
+    containerWidth * 0.3,
+    bottomH * 0.9,
     rows
   );
   
   bigRoad = new RoadMapGrid(
-    startX + containerWidth * 0.5,
+    startX + (containerWidth * 0.3),
     hudY + topH * 1.04,
-    containerWidth * 0.5,
+    containerWidth * 0.7,
     halfHeight,
     rows
   );
 
+  const trioMapW = (containerWidth * 0.7) /3
+  const baseX = startX + (containerWidth * 0.3);
+
   bigEye = new RoadMapGrid(
-    startX + containerWidth * 0.5,
-    hudY + topH * 1.04 + halfHeight + gap, // 👈 move it down
-    containerWidth * 0.5,
+    baseX,
+    hudY + topH * 1.04 + halfHeight,
+    trioMapW,
     halfHeight,
     rows
   );
-  
+
+  smallEye = new RoadMapGrid(
+    baseX + trioMapW,
+    hudY + topH * 1.04 + halfHeight,
+    trioMapW,
+    halfHeight,
+    rows
+  );
+
+  coackroach = new RoadMapGrid(
+    baseX + trioMapW * 2, // ✅ move to 3rd column
+    hudY + topH * 1.04 + halfHeight,
+    trioMapW,
+    halfHeight,
+    rows
+  );
 }
 
 function buildButtons(components) {
@@ -828,6 +848,8 @@ function drawUI() {
   beadRoad.draw(ctx)
   bigRoad.draw(ctx)
   bigEye.draw(ctx)
+  smallEye.draw(ctx)
+  coackroach.draw(ctx)
   //=================================================================================
   //  CHIPS CONTROLLER
   //=================================================================================
