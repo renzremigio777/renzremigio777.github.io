@@ -21,7 +21,7 @@ class HudTopBar {
   draw(ctx) {
 
     ctx.fillStyle = "#25332b";
-    ctx.fillRect(this.x, this.y, this.w, this.h);
+    // ctx.fillRect(this.x, this.y, this.w, this.h);
 
     ctx.strokeStyle = "rgb(199, 196, 196)";
     ctx.lineWidth = 0.1;
@@ -32,24 +32,9 @@ class HudTopBar {
     ctx.textAlign = "start";
     ctx.textBaseline = "middle";
 
-    //=============================
-    // STATISTICS
-    //=============================
-   
-
-    //=============================
-    // P BADGE
-    //=============================
-    // const circleOffset = 30
-    // const circleTextOffset = circleOffset - 2
-    // ctx.beginPath();
-    // ctx.fillStyle = colors.NEONBLUE;
-    // ctx.arc(startX + circleOffset, this.y + this.h / 2, 8, 0, Math.PI * 2);
-    // ctx.font = `900 8px Trebuchet MS`;
-    // ctx.fill();
-    // ctx.fillStyle = "#fff";
-    // ctx.fillText("P", startX + circleTextOffset , this.y + this.h / 2);
-  
+    //========================================================================
+    // STATS
+    //========================================================================
     const scale = this.h / 100;
 
     const statItems = [
@@ -67,7 +52,7 @@ class HudTopBar {
     ];
 
     const radius = 16 * scale;
-    const gap = 18 * scale;
+    const gap = 25 * scale;
     const fontSize = Math.max(12 , 14 * scale);
 
     let startX = this.x + gap;
@@ -81,9 +66,9 @@ class HudTopBar {
       if (item.type === "badge") {
         ctx.beginPath();
         ctx.arc(startX + radius, centerY - 0.5, radius, 0, Math.PI * 2);
-          ctx.strokeStyle = item.bg;
-          ctx.lineWidth = 2
-          ctx.stroke();
+        ctx.strokeStyle = item.bg;
+        ctx.lineWidth = 2
+        ctx.stroke();
         if (item.isTie) {
           ctx.beginPath();
           // ctx.moveTo(startX, centerY)
@@ -114,7 +99,9 @@ class HudTopBar {
         ctx.textAlign = "center";
         ctx.fillText(item.text, startX + radius, centerY);
 
-        startX += radius * 2 + gap;
+        
+
+        startX += radius  + gap;
 
       } else {
         ctx.fillStyle = "#fff";
@@ -127,6 +114,97 @@ class HudTopBar {
         startX += textWidth + gap;
       }
     });
+
+    //========================================================================
+    // PREDICTION
+    //========================================================================
+    const gapBetweenPills = 10 * scale;
+
+    const pills = [
+      {
+        label: "B",
+        fill: colors.RED,
+        stroke: colors.NEONRED
+      },
+      {
+        label: "P",
+        fill: colors.BLUE,
+        stroke: colors.NEONBLUE
+      }
+    ];
+    const pillHeight = this.h * 0.5;   // height relative to bar
+    const pillWidth = this.w * 0.18;  // width relative to bar
+    const pRadius = pillHeight * 0.25;
+    const endGap = 10; 
+    const pillX = this.w - pillWidth - endGap
+      
+    pills.forEach((item, i) => {
+      const x = this.x + this.w - (pillWidth * (i + 1)) - (gapBetweenPills * i) - endGap;
+
+      //========================
+      // PILL BACKGROUND
+      //========================
+      ctx.beginPath();
+      ctx.roundRect(
+        x,
+        centerY - pillHeight / 2,
+        pillWidth,
+        pillHeight,
+        pillHeight / 2
+      );
+      ctx.fillStyle = item.fill;
+      ctx.strokeStyle = item.stroke;
+      ctx.fill();
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+
+      //========================
+      // LABEL (B / P)
+      //========================
+      ctx.fillStyle = colors.WHITE;
+      ctx.font = `900 ${fontSize - 1}px Trebuchet MS`;
+      ctx.textAlign = "center";
+      ctx.fillText(item.label, x + pillWidth * 0.15, centerY + 1);
+
+      //========================
+      // OUTLINED CIRCLE
+      //========================
+      ctx.beginPath();
+      ctx.arc(x + pillWidth * 0.35, centerY, pRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = item.stroke;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      //========================
+      // FILLED CIRCLE
+      //========================
+      ctx.beginPath();
+      ctx.arc(x + pillWidth * 0.57, centerY, pRadius, 0, Math.PI * 2);
+      ctx.fillStyle = item.stroke;
+      ctx.fill();
+      ctx.stroke();
+
+      //========================
+      // SLASH
+      //========================
+      const cx = x + pillWidth * 0.8;
+      const cy = centerY;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-Math.PI / 4);
+
+      ctx.beginPath();
+      ctx.moveTo(-pRadius, 0);
+      ctx.lineTo(pRadius, 0);
+
+      ctx.strokeStyle = item.stroke;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.restore();
+    });
+     
   }
 }
 class StatusBar {
@@ -335,7 +413,7 @@ let clicked = null;
 
 const colors = {
   ACTIVEBG: "rgba(15, 14, 14,0.5)",
-  NEONBLUE: "rgb(117, 119, 255)",
+  NEONBLUE: "rgb(68, 133, 255)",
   NEONRED: "rgb(253, 88, 88)",
   NEONGREEN: " rgb(73, 212, 80)",
   BLUE: "rgba(46, 34, 156, 0.5)",
