@@ -155,6 +155,7 @@ class RoadMapGrid {
     this.cellH = this.h / this.rows;
     this.cellW = this.cellH;
 
+    // this.cols = Math.floor(this.w / this.cellW);
     this.cols = Math.floor(this.w / this.cellW);
 
     // this.w = this.cols * this.cellW;
@@ -166,7 +167,7 @@ class RoadMapGrid {
   draw(ctx) {
     const startX = this.x + this.offsetX;
     
-    ctx.fillStyle = "#3f3a3a88";
+    ctx.fillStyle = "#4a6d5f21";
     ctx.fillRect(startX, this.y, this.gridWidth, this.h);
 
     ctx.beginPath();
@@ -333,17 +334,17 @@ function buildRoadMap() {
 
   beadRoad = new RoadMapGrid(
     startX,
-    hudY + topH * 1.04,
+    hudY + topH * 0.1,
     containerWidth * 0.5,
-    bottomH * 0.9,
+    topH * 0.3,
     6
   );
   
   bigRoad = new RoadMapGrid(
     startX + (containerWidth * 0.5),
-    hudY + topH * 1.04 ,
+    hudY + topH * 0.1 ,
     containerWidth * 0.5,
-    bottomH * 0.9,
+    topH * 0.3,
     9
   );
 
@@ -372,7 +373,7 @@ function buildChipController() {
   {
     id: "chips",
     x: (canvas.width - containerWidth) / 2,
-    y: hudY + topH * 0.90,
+    y: hudY + topH * 1.25,
     w: containerWidth,
     h: bottomH / 3,
   };
@@ -499,15 +500,15 @@ function drawUI() {
 
   // 3 cards per group
   const groupWidth = (cardWidth * 2) + cardHeight + (gap * 4);
-  const resultBarY = hudY + topH * 0.1;
-  const resultBarH = topH * 0.25;
-  const cardStartY = resultBarY + (resultBarH - cardHeight) / 2;
+  const resultBarY = hudY + topH * 0.4;
+  const resultBarH = topH * 0.22;
+  const cardStartY = resultBarY + (resultBarH - cardHeight) ;
 
-  const betRow1Y = hudY + topH * 0.35;
+  const betRow1Y = cardStartY + resultBarH;
   const betRow1H = topH * 0.25;
-  const betRow2Y = hudY + topH * 0.6;
+  const betRow2Y = betRow1Y + betRow1H;
   const betRow2H = topH * 0.15;
-  const betRow3Y = hudY + topH * 0.75;
+  const betRow3Y = betRow2Y + betRow2H;
   const betRow3H = betRow2H
 
   const chipRowY = hudY + topH * 0.90;
@@ -770,15 +771,15 @@ function drawUI() {
     //=============================================
     // CHIPS CONTAINER
     //=============================================
-    "": {
-      id: "chips_container",
-      x: (canvas.width - containerWidth) / 2,
-      y: chipRowY,
-      w: containerWidth ,
-      h: bottomH / 3,
-      border: "rgb(255, 255, 255)",
-      bg: "rgba(255,255,255,0.3)",
-    },
+    // "": {
+    //   id: "chips_container",
+    //   x: (canvas.width - containerWidth) / 2,
+    //   y: chipRowY,
+    //   w: containerWidth ,
+    //   h: bottomH / 3,
+    //   border: "rgb(255, 255, 255)",
+    //   bg: "rgba(255,255,255,0.3)",
+    // },
     //=============================================
     // chiptools CONTAINER
     //=============================================
