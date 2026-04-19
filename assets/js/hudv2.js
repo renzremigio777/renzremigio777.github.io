@@ -394,13 +394,41 @@ class ScoreBoard {
     // 👇 shrink width to fit perfectly
     this.gridWidth = this.cols * this.cellW +1;
     this.offsetX = (this.w - this.gridWidth) / 2;
-  }
 
+    this.smallRoadState = { col: 0, row: 0 };
+    this.smallRoadData = []; // 👈 ADD THIS
+  }
+  buildSmallRoad() {
+    const state = { col: 0, row: 0 };
+    const colHeight = 6;
+
+    this.smallRoadData = [];
+
+    for (let i = 0; i < resultData.length; i++) {
+      const result = resultData[i];
+      const prev = resultData[i - 1]?.value;
+      const changed = prev && prev !== result.value;
+
+      this.smallRoadData.push({
+        value: result.value,
+        col: state.col,
+        row: state.row
+      });
+
+      if (changed || state.row >= colHeight - 1) {
+        state.col++;
+        state.row = 0;
+      } else {
+        state.row++;
+      }
+    }
+  }
   draw(ctx) {
     const startX = this.x + this.offsetX;
 
     ctx.fillStyle = "#4a6d5f21";
     ctx.fillRect(startX, this.y, this.gridWidth, this.h);
+    ctx.strokeStyle = "rgba(255, 250, 250, 0.86)";
 
     ctx.beginPath();
     // horizontal
@@ -416,10 +444,39 @@ class ScoreBoard {
       ctx.moveTo(x, this.y);
       ctx.lineTo(x, this.y + this.h);
     }
-
-    ctx.strokeStyle = "rgba(255, 250, 250, 0.86)";
     ctx.lineWidth = 0.1;
     ctx.stroke();
+
+   
+    if (this.type === "bigroad") {
+      const y = Math.round(this.y + 6 * this.cellH) + 0.5;
+
+
+      ctx.beginPath();
+      ctx.moveTo(startX, y);
+      ctx.lineTo(startX + this.gridWidth, y);
+
+      ctx.strokeStyle = "rgba(255,255,255,0.6)";
+      ctx.lineWidth = 0.3;
+      ctx.stroke();
+
+
+      const endY = this.y + this.h;
+      const thirds = 3; // number of sections
+
+      for (let i = 1; i < thirds; i++) {
+        const colIndex = Math.floor(this.cols * i / thirds);
+        const x = Math.round(startX + colIndex * this.cellW) + 0.5;
+
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, endY);
+
+        ctx.stroke();
+      }
+
+    }
 
     //================================================
     // DATA
@@ -434,18 +491,20 @@ class ScoreBoard {
     
     let currentY = cy;
     let currentX = cx;
+    let smallRoadX = 0;
     resultData.forEach((result,index) => {
+      const color = result.value === "P" ? colors.NEONBLUE :
+        result.value === "B" ? colors.NEONRED :
+          result.value === "T" ? colors.NEONGREEN : "#0000";
       switch (this.type) {
         case "beadroad":
           // circle
           ctx.beginPath();
           ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
-          ctx.fillStyle = result.value === "P" ? colors.NEONBLUE:
-            result.value === "B" ? colors.NEONRED : 
-              result.value === "T" ? colors.NEONGREEN : "#0000";
-          ctx.strokeStyle = ctx.fillStyle
+          ctx.fillStyle = color;
+          ctx.strokeStyle = color;
           ctx.fill();      
-          ctx.lineWidth = 1;    
+          ctx.lineWidth = 1.5;    
           ctx.stroke();
           // text
           ctx.textAlign = "center";
@@ -466,26 +525,82 @@ class ScoreBoard {
           }
           break;
         case "bigroad":
-          // SHIFT ROW
+        
+          (() => {
+            // SHIFT COLUMN
+            const previousValue = resultData[index - 1]?.value ?? null
+            if (index % 6 === 5 || (previousValue && previousValue !== result.value)) {
+              currentY = cy;
+              currentX += this.cellW
+            }
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = result.value === "P" ? colors.NEONBLUE :
+              result.value === "B" ? colors.NEONRED :
+                result.value === "T" ? colors.NEONGREEN : "#0000";
+            ctx.lineWidth = 1.5
 
-          // SHIFT COLUMN
-          const previousValue = resultData[index - 1]?.value ?? null
-          if (index % 6 === 5 || (previousValue && previousValue !== result.value)) {
-            currentY = cy;
-            currentX += this.cellW + 0.25
-          }
-          ctx.beginPath();
-          ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
-          ctx.strokeStyle = result.value === "P" ? colors.NEONBLUE:
-            result.value === "B" ? colors.NEONRED : 
-              result.value === "T" ? colors.NEONGREEN : "#0000";
-          ctx.lineWidth = 1.5
+            ctx.stroke();
 
-          ctx.stroke();
- 
-          currentY += this.cellH + 0.25
+            // SHIFT ROW
+            currentY += this.cellH + 0.25;
+          })();
 
+          const y = Math.round(this.y + 6 * this.cellH) + 0.7;
+          const sRad = Math.min(this.cellW, this.cellH) * 0.125;
+          // SMALL ROAD
           
+          (() => {
+            const state = this.smallRoadData[index];
+            if (!state) return;
+
+            const baseX = startX;
+            const baseY = y;
+
+            // 🔥 each 2 rows = 1 cell
+            const cellRow = Math.floor(state.row / 2);
+            const halfOffset = state.row % 2; // 0 = top, 1 = bottom
+
+            const cx =
+              baseX +
+              state.col * this.cellW * 0.504 +
+              this.cellW * 0.25;
+
+            const cy =
+              baseY +
+              cellRow * this.cellH +
+              (halfOffset * (this.cellH * 0.4)) +
+              (this.cellH * 0.25);
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, sRad, 0, Math.PI * 2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 0.9;
+            ctx.stroke();
+          })();
+          // IG EYE
+          // (() => {
+          //   const colIndex = Math.floor(this.cols * 1 / 3);
+          //   const x = Math.round(startX + colIndex * this.cellW) + 0.5;
+
+          //   ctx.beginPath();
+          //   ctx.arc(x, y, sRad, 0, Math.PI * 2);
+          //   ctx.fillStyle = color;
+          //   ctx.fill();
+          // })();
+          
+          // // COCKROACH
+          // (() => {
+          //   const colIndex = Math.floor(this.cols * 2 / 3);
+          //   const x = Math.round(startX + colIndex * this.cellW) + 0.5;
+
+          //   ctx.beginPath();
+          //   ctx.arc(x, y, sRad, 0, Math.PI * 2);
+          //   ctx.fillStyle = colors.NEONBLUE;
+          //   ctx.fill();
+          // })();
+
+        
           break;
       }
     });
@@ -1344,6 +1459,7 @@ function main() {
   buildStatusBar();
   buildScoreBoard();
   buildHudTopBar();
+  bigRoad.buildSmallRoad();
 }
 main();
 window.addEventListener("resize", main);
