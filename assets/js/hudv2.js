@@ -166,7 +166,7 @@ class RoadMapGrid {
   draw(ctx) {
     const startX = this.x + this.offsetX;
     
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#ffffff65";
     ctx.fillRect(startX, this.y, this.gridWidth, this.h);
 
     ctx.beginPath();
@@ -184,7 +184,7 @@ class RoadMapGrid {
       ctx.lineTo(x, this.y + this.h);
     }
 
-    ctx.strokeStyle = "rgb(0, 0, 0)";
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.55)";
     ctx.lineWidth = 0.1;
     ctx.stroke();
 
