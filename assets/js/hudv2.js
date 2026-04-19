@@ -1,3 +1,134 @@
+class HudTopBar {
+  constructor(x, y, w, h, bg) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    // this.bg = bg ?? "#414be2"
+    this.bg = bg
+  }
+  // 🔥 detect click inside rect
+  isInside(mx, my) {
+    return mx >= this.x &&
+      mx <= this.x + this.w &&
+      my >= this.y &&
+      my <= this.y + this.h;
+  }
+  setStatus(value, bg) {
+    this.value = value;
+    this.bg = bg;
+  }
+  draw(ctx) {
+
+    ctx.fillStyle = "#25332b";
+    ctx.fillRect(this.x, this.y, this.w, this.h);
+
+    ctx.strokeStyle = "rgb(199, 196, 196)";
+    ctx.lineWidth = 0.1;
+    ctx.setLineDash([]);
+    // ctx.strokeRect(this.x, this.y, this.w, this.h);
+
+
+    ctx.textAlign = "start";
+    ctx.textBaseline = "middle";
+
+    //=============================
+    // STATISTICS
+    //=============================
+   
+
+    //=============================
+    // P BADGE
+    //=============================
+    // const circleOffset = 30
+    // const circleTextOffset = circleOffset - 2
+    // ctx.beginPath();
+    // ctx.fillStyle = colors.NEONBLUE;
+    // ctx.arc(startX + circleOffset, this.y + this.h / 2, 8, 0, Math.PI * 2);
+    // ctx.font = `900 8px Trebuchet MS`;
+    // ctx.fill();
+    // ctx.fillStyle = "#fff";
+    // ctx.fillText("P", startX + circleTextOffset , this.y + this.h / 2);
+  
+    const scale = this.h / 100;
+
+    const statItems = [
+      { type: "text", text: "#47", bg: colors.NEONBLUE },
+      { type: "badge", text: "P", bg: colors.NEONBLUE },
+      { type: "text", text: "24" , bg: colors.NEONBLUE },
+      { type: "badge", text: "B" , bg: colors.NEONRED },
+      { type: "text", text: "17" , bg: colors.NEONBLUE },
+      { type: "badge", text: "T" , bg: colors.NEONGREEN },
+      { type: "text", text: "6" , bg: colors.NEONBLUE },
+      { type: "badge", isTie:true, text: "", bg: colors.NEONBLUE },
+      { type: "text", text: "4" , bg: colors.NEONBLUE },
+      { type: "badge", isTie: true, text: "", bg: colors.NEONRED },
+      { type: "text", text: "1" , bg: colors.NEONRED },
+    ];
+
+    const radius = 16 * scale;
+    const gap = 18 * scale;
+    const fontSize = Math.max(12 , 14 * scale);
+
+    let startX = this.x + gap;
+    const centerY = this.y + this.h / 2;
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+
+    statItems.forEach(item => {
+
+      if (item.type === "badge") {
+        ctx.beginPath();
+        ctx.arc(startX + radius, centerY - 0.5, radius, 0, Math.PI * 2);
+          ctx.strokeStyle = item.bg;
+          ctx.lineWidth = 2
+          ctx.stroke();
+        if (item.isTie) {
+          ctx.beginPath();
+          // ctx.moveTo(startX, centerY)
+          // ctx.lineTo(startX + radius * 2 , centerY)
+          // ctx.stroke();
+          const cx = startX + radius;
+          const cy = centerY - 0.5;
+
+          ctx.save();
+
+          ctx.translate(cx, cy);
+          ctx.rotate(-Math.PI / 4); // slant "/"
+
+          // line through center
+          ctx.beginPath();
+          ctx.moveTo(-radius, 0);
+          ctx.lineTo(radius, 0);
+          ctx.stroke();
+
+          ctx.restore();
+        } else {
+          ctx.fillStyle = item.bg;
+          ctx.fill();
+        }
+
+        ctx.fillStyle = "#fff";
+        ctx.font = `900 ${fontSize-2}px Trebuchet MS`;
+        ctx.textAlign = "center";
+        ctx.fillText(item.text, startX + radius, centerY);
+
+        startX += radius * 2 + gap;
+
+      } else {
+        ctx.fillStyle = "#fff";
+        ctx.font = `900 ${fontSize}px Trebuchet MS`;
+        ctx.textAlign = "left";
+        ctx.fillText(item.text, startX, centerY);
+
+        // measure text width for proper spacing
+        const textWidth = ctx.measureText(item.text).width;
+        startX += textWidth + gap;
+      }
+    });
+  }
+}
 class StatusBar {
   constructor(value, x, y, w, h, bg) {
     this.value = value;
@@ -204,8 +335,9 @@ let clicked = null;
 
 const colors = {
   ACTIVEBG: "rgba(15, 14, 14,0.5)",
-  NEONRED: "rgb(241, 48, 48)",
-  NEONBLUE: "rgb(88, 70, 252)",
+  NEONBLUE: "rgb(117, 119, 255)",
+  NEONRED: "rgb(253, 88, 88)",
+  NEONGREEN: " rgb(73, 212, 80)",
   BLUE: "rgba(46, 34, 156, 0.5)",
   RED: " rgba(105, 14, 14, 0.5)",
   GREEN: " rgba(30, 97, 33, 0.5)",
@@ -226,6 +358,7 @@ const colors = {
 const buttons = [];
 const chips = [];
 const quickTools = [];
+let hudTopBar = null;
 let statusBar = null;
 let beadRoad = null;
 let bigRoad = null;
@@ -305,7 +438,7 @@ function getFontSize(width, height) {
   return Math.max(15, Math.floor(base * 0.20));
 }
 function buildStatusBar() {
-  let statusBarContainer= {
+  let topBarContainer= {
     x: (canvas.width - containerWidth) / 2 ,
     y: hudY,
     w: containerWidth,
@@ -314,10 +447,25 @@ function buildStatusBar() {
 
   statusBar = new StatusBar(
     'PLACE YOUR BET',
-    statusBarContainer.x,
-    statusBarContainer.y,
-    statusBarContainer.w,
-    statusBarContainer.h
+    topBarContainer.x,
+    topBarContainer.y,
+    topBarContainer.w,
+    topBarContainer.h
+  );
+}
+function buildHudTopBar() {
+  let topBarContainer = {
+    x: (canvas.width - containerWidth) / 2 ,
+    y: hudY,
+    w: containerWidth,
+    h: topH * 0.1,
+  };
+
+  hudTopBar = new HudTopBar(
+    topBarContainer.x,
+    topBarContainer.y,
+    topBarContainer.w,
+    topBarContainer.h
   );
 }
 
@@ -811,7 +959,8 @@ function drawUI() {
   //=================================================================================
   //  DRAW STATUS BAR 
   //=================================================================================
-  statusBar.draw(ctx)
+  // statusBar.draw(ctx)
+  hudTopBar.draw(ctx)
   //=================================================================================
   //  DRAW ROAD MAP GRID 
   //=================================================================================
@@ -1015,16 +1164,14 @@ function loop() {
 
 initVideo();
 
-resize();
-buildChipController();
-buildStatusBar();
-buildRoadMap();
-
-window.addEventListener("resize", () => {
+function main() {
   resize();
   buildChipController();
   buildStatusBar();
   buildRoadMap();
-});
+  buildHudTopBar();
+}
+main();
+window.addEventListener("resize", main);
 
 loop();
