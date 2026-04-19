@@ -318,7 +318,6 @@ class Chip {
   }
 }
 
-
 class QuickButton {
   constructor(value, symbol, x, y, size, bg) {
     this.value = value;
@@ -367,6 +366,227 @@ class QuickButton {
     ctx.fillText(this.value.toUpperCase(), this.x + this.size / 2, this.y + this.size - 9);
   }
 }
+
+class BetOptions {
+  constructor(value, x,  y, w, h) {
+    this.value = value;
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+  }
+
+  isInside(mx, my) {
+
+  }
+  draw(ctx) {
+    const gap = 10;
+    const bRadius = 10
+   
+    const colW = this.w * 0.333 ;
+    
+    // ============================================
+    //  PLAYER
+    // ============================================
+    (()=> {
+      const x = this.x + gap;
+      const y = this.y;
+      const w = this.w + gap;
+      const h = this.h + gap;
+      const r = (h / 2);
+
+      const cx = x + colW + r;
+      const cy = y + h / 2;
+
+
+      ctx.beginPath();
+      ctx.moveTo(x + bRadius, y);
+      ctx.lineTo(x + colW + r, y);
+      // concave arc (inward cut)
+      ctx.arc(
+        cx,
+        cy,
+        r,
+        Math.PI + (Math.PI / 2),
+        Math.PI,
+        true 
+      );
+
+
+      // bottom-right corner
+      ctx.arc(
+        x + colW - bRadius,
+        y + h - bRadius,
+        bRadius,
+        0,
+        Math.PI - (Math.PI / 2),
+        false 
+      );
+
+
+      // bottom-left corner
+      ctx.arc(
+        x + bRadius,
+        y + h - bRadius,
+        bRadius,
+        // Math.PI /2,
+        Math.PI / 2,
+        Math.PI,
+        false 
+      );
+
+      // top-left corner
+      ctx.arc(
+        x + bRadius,
+        y + bRadius,
+        bRadius,
+        Math.PI,
+        -Math.PI / 2,
+        false 
+      );
+      ctx.closePath();
+      ctx.strokeStyle = colors.NEONBLUE;
+      ctx.fillStyle = colors.BLUE;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      // // ctx.fill();
+
+    })();
+    // ============================================
+    //  BANKER
+    // ============================================
+    (()=> {
+      const w = this.w + gap;
+      const h = this.h + gap;
+      
+      const x = this.x + containerWidth -gap;
+      const y = this.y ;
+      
+      const r = (h / 2);
+
+      const cx = x - colW - r;
+      const cy = y + h / 2;
+
+      ctx.beginPath();
+      ctx.moveTo(x - bRadius,  y);
+      ctx.lineTo(x - colW - r, y);
+      // concave arc (inward cut)
+      ctx.arc(
+        cx,
+        cy,
+        r,
+        Math.PI + (Math.PI / 2),
+        0,
+        false 
+      );
+
+      // bottom-left corner
+      ctx.arc(
+        x - colW + bRadius,
+        y + h - bRadius,
+        bRadius,
+        Math.PI,
+        Math.PI / 2,
+        true 
+      );
+
+
+      // bottom-right corner
+      ctx.arc(
+        x  - bRadius,
+        y + h - bRadius,
+        bRadius,
+        Math.PI - (Math.PI / 2),
+        0,
+        true   
+      );
+
+      // top-right corner
+      ctx.arc(
+        x - bRadius,
+        y + bRadius,
+        bRadius,
+        0,
+        -Math.PI / 2,
+        true 
+      );
+
+     
+      ctx.strokeStyle = colors.NEONRED;
+      ctx.fillStyle = colors.RED;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      // ctx.fill();
+    })();
+    // ============================================
+    //  TIE
+    // ============================================
+    (()=> {
+      const x = this.x + containerWidth/2  + gap;
+      const y = this.y;
+      const w = x + (colW / 4);
+      const h = this.h + gap;
+      const r = (h / 2);
+  
+
+      const cx = this.x + containerWidth - (colW + r + gap);  
+      const cy = y + 3 + h / 2  ;
+      ctx.beginPath();
+      ctx.moveTo(this.x + (colW + r + gap), y + 3)
+      // ctx.lineTo(x, y)
+      // top-right
+      ctx.arc(
+        cx - 4,
+        cy,
+        r,
+        -Math.PI/2,
+        0,
+        false
+      );
+      // bottom-right
+      ctx.arc(
+        cx + r - gap -5,
+        y + h - bRadius - 3,
+        bRadius,
+        0,
+        Math.PI - (Math.PI / 2),
+        false
+      );
+     
+      // bottom-left
+      ctx.arc(
+        x - colW / 2 + gap + 4,
+        y + h - bRadius - 3,
+        bRadius,
+        // Math.PI /2,
+        Math.PI / 2,
+        Math.PI,
+        false
+      );
+
+      // top-left
+      ctx.arc(
+        this.x + colW + r + gap + 4,
+        cy,
+        r,
+        Math.PI,
+        -Math.PI / 2,
+        false
+      );
+    
+
+     
+      ctx.strokeStyle = colors.NEONGREEN;
+      ctx.fillStyle = colors.GREEN;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      // ctx.fill();
+    })();
+
+
+  }
+}
+
 
 const values = ["P", "B", "T"];
 const resultData = []
@@ -646,6 +866,8 @@ let hudTopBar = null;
 let statusBar = null;
 let beadRoad = null;
 let bigRoad = null;
+let betOptions = null;
+let bankerCell = null;
 
 //======================================
 //  DRAW CONTAINER
@@ -655,6 +877,9 @@ const layoutGap = 0;
 let containerAvailableWidth = 0;
 let containerMaxWidth = 980;
 let containerWidth = containerMaxWidth;
+let leftGutter = 0;
+
+
 //======================================
 //  ROOT LAYOUT RATIO
 //======================================
@@ -701,6 +926,7 @@ function resize() {
   containerMaxWidth = 980;
   containerWidth = isMobile ? containerAvailableWidth   // full width on phone
     : Math.min(containerAvailableWidth, containerMaxWidth);
+  leftGutter = (canvas.width - containerWidth) / 2;
   videoW = containerWidth;
   videoH = videoW * 9 / 18;
 
@@ -723,7 +949,7 @@ function getFontSize(width, height) {
 }
 function buildStatusBar() {
   let topBarContainer= {
-    x: (canvas.width - containerWidth) / 2 ,
+    x: leftGutter ,
     y: hudY,
     w: containerWidth,
     h: topH * 0.1,
@@ -739,7 +965,7 @@ function buildStatusBar() {
 }
 function buildHudTopBar() {
   let topBarContainer = {
-    x: (canvas.width - containerWidth) / 2 ,
+    x: leftGutter ,
     y: hudY,
     w: containerWidth,
     h: topH * 0.1,
@@ -755,7 +981,7 @@ function buildHudTopBar() {
 
 function buildScoreBoard() {
   // roadMapGrid = new ScoreBoard(
-  //   (canvas.width - containerWidth) / 2 ,
+  //   leftGutter ,
   //   hudY + topH * 1.04 ,
   //   containerWidth ,
   //   bottomH - 15,
@@ -806,7 +1032,7 @@ function buildChipController() {
   const chipsContainer =
   {
     id: "chips",
-    x: (canvas.width - containerWidth) / 2,
+    x: leftGutter,
     y: hudY + topH * 1.25,
     w: containerWidth,
     h: bottomH / 3,
@@ -880,6 +1106,42 @@ function buildChipController() {
     startX += chipD + chipG + (index === 5? 8 : 0);
   });
 }
+function buildBetOptions() {
+  const items = [
+    { type: "chip", value: "player", bg: colors.BLUE },
+    { type: "chip", value: "tie", bg: colors.GREEN },
+    { type: "chip", value: "banker", bg: colors.RED },
+  ];
+
+  // items.forEach(item => {
+  //   //  "player": {
+  //   //   id: "player",
+  //   //   x: leftGutter,
+  //   //   y: betRow1Y,
+  //   //   w: containerWidth * 0.3332,
+  //   //   h: betRow1H,
+  //   //   // bg: colors.BLUE,
+  //   //   hoverBg: colors.HOVERBLUE,
+  //   //   activeBg: colors.ACTIVEBLUE,
+  //   //   border: "rgb(255, 255, 255)",
+  //   //   isButton: true
+  //   // },
+  // }); 
+  // hudY + topH * 0.1
+  // const resultBarY = hudY + topH * 0.4;
+  // const resultBarH = topH * 0.22;
+  betOptions = new BetOptions (
+    "player",  
+    leftGutter,
+    hudY + topH * 0.4 + topH * 0.22,
+    containerWidth,
+    topH * 0.25,
+  )
+
+ 
+}
+
+
 
 
 
@@ -969,7 +1231,7 @@ function drawUI() {
 
   const components = {
     video: {
-      x: (canvas.width - containerWidth) / 2,
+      x: leftGutter,
       y: layoutPadding,
       w: videoW,
       h: videoH,
@@ -978,7 +1240,7 @@ function drawUI() {
     },
 
     // topBar: {
-    //   x: (canvas.width - containerWidth) / 2 ,
+    //   x: leftGutter ,
     //   y: hudY,
     //   w: containerWidth,
     //   h: topH
@@ -986,7 +1248,7 @@ function drawUI() {
 
     // statusBar: {
     //   bg: "rgba(212, 191, 191, 0.97)"
-    //   x: (canvas.width - containerWidth) / 2 ,
+    //   x: leftGutter ,
     //   y: hudY,
     //   w: containerWidth,
     //   h: topH * 0.1,
@@ -995,7 +1257,7 @@ function drawUI() {
 
     // "resultBar": { //resultBar
     //   id: "result bar",
-    //   x: (canvas.width - containerWidth) / 2 ,
+    //   x: leftGutter ,
     //   y: hudY + topH * 0.1,
     //   w: containerWidth,
     //   h: resultBarH,
@@ -1081,7 +1343,7 @@ function drawUI() {
 
 
     // placeBets: {
-    //   x: (canvas.width - containerWidth) / 2 ,
+    //   x: leftGutter ,
     //   y: hudY + topH * 0.4,
     //   w: containerWidth,
     //   h: topH * 0.6,
@@ -1093,7 +1355,7 @@ function drawUI() {
     //=============================================
     "player": {
       id: "player",
-      x: (canvas.width - containerWidth) / 2,
+      x: leftGutter,
       y: betRow1Y,
       w: containerWidth * 0.3332,
       h: betRow1H,
@@ -1105,7 +1367,7 @@ function drawUI() {
     },
     "tie": {
       id: "tie",
-      x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
+      x: leftGutter + (containerWidth * 0.3332),
       y: betRow1Y,
       w: containerWidth * 0.3332,
       h: betRow1H,
@@ -1117,7 +1379,7 @@ function drawUI() {
     },
     "banker": {
       id: "banker",
-      x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
+      x: leftGutter + (containerWidth * 0.3332) * 2,
       y: betRow1Y,
       w: containerWidth * 0.3332,
       h: betRow1H,
@@ -1129,7 +1391,7 @@ function drawUI() {
     },
     "p pair": {
       id: "p pair",
-      x: (canvas.width - containerWidth) / 2,
+      x: leftGutter,
       y: betRow2Y,
       w: containerWidth * 0.3332,
       h: betRow2H,
@@ -1141,7 +1403,7 @@ function drawUI() {
     },
     "perfect pair": {
       id: "perfect pair",
-      x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
+      x: leftGutter + (containerWidth * 0.3332),
       y: betRow2Y,
       w: containerWidth * 0.3332,
       h: betRow2H,
@@ -1153,7 +1415,7 @@ function drawUI() {
     },
     "b pair": {
       id: "b pair",
-      x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
+      x: leftGutter + (containerWidth * 0.3332) * 2,
       y: betRow2Y,
       w: containerWidth * 0.3332,
       h: betRow2H,
@@ -1165,7 +1427,7 @@ function drawUI() {
     },
     "p bonus": {
       id: "p bonus",
-      x: (canvas.width - containerWidth) / 2,
+      x: leftGutter,
       y: betRow3Y,
       w: containerWidth * 0.3332,
       h: betRow2H,
@@ -1177,7 +1439,7 @@ function drawUI() {
     },
     "either pair": {
       id: "either pair",
-      x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332),
+      x: leftGutter + (containerWidth * 0.3332),
       y: betRow3Y,
       w: containerWidth * 0.3332,
       h: betRow2H,
@@ -1189,7 +1451,7 @@ function drawUI() {
     },
     "b bonus": {
       id: "b bonus",
-      x: (canvas.width - containerWidth) / 2 + (containerWidth * 0.3332) * 2,
+      x: leftGutter + (containerWidth * 0.3332) * 2,
       y: betRow3Y,
       w: containerWidth * 0.3332,
       h: betRow2H,
@@ -1207,7 +1469,7 @@ function drawUI() {
     //=============================================
     // "": {
     //   id: "chips_container",
-    //   x: (canvas.width - containerWidth) / 2,
+    //   x: leftGutter,
     //   y: chipRowY,
     //   w: containerWidth ,
     //   h: bottomH / 3,
@@ -1219,7 +1481,7 @@ function drawUI() {
     //=============================================
     // "chiptools_container": {
     //   id: "chiptools_container",
-    //   x: (canvas.width - containerWidth) / 2,
+    //   x: leftGutter,
     //   y: hudY + topH + layoutGap + bottomH / 2,
     //   w: containerWidth ,
     //   h: bottomH / 2,
@@ -1228,7 +1490,7 @@ function drawUI() {
     // },
     // "bottom bar": {
     //   id: "bottom bar",
-    //   x: (canvas.width - containerWidth) / 2,
+    //   x: leftGutter,
     //   y: chipRowY + bottomH / 3,
     //   w: containerWidth ,
     //   h: bottomH,
@@ -1251,6 +1513,10 @@ function drawUI() {
   //=================================================================================
   beadRoad.draw(ctx)
   bigRoad.draw(ctx)
+  //=================================================================================
+  //  DRAW BET OPTIONS
+  //=================================================================================
+  betOptions.draw(ctx)
   //=================================================================================
   //  CHIPS CONTROLLER
   //=================================================================================
@@ -1455,6 +1721,7 @@ initVideo();
 
 function main() {
   resize();
+  buildBetOptions();
   buildChipController();
   buildStatusBar();
   buildScoreBoard();
