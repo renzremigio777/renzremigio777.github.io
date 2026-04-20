@@ -1,15 +1,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HUD</title>
   <style>
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden; /* ❌ disables page scroll */
       height: 100%;
-      background: #2e2e35;
     }
 
     body {
@@ -18,11 +21,12 @@
       overflow: hidden;
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
+      background: #3f3f3f url('../assets/images/bg.jpg') no-repeat center center / cover;
     }
     canvas {
         box-sizing: border-box;
         position: fixed;
-        touch-action: none; /* ✅ prevents drag/scroll gestures */
+        touch-action: none; 
     }
   </style>
 </head>

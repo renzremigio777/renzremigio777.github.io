@@ -601,6 +601,74 @@ class BetOptions {
       // ctx.fill();
     })();
 
+    // ============================================
+    //  P PAIR
+    // ============================================
+    (() => {
+      const w = this.w + gap;
+      const h = this.h
+
+      const x = this.x + containerWidth - gap;
+      const y = this.y;
+
+      const r = (h / 2);
+
+      const cx = x - colW - r;
+      const cy = y + h / 2;
+
+      ctx.beginPath();
+      ctx.moveTo(x - bRadius, y);
+      ctx.lineTo(x - w / 2 + gap * 1.5, y);
+
+      // concave arc (inward cut)
+      ctx.arc(
+        cx,
+        cy,
+        r,
+        Math.PI + (Math.PI / 2),
+        0,
+        false
+      );
+
+      // bottom-left corner
+      ctx.arc(
+        x - colW + bRadius,
+        y + h,
+        bRadius,
+        Math.PI,
+        Math.PI / 2,
+        true
+      );
+
+
+      // bottom-right corner
+      ctx.arc(
+        x - bRadius,
+        y + h,
+        bRadius,
+        Math.PI - (Math.PI / 2),
+        0,
+        true
+      );
+
+      // top-right corner
+      ctx.arc(
+        x - bRadius,
+        y + bRadius,
+        bRadius,
+        0,
+        -Math.PI / 2,
+        true
+      );
+
+
+      ctx.strokeStyle = "#ff474759";
+      ctx.fillStyle = colors.RED;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // ctx.fill();
+    })();
+    //
 
   }
 }
@@ -1007,7 +1075,6 @@ function buildScoreBoard() {
   //   colums
   // );
   const startX = (canvas.width - containerWidth) * 0.5;
-
   beadRoad = new ScoreBoard(
     'beadroad',
     startX,
@@ -1025,7 +1092,6 @@ function buildScoreBoard() {
     topH * 0.3,
     9
   );
-
 
 }
 
@@ -1506,15 +1572,14 @@ function drawUI() {
     //   border: "rgb(255, 255, 255)",
     //   bg: "rgba(255,255,255,0.3)",
     // },
-    // "bottom bar": {
-    //   id: "bottom bar",
-    //   x: leftGutter,
-    //   y: chipRowY + bottomH / 3,
-    //   w: containerWidth ,
-    //   h: bottomH,
-    //   border: "rgb(255, 255, 255)",
-    //   bg: "rgba(255,255,255,0.3)",
-    // },
+    "bottom bar": {
+      id: "bottom bar",
+      x: leftGutter,
+      y: chipRowY + bottomH / 3,
+      w: containerWidth ,
+      h: bottomH,
+      border: "rgb(255, 255, 255)",
+    },
   };
 
 
