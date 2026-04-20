@@ -380,8 +380,8 @@ class BetOptions {
 
   }
   draw(ctx) {
-    const gap = 10;
-    const bRadius = 10
+    const gap = 15;
+    const bRadius = gap * 2
    
     const colW = this.w * 0.333 ;
     
@@ -392,16 +392,18 @@ class BetOptions {
       const x = this.x + gap;
       const y = this.y;
       const w = this.w + gap;
-      const h = this.h + gap;
+      const h = this.h
       const r = (h / 2);
 
-      const cx = x + colW + r;
+      const cx = x + colW + r ;
       const cy = y + h / 2;
 
 
       ctx.beginPath();
       ctx.moveTo(x + bRadius, y);
-      ctx.lineTo(x + colW + r, y);
+      // ctx.lineTo(x + colW + r +colW /4 + gap, y);
+      ctx.lineTo(x + w / 2 - gap, y);
+
       // concave arc (inward cut)
       ctx.arc(
         cx,
@@ -416,7 +418,7 @@ class BetOptions {
       // bottom-right corner
       ctx.arc(
         x + colW - bRadius,
-        y + h - bRadius + 8,
+        y + h,
         bRadius,
         0,
         Math.PI - (Math.PI / 2),
@@ -427,7 +429,7 @@ class BetOptions {
       // bottom-left corner
       ctx.arc(
         x + bRadius,
-        y + h - bRadius + 8,
+        y + h,
         bRadius,
         // Math.PI /2,
         Math.PI / 2,
@@ -445,7 +447,7 @@ class BetOptions {
         false 
       );
       ctx.closePath();
-      ctx.strokeStyle = colors.NEONBLUE;
+      ctx.strokeStyle = "#9b85ff4d";
       ctx.fillStyle = colors.BLUE;
       ctx.lineWidth = 2;
       ctx.stroke();
@@ -457,7 +459,7 @@ class BetOptions {
     // ============================================
     (()=> {
       const w = this.w + gap;
-      const h = this.h + gap;
+      const h = this.h
       
       const x = this.x + containerWidth -gap;
       const y = this.y ;
@@ -469,7 +471,8 @@ class BetOptions {
 
       ctx.beginPath();
       ctx.moveTo(x - bRadius,  y);
-      ctx.lineTo(x - colW - r, y);
+      ctx.lineTo(x - w / 2 + gap * 1.5, y);
+
       // concave arc (inward cut)
       ctx.arc(
         cx,
@@ -483,7 +486,7 @@ class BetOptions {
       // bottom-left corner
       ctx.arc(
         x - colW + bRadius,
-        y + h - bRadius + 8,
+        y + h,
         bRadius,
         Math.PI,
         Math.PI / 2,
@@ -494,7 +497,7 @@ class BetOptions {
       // bottom-right corner
       ctx.arc(
         x  - bRadius,
-        y + h - bRadius + 8,
+        y + h,
         bRadius,
         Math.PI - (Math.PI / 2),
         0,
@@ -512,9 +515,9 @@ class BetOptions {
       );
 
      
-      ctx.strokeStyle = colors.NEONRED;
+      ctx.strokeStyle = "#ff474759";
       ctx.fillStyle = colors.RED;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 2;
       ctx.stroke();
       // ctx.fill();
     })();
@@ -522,65 +525,78 @@ class BetOptions {
     //  TIE
     // ============================================
     (()=> {
-      const x = this.x + containerWidth/2  + gap;
+      const x = this.x + (containerWidth - colW) / 2;
       const y = this.y;
-      const w = x + (colW / 4);
-      const h = this.h + gap;
-      const r = (h / 2);
-  
+      const w = colW;
+      const h = this.h
+      const r = h / 2;
 
-      const cx = this.x + containerWidth - (colW + r + gap);  
-      const cy = y + 3 + h / 2  ;
-
-      const offsetY = 8;
+      const cx = x + w / 2;
+      const cy = y + h / 2 + 5;
+      // ctx.roundRect(x - (w/2) - gap, y + gap, w, h , r)
       ctx.beginPath();
-      ctx.moveTo(this.x + (colW + r + gap), y + gap + 2)
-      // top-right
-      ctx.arc(
-        cx - 2,
-        cy,
-        r + - 8,
-        -Math.PI/2,
-        0,
-        false
-      );
-      // bottom-right
-      ctx.arc(
 
-        cx + r - gap - 10,
-        y + h  - 3,
-        bRadius,
-        0,
-        Math.PI - (Math.PI / 2),
-        false
-      );
-     
-      // bottom-left
+      // top-left curve
       ctx.arc(
-        x - colW / 2 + gap + 4 + 8,
-        y + h  - 3,
-        bRadius,
-        // Math.PI /2,
-        Math.PI / 2,
-        Math.PI,
-        false
-      );
-
-      // top-left
-      ctx.arc(
-       this.x + colW + r + gap + 4,
+        x + r + bRadius  ,
         cy,
-        r + - 8,
+        r ,
         Math.PI,
         -Math.PI / 2,
         false
       );
-    
+
+      // top-right curve
+      ctx.arc(
+        x + w -  r - bRadius,
+        cy,
+        r ,
+        -Math.PI / 2,
+        0,
+        false
+      );
+      // ctx.lineTo(x + w - r + 15 , y + h)
+      // bottom-right
+      ctx.arc(
+        x + w - bRadius,
+        y + h,
+        bRadius,
+        -Math.PI + (Math.PI / 2),
+        -Math.PI + (Math.PI / 2),
+        false 
+      );
 
      
-      ctx.strokeStyle = colors.NEONGREEN;
+
+      ctx.arc(
+        // x + bRadius,
+        x + colW - bRadius * 2   ,
+        y + h  ,
+        bRadius,
+        0,
+        Math.PI -Math.PI/2,
+        false
+      );
+
+
+      // // bottom-left
+      ctx.arc(
+        // x + bRadius,
+        x + bRadius + bRadius,
+        y + h,
+        bRadius,
+        Math.PI / 2,
+        Math.PI,
+          0,
+        Math.PI / 2,
+        false
+      );
+
+      ctx.closePath();
+      ctx.stroke();
+      ctx.strokeStyle = "#33a0584d";
       ctx.fillStyle = colors.GREEN;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 2;
       ctx.stroke();
       // ctx.fill();
     })();
@@ -797,7 +813,7 @@ class ScoreBoard {
             ctx.beginPath();
             ctx.arc(cx, cy, sRad, 0, Math.PI * 2);
             ctx.strokeStyle = color;
-            ctx.lineWidth = 0.9;
+            ctx.lineWidth = 3;
             ctx.stroke();
           })();
           // IG EYE
@@ -932,7 +948,7 @@ function resize() {
   videoW = containerWidth;
   videoH = videoW * 9 / 18;
 
-  hudY = videoH + layoutGap * 2;
+  hudY = videoH + layoutGap * 3;
   hudH = canvas.height - hudY - layoutPadding;
 
   topRatio = 0.7;   // 70%
@@ -1220,7 +1236,7 @@ function drawUI() {
   const leftStartX = midX - centerGap / 2 - groupWidth;
 
 
-  const p1x = leftStartX + (cardWidth) + (gap * 2);
+  const p1x = leftStartX + (cardWidth) + (gap * 3);
   const p2x = leftStartX + (cardWidth * 2) + (gap * 4);
   const p3x = leftStartX
 
