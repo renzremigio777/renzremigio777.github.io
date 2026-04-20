@@ -618,55 +618,14 @@ class BetOptions {
 
       ctx.beginPath();
       ctx.moveTo(x - bRadius, y);
-      ctx.lineTo(x - w / 2 + gap * 1.5, y);
-
-      // concave arc (inward cut)
-      ctx.arc(
-        cx,
-        cy,
-        r,
-        Math.PI + (Math.PI / 2),
-        0,
-        false
-      );
-
-      // bottom-left corner
-      ctx.arc(
-        x - colW + bRadius,
-        y + h,
-        bRadius,
-        Math.PI,
-        Math.PI / 2,
-        true
-      );
-
-
-      // bottom-right corner
-      ctx.arc(
-        x - bRadius,
-        y + h,
-        bRadius,
-        Math.PI - (Math.PI / 2),
-        0,
-        true
-      );
-
-      // top-right corner
-      ctx.arc(
-        x - bRadius,
-        y + bRadius,
-        bRadius,
-        0,
-        -Math.PI / 2,
-        true
-      );
-
+      ctx.lineTo(x - w / 2 + gap * 1.5, top);
 
       ctx.strokeStyle = "#ff474759";
       ctx.fillStyle = colors.RED;
       ctx.lineWidth = 2;
       ctx.stroke();
       // ctx.fill();
+
     })();
     //
 
