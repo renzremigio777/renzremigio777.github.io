@@ -40,20 +40,20 @@ class HudTopBar {
     const statItems = [
       { type: "text", text: "#47", bg: colors.NEONBLUE },
       { type: "badge", text: "P", bg: colors.NEONBLUE },
-      { type: "text", text: "24" , bg: colors.NEONBLUE },
-      { type: "badge", text: "B" , bg: colors.NEONRED },
-      { type: "text", text: "17" , bg: colors.NEONBLUE },
-      { type: "badge", text: "T" , bg: colors.NEONGREEN },
-      { type: "text", text: "6" , bg: colors.NEONBLUE },
-      { type: "badge", isTie:true, text: "", bg: colors.NEONBLUE },
-      { type: "text", text: "4" , bg: colors.NEONBLUE },
+      { type: "text", text: "24", bg: colors.NEONBLUE },
+      { type: "badge", text: "B", bg: colors.NEONRED },
+      { type: "text", text: "17", bg: colors.NEONBLUE },
+      { type: "badge", text: "T", bg: colors.NEONGREEN },
+      { type: "text", text: "6", bg: colors.NEONBLUE },
+      { type: "badge", isTie: true, text: "", bg: colors.NEONBLUE },
+      { type: "text", text: "4", bg: colors.NEONBLUE },
       { type: "badge", isTie: true, text: "", bg: colors.NEONRED },
-      { type: "text", text: "1" , bg: colors.NEONRED },
+      { type: "text", text: "1", bg: colors.NEONRED },
     ];
 
     const radius = 16 * scale;
     const gap = 25 * scale;
-    const fontSize = Math.max(12 , 14 * scale);
+    const fontSize = Math.max(12, 14 * scale);
 
     let startX = this.x + gap;
     const centerY = this.y + this.h / 2;
@@ -95,13 +95,13 @@ class HudTopBar {
         }
 
         ctx.fillStyle = "#fff";
-        ctx.font = `900 ${fontSize-2}px Trebuchet MS`;
+        ctx.font = `900 ${fontSize - 2}px Trebuchet MS`;
         ctx.textAlign = "center";
         ctx.fillText(item.text, startX + radius, centerY);
 
 
 
-        startX += radius  + gap;
+        startX += radius + gap;
 
       } else {
         ctx.fillStyle = "#fff";
@@ -216,7 +216,7 @@ class StatusBar {
     this.h = h;
     // this.bg = bg ?? "#414be2"
     this.bg = bg
-    this.show =  false
+    this.show = false
   }
   // 🔥 detect click inside rect
   isInside(mx, my) {
@@ -241,7 +241,7 @@ class StatusBar {
     }, 1500);
   }
   draw(ctx) {
-    if(this.show) {
+    if (this.show) {
       ctx.fillStyle = this.bg ?? "#106650";
       ctx.fillRect(this.x, this.y, this.w, this.h);
 
@@ -368,264 +368,195 @@ class QuickButton {
 }
 
 class BetOptions {
-  constructor(value, x,  y, w, h) {
+  constructor(value, x, y, w, h) {
     this.value = value;
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
+
+    this.player = {x: 0, y: 0, w: 0, h: 0}
+    this.banker = {x: 0, y: 0, w: 0, h: 0}
+    this.tie = {x: 0, y: 0, w: 0, h: 0}
   }
 
   isInside(mx, my) {
 
   }
   draw(ctx) {
-    const gap = 15;
+    const gap = 8;
     const bRadius = gap * 2
-   
-    const colW = this.w * 0.333 ;
-    
+
+    const colW = this.w * 0.333;
+    const sideBetY = this.y + gap / 2;
+    const mainBetY = this.y + this.h * 0.4 + gap * 0.5;
+    ctx.fillStyle = "#8a636328"
+    const totalW = this.w - gap * 2;
+
+ 
+    ctx.font = `900 20px Trebuchet MS`;
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle";
     // ============================================
     //  PLAYER
     // ============================================
-    (()=> {
-      const x = this.x + gap;
-      const y = this.y;
-      const w = this.w + gap;
-      const h = this.h
-      const r = (h / 2);
+    (() => {
+      this.player.y = mainBetY;
+      this.player.x = this.x + gap;
+      // this.player.w = this.w + gap;
+      this.player.w = this.w / 2 - gap;
+      this.player.h = this.h * 0.6
 
-      const cx = x + colW + r ;
-      const cy = y + h / 2;
-
+      const r = (this.player.h / 2);
+      const cx = this.player.x + colW + r;
+      const cy = this.player.y + this.player.h / 2;
 
       ctx.beginPath();
-      ctx.moveTo(x + bRadius, y);
+      ctx.moveTo(this.player.x + bRadius, this.player.y);
       // ctx.lineTo(x + colW + r +colW /4 + gap, y);
-      ctx.lineTo(x + w / 2 - gap, y);
+      ctx.lineTo(this.player.x + this.player.w - gap, this.player.y);
 
       // concave arc (inward cut)
-      ctx.arc(
-        cx,
-        cy,
-        r,
-        Math.PI + (Math.PI / 2),
-        Math.PI,
-        true 
-      );
-
-
+      ctx.arc( cx, cy, r, Math.PI + (Math.PI / 2), Math.PI, true);
+      
       // bottom-right corner
-      ctx.arc(
-        x + colW - bRadius,
-        y + h,
-        bRadius,
-        0,
-        Math.PI - (Math.PI / 2),
-        false 
-      );
-
-
+      ctx.arc(this.player.x + colW - bRadius, this.player.y + this.player.h, bRadius, 0, Math.PI - (Math.PI / 2), false);
+      
       // bottom-left corner
-      ctx.arc(
-        x + bRadius,
-        y + h,
-        bRadius,
-        // Math.PI /2,
-        Math.PI / 2,
-        Math.PI,
-        false 
-      );
-
+      ctx.arc(this.player.x + bRadius, this.player.y + this.player.h,bRadius, Math.PI / 2,Math.PI,false);
+      
       // top-left corner
-      ctx.arc(
-        x + bRadius,
-        y + bRadius,
-        bRadius,
-        Math.PI,
-        -Math.PI / 2,
-        false 
-      );
+      ctx.arc(this.player.x + bRadius, this.player.y + bRadius, bRadius, Math.PI, -Math.PI / 2, false );
       ctx.closePath();
-      ctx.strokeStyle = "#9b85ff4d";
+      
+      ctx.strokeStyle = colors.STROKEBLUE;
       ctx.fillStyle = colors.BLUE;
       ctx.lineWidth = 2;
       ctx.stroke();
       // // ctx.fill();
-
+      ctx.fillStyle = "#fff"
+      ctx.fillText('PLAYER', this.player.x + this.player.w * 0.33, this.player.y + this.player.h * 0.90)
     })();
     // ============================================
     //  BANKER
     // ============================================
-    (()=> {
-      const w = this.w + gap;
-      const h = this.h
-      
-      const x = this.x + containerWidth -gap;
-      const y = this.y ;
-      
-      const r = (h / 2);
+    (() => {
+      this.banker.w = this.w / 2 - gap;
+      this.banker.h = this.h * 0.6
 
-      const cx = x - colW - r;
-      const cy = y + h / 2;
+      this.banker.x = this.x + containerWidth - gap;
+      this.banker.y = mainBetY;
+
+      const r = (this.banker.h / 2);
+
+      const cx = this.banker.x - colW - r;
+      const cy = this.banker.y + this.banker.h / 2;
 
       ctx.beginPath();
-      ctx.moveTo(x - bRadius,  y);
-      ctx.lineTo(x - w / 2 + gap * 1.5, y);
+      ctx.moveTo(this.banker.x - bRadius, this.banker.y);
+      ctx.lineTo(this.banker.x - this.banker.w  , this.banker.y);
 
       // concave arc (inward cut)
-      ctx.arc(
-        cx,
-        cy,
-        r,
-        Math.PI + (Math.PI / 2),
-        0,
-        false 
-      );
+      ctx.arc( cx, cy, r, Math.PI + (Math.PI / 2), 0, false);
 
       // bottom-left corner
-      ctx.arc(
-        x - colW + bRadius,
-        y + h,
-        bRadius,
-        Math.PI,
-        Math.PI / 2,
-        true 
-      );
+      ctx.arc(this.banker.x - colW + bRadius, this.banker.y + this.banker.h, bRadius, Math.PI, Math.PI / 2, true);
 
 
       // bottom-right corner
-      ctx.arc(
-        x  - bRadius,
-        y + h,
-        bRadius,
-        Math.PI - (Math.PI / 2),
-        0,
-        true   
-      );
+      ctx.arc(this.banker.x - bRadius, this.banker.y + this.banker.h, bRadius, Math.PI - (Math.PI / 2), 0, true);
 
       // top-right corner
-      ctx.arc(
-        x - bRadius,
-        y + bRadius,
-        bRadius,
-        0,
-        -Math.PI / 2,
-        true 
-      );
+      ctx.arc( this.banker.x - bRadius, this.banker.y + bRadius, bRadius, 0, -Math.PI / 2, true);
 
-     
-      ctx.strokeStyle = "#ff474759";
+
+      ctx.strokeStyle = colors.STROKERED;
       ctx.fillStyle = colors.RED;
       ctx.lineWidth = 2;
       ctx.stroke();
       // ctx.fill();
+      ctx.fillStyle = "#fff"
+      ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90)
     })();
     // ============================================
     //  TIE
     // ============================================
-    (()=> {
-      const x = this.x + (containerWidth - colW) / 2;
-      const y = this.y;
-      const w = colW;
-      const h = this.h
-      const r = h / 2;
+    (() => {
+      this.tie.x = this.x + (containerWidth - colW) / 2;
+      this.tie.y = mainBetY
+      this.tie.w = colW;
+      this.tie.h = this.h * 0.6
 
-      const cx = x + w / 2;
-      const cy = y + h / 2 + 5;
-      // ctx.roundRect(x - (w/2) - gap, y + gap, w, h , r)
+      const r = this.tie.h / 2;
+
+      const cx = this.tie.x + this.tie.w / 2;
+      const cy = this.tie.y + this.tie.h / 2 + 5;
+      // ctx.roundRect(this.tie.x - (this.tie.w/2) - gap, this.tie.y + gap, this.tie.w, this.tie.h , r)
       ctx.beginPath();
 
       // top-left curve
-      ctx.arc(
-        x + r + bRadius  ,
-        cy,
-        r ,
-        Math.PI,
-        -Math.PI / 2,
-        false
+      ctx.arc( this.tie.x + r + bRadius, cy, r, Math.PI, -Math.PI / 2, false
       );
 
       // top-right curve
-      ctx.arc(
-        x + w -  r - bRadius,
-        cy,
-        r ,
-        -Math.PI / 2,
-        0,
-        false
-      );
-      // ctx.lineTo(x + w - r + 15 , y + h)
+      ctx.arc( this.tie.x + this.tie.w - r - bRadius, cy, r, -Math.PI / 2, 0, false);
+      // ctx.lineTo(this.tie.x + this.tie.w - r + 15 , this.tie.y + this.tie.h)
       // bottom-right
-      ctx.arc(
-        x + w - bRadius,
-        y + h,
-        bRadius,
-        -Math.PI + (Math.PI / 2),
-        -Math.PI + (Math.PI / 2),
-        false 
-      );
+      ctx.arc( this.tie.x + this.tie.w - bRadius, this.tie.y + this.tie.h, bRadius, -Math.PI + (Math.PI / 2), -Math.PI + (Math.PI / 2), false);
 
-     
-
-      ctx.arc(
-        // x + bRadius,
-        x + colW - bRadius * 2   ,
-        y + h  ,
-        bRadius,
-        0,
-        Math.PI -Math.PI/2,
-        false
-      );
-
+      ctx.arc(  this.tie.x + colW - bRadius * 2, this.tie.y + this.tie.h, bRadius, 0, Math.PI - Math.PI / 2, false);
 
       // // bottom-left
-      ctx.arc(
-        // x + bRadius,
-        x + bRadius + bRadius,
-        y + h,
-        bRadius,
-        Math.PI / 2,
-        Math.PI,
-          0,
-        Math.PI / 2,
-        false
-      );
+      ctx.arc(  this.tie.x + bRadius + bRadius,  this.tie.y + this.tie.h,  bRadius,  Math.PI / 2,  Math.PI,  0,  Math.PI / 2,  false);
 
       ctx.closePath();
       ctx.stroke();
-      ctx.strokeStyle = "#33a0584d";
+      ctx.strokeStyle = colors.STROKEGREEN;
       ctx.fillStyle = colors.GREEN;
       ctx.lineWidth = 2;
       ctx.stroke();
       // ctx.fill();
+      ctx.fillStyle = "#fff"
+      ctx.fillText('TIE', this.w / 2, this.tie.y + this.tie.h * 0.90)
     })();
 
-    // ============================================
-    //  P PAIR
-    // ============================================
+    // // ============================================
+    // //  SIDEBETS
     (() => {
-      const w = this.w + gap;
-      const h = this.h
+      let sideBets = [
+        { value: "P PAIR", outline: colors.STROKEBLUE },
+        { value: "P BONUS", outline: colors.STROKEBLUE },
+        { value: "PERFECT PAIR", outline: colors.STROKERED },
+        { value: "E PAIR", outline: colors.STROKERED },
+        { value: "B BONUS", outline: colors.STROKERED },
+        { value: "B PAIR", outline: colors.STROKERED },
+      ];
 
-      const x = this.x + containerWidth - gap;
-      const y = this.y;
+      const count = sideBets.length;
+      const spacing = gap;
 
-      const r = (h / 2);
+      const totalW = this.w - gap * 2;
+      const totalSpacing = spacing * (count - 1);
+      const w = (totalW - totalSpacing) / count;
+      const h = this.h * 0.4 - gap;
 
-      const cx = x - colW - r;
-      const cy = y + h / 2;
+      let startX = this.x + gap;
 
-      ctx.beginPath();
-      ctx.moveTo(x - bRadius, y);
-      ctx.lineTo(x - w / 2 + gap * 1.5, top);
+      sideBets.forEach(sb => {
+        const x = startX;
+        const y = sideBetY;
 
-      ctx.strokeStyle = "#ff474759";
-      ctx.fillStyle = colors.RED;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      // ctx.fill();
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, bRadius * 0.5);
+        ctx.strokeStyle = sb.outline;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.font = `100 12px Trebuchet MS`;
+        ctx.fillStyle = "#ffffff93"
+        ctx.fillText(sb.value, x+ w/2, y + h/2)
 
+        startX += w + spacing;
+      });
     })();
     //
 
@@ -641,7 +572,7 @@ for (let i = 0; i < 15; i++) {
   resultData.push({ value: randomValue });
 }
 class ScoreBoard {
-  constructor(type, x,y,w,h, rows) {
+  constructor(type, x, y, w, h, rows) {
     this.type = type;
     this.x = x;
     this.y = y;
@@ -657,7 +588,7 @@ class ScoreBoard {
 
     // this.w = this.cols * this.cellW;
     // 👇 shrink width to fit perfectly
-    this.gridWidth = this.cols * this.cellW +1;
+    this.gridWidth = this.cols * this.cellW + 1;
     this.offsetX = (this.w - this.gridWidth) / 2;
 
     this.smallRoadState = { col: 0, row: 0 };
@@ -712,7 +643,7 @@ class ScoreBoard {
     ctx.lineWidth = 0.1;
     ctx.stroke();
 
-   
+
     if (this.type === "bigroad") {
       const y = Math.round(this.y + 6 * this.cellH) + 0.5;
 
@@ -753,11 +684,11 @@ class ScoreBoard {
     const cy = this.y + row * this.cellH + this.cellH / 2;
 
     const radius = this.cellW * 0.4;
-    
+
     let currentY = cy;
     let currentX = cx;
     let smallRoadX = 0;
-    resultData.forEach((result,index) => {
+    resultData.forEach((result, index) => {
       const color = result.value === "P" ? colors.NEONBLUE :
         result.value === "B" ? colors.NEONRED :
           result.value === "T" ? colors.NEONGREEN : "#0000";
@@ -768,8 +699,8 @@ class ScoreBoard {
           ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
           ctx.fillStyle = color;
           ctx.strokeStyle = color;
-          ctx.fill();      
-          ctx.lineWidth = 1.5;    
+          ctx.fill();
+          ctx.lineWidth = 1.5;
           ctx.stroke();
           // text
           ctx.textAlign = "center";
@@ -784,13 +715,13 @@ class ScoreBoard {
           currentY += this.cellH + 0.25
 
           // SHIFT COLUMN
-          if(index % 6 === 5 ) {
+          if (index % 6 === 5) {
             currentY = cy;
             currentX += this.cellW + 0.25
           }
           break;
         case "bigroad":
-        
+
           (() => {
             // SHIFT COLUMN
             const previousValue = resultData[index - 1]?.value ?? null
@@ -814,7 +745,7 @@ class ScoreBoard {
           const y = Math.round(this.y + 6 * this.cellH) + 0.7;
           const sRad = Math.min(this.cellW, this.cellH) * 0.125;
           // SMALL ROAD
-          
+
           (() => {
             const state = this.smallRoadData[index];
             if (!state) return;
@@ -840,7 +771,7 @@ class ScoreBoard {
             ctx.beginPath();
             ctx.arc(cx, cy, sRad, 0, Math.PI * 2);
             ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 1;
             ctx.stroke();
           })();
           // IG EYE
@@ -853,7 +784,7 @@ class ScoreBoard {
           //   ctx.fillStyle = color;
           //   ctx.fill();
           // })();
-          
+
           // // COCKROACH
           // (() => {
           //   const colIndex = Math.floor(this.cols * 2 / 3);
@@ -865,7 +796,7 @@ class ScoreBoard {
           //   ctx.fill();
           // })();
 
-        
+
           break;
       }
     });
@@ -884,6 +815,9 @@ let clicked = null;
 
 const colors = {
   ACTIVEBG: "rgba(15, 14, 14,0.5)",
+  STROKEBLUE: "#9b85ff4d",
+  STROKERED: "#ff474759",
+  STROKEGREEN: "#33a0584d",
   NEONBLUE: "rgb(68, 133, 255)",
   NEONRED: "rgb(243, 68, 68)",
   NEONGREEN: " rgb(28, 161, 34)",
@@ -993,8 +927,8 @@ function getFontSize(width, height) {
   return Math.max(15, Math.floor(base * 0.20));
 }
 function buildStatusBar() {
-  let topBarContainer= {
-    x: leftGutter ,
+  let topBarContainer = {
+    x: leftGutter,
     y: hudY,
     w: containerWidth,
     h: topH * 0.1,
@@ -1010,7 +944,7 @@ function buildStatusBar() {
 }
 function buildHudTopBar() {
   let topBarContainer = {
-    x: leftGutter ,
+    x: leftGutter,
     y: hudY,
     w: containerWidth,
     h: topH * 0.1,
@@ -1046,7 +980,7 @@ function buildScoreBoard() {
   bigRoad = new ScoreBoard(
     'bigroad',
     startX + (containerWidth * 0.5),
-    hudY + topH * 0.1 ,
+    hudY + topH * 0.1,
     containerWidth * 0.5,
     topH * 0.3,
     9
@@ -1137,8 +1071,8 @@ function buildChipController() {
       const btn = new QuickButton(
         item.value,
         symbol,
-        centerX - chipR /2,   // ✅ center → top-left ONLY
-        centerY - chipR /2,   // ✅ same vertical alignment
+        centerX - chipR / 2,   // ✅ center → top-left ONLY
+        centerY - chipR / 2,   // ✅ same vertical alignment
         chipR,              // ✅ use diameter, not radius
         item.bg
       );
@@ -1146,7 +1080,7 @@ function buildChipController() {
       quickTools.push(btn);
     }
 
-    startX += chipD + chipG + (index === 5? 8 : 0);
+    startX += chipD + chipG + (index === 5 ? 8 : 0);
   });
 }
 function buildBetOptions() {
@@ -1173,15 +1107,15 @@ function buildBetOptions() {
   // hudY + topH * 0.1
   // const resultBarY = hudY + topH * 0.4;
   // const resultBarH = topH * 0.22;
-  betOptions = new BetOptions (
-    "player",  
+  betOptions = new BetOptions(
+    "player",
     leftGutter,
     hudY + topH * 0.4 + topH * 0.22,
     containerWidth,
-    topH * 0.25,
+    topH * 0.5,
   )
 
- 
+
 }
 
 
@@ -1225,7 +1159,7 @@ function drawUI() {
   //  CARDS - VARIABLES
   //=================================================================================
   const gap = 2;
-  const aspect = 9/ 14;
+  const aspect = 9 / 14;
   // max allowed space
   const maxCardHeight = topH * 0.25 - 21;
   const maxCardWidth = containerWidth / 8; // adjust depending on how tight you want components
@@ -1241,7 +1175,7 @@ function drawUI() {
   const groupWidth = (cardWidth * 2) + cardHeight + (gap * 4);
   const resultBarY = hudY + topH * 0.4;
   const resultBarH = topH * 0.22;
-  const cardStartY = resultBarY + (resultBarH - cardHeight) ;
+  const cardStartY = resultBarY + (resultBarH - cardHeight);
 
   const betRow1Y = cardStartY + resultBarH;
   const betRow1H = topH * 0.25;
@@ -1320,7 +1254,7 @@ function drawUI() {
       bg: colors.TRANSPARENT,
       c: colors.NEONBLUE,
       fontWeight: '900',
-      fontSize: getFontSize(containerWidth, resultBarH-40),
+      fontSize: getFontSize(containerWidth, resultBarH - 40),
     },
     "b": {
       x: midX + 12,
@@ -1510,15 +1444,15 @@ function drawUI() {
     //=============================================
     // CHIPS CONTAINER
     //=============================================
-    // "": {
-    //   id: "chips_container",
-    //   x: leftGutter,
-    //   y: chipRowY,
-    //   w: containerWidth ,
-    //   h: bottomH / 3,
-    //   border: "rgb(255, 255, 255)",
-    //   bg: "rgba(255,255,255,0.3)",
-    // },
+    "": {
+      id: "chips_container",
+      x: leftGutter,
+      y: chipRowY,
+      w: containerWidth ,
+      h: bottomH / 3,
+      border: "rgb(255, 255, 255)",
+      bg: "rgba(255,255,255,0.3)",
+    },
     //=============================================
     // chiptools CONTAINER
     //=============================================
@@ -1535,7 +1469,7 @@ function drawUI() {
       id: "bottom bar",
       x: leftGutter,
       y: chipRowY + bottomH / 3,
-      w: containerWidth ,
+      w: containerWidth,
       h: bottomH,
       border: "rgb(255, 255, 255)",
     },
@@ -1581,12 +1515,11 @@ function drawUI() {
     //=====================================================
     // BORDER
     //=====================================================
-    if(obj.border) {
-      ctx.lineWidth = 0.1;
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.33)"
-      ctx.strokeStyle =  obj.border;
+    if (obj.border) {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.18)"
+      ctx.strokeStyle = obj.border;
       ctx.setLineDash([5, 5]); // 5px line, 5px gap
-      ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+      // ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
     }
     else {
       ctx.setLineDash([]); // reset
@@ -1607,26 +1540,26 @@ function drawUI() {
 
     if (isClicked) {
       bg = colors.ACTIVEBG;
-      ctx.fillStyle = bg ;
+      ctx.fillStyle = bg;
       ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
     } else if (isHovered) {
 
     }
 
-    if(obj.bg) {
+    if (obj.bg) {
       // ctx.fillStyle = bg;
       // ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
     }
 
-    ctx.fillStyle = obj.c ?? (isHovered ? "rgba(255, 255, 255, 0.75)" : "rgba(255, 255, 255, 0.45)");
-    ctx.font = `${fontWeight} ${obj.fontSize ?? getFontSize(obj.w, obj.h) }px Trebuchet MS`;
+    ctx.fillStyle = obj.c ?? (isHovered ? "rgba(255, 255, 255, 0.06)" : "rgba(255, 255, 255, 0.06)");
+    ctx.font = `${fontWeight} ${obj.fontSize ?? getFontSize(obj.w, obj.h)}px Trebuchet MS`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(
-      index.toUpperCase(),
-      obj.x + obj.w / 2,
-      obj.y + obj.h / 2
-    );
+    // ctx.fillText(
+    //   index.toUpperCase(),
+    //   obj.x + obj.w / 2,
+    //   obj.y + obj.h / 2
+    // );
 
   }
   //=================================================================================
@@ -1656,7 +1589,7 @@ canvas.addEventListener("mousemove", (e) => {
   chips.forEach(c => c.isHovered = false);
 
   const chipHovered = chips.find(chip => chip.isInside(mX, mY));
-  if(chipHovered) {
+  if (chipHovered) {
     chipHovered.isHovered = true;
     isHovering = true;
   }
@@ -1745,8 +1678,8 @@ canvas.addEventListener("pointerdown", (e) => {
 });
 canvas.addEventListener("pointerup", (e) => {
   clicked = null;
-  chips.forEach(chip =>  chip.isActive = false);
-  quickTools.forEach(tool =>  tool.isActive = false);
+  chips.forEach(chip => chip.isActive = false);
+  quickTools.forEach(tool => tool.isActive = false);
 });
 
 
