@@ -416,7 +416,7 @@ class BetOptions {
       // bottom-right corner
       ctx.arc(
         x + colW - bRadius,
-        y + h - bRadius,
+        y + h - bRadius + 8,
         bRadius,
         0,
         Math.PI - (Math.PI / 2),
@@ -427,7 +427,7 @@ class BetOptions {
       // bottom-left corner
       ctx.arc(
         x + bRadius,
-        y + h - bRadius,
+        y + h - bRadius + 8,
         bRadius,
         // Math.PI /2,
         Math.PI / 2,
@@ -447,7 +447,7 @@ class BetOptions {
       ctx.closePath();
       ctx.strokeStyle = colors.NEONBLUE;
       ctx.fillStyle = colors.BLUE;
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = 2;
       ctx.stroke();
       // // ctx.fill();
 
@@ -483,7 +483,7 @@ class BetOptions {
       // bottom-left corner
       ctx.arc(
         x - colW + bRadius,
-        y + h - bRadius,
+        y + h - bRadius + 8,
         bRadius,
         Math.PI,
         Math.PI / 2,
@@ -494,7 +494,7 @@ class BetOptions {
       // bottom-right corner
       ctx.arc(
         x  - bRadius,
-        y + h - bRadius,
+        y + h - bRadius + 8,
         bRadius,
         Math.PI - (Math.PI / 2),
         0,
@@ -514,7 +514,7 @@ class BetOptions {
      
       ctx.strokeStyle = colors.NEONRED;
       ctx.fillStyle = colors.RED;
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = 4;
       ctx.stroke();
       // ctx.fill();
     })();
@@ -531,22 +531,24 @@ class BetOptions {
 
       const cx = this.x + containerWidth - (colW + r + gap);  
       const cy = y + 3 + h / 2  ;
+
+      const offsetY = 8;
       ctx.beginPath();
-      ctx.moveTo(this.x + (colW + r + gap), y + 3)
-      // ctx.lineTo(x, y)
+      ctx.moveTo(this.x + (colW + r + gap), y + gap + 2)
       // top-right
       ctx.arc(
-        cx - 4,
+        cx - 2,
         cy,
-        r,
+        r + - 8,
         -Math.PI/2,
         0,
         false
       );
       // bottom-right
       ctx.arc(
-        cx + r - gap -5,
-        y + h - bRadius - 3,
+
+        cx + r - gap - 10,
+        y + h  - 3,
         bRadius,
         0,
         Math.PI - (Math.PI / 2),
@@ -555,8 +557,8 @@ class BetOptions {
      
       // bottom-left
       ctx.arc(
-        x - colW / 2 + gap + 4,
-        y + h - bRadius - 3,
+        x - colW / 2 + gap + 4 + 8,
+        y + h  - 3,
         bRadius,
         // Math.PI /2,
         Math.PI / 2,
@@ -566,9 +568,9 @@ class BetOptions {
 
       // top-left
       ctx.arc(
-        this.x + colW + r + gap + 4,
+       this.x + colW + r + gap + 4,
         cy,
-        r,
+        r + - 8,
         Math.PI,
         -Math.PI / 2,
         false
@@ -578,7 +580,7 @@ class BetOptions {
      
       ctx.strokeStyle = colors.NEONGREEN;
       ctx.fillStyle = colors.GREEN;
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = 4;
       ctx.stroke();
       // ctx.fill();
     })();
