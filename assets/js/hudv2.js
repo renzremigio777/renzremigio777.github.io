@@ -394,7 +394,7 @@ class BetOptions {
     const totalW = this.w - gap * 2;
 
  
-    ctx.font = `900 20px Trebuchet MS`;
+    ctx.font = `900 25px Trebuchet MS`;
     ctx.textAlign = "center"
     ctx.textBaseline = "middle";
     // ============================================
@@ -517,7 +517,7 @@ class BetOptions {
       ctx.stroke();
       // ctx.fill();
       ctx.fillStyle = "#fff"
-      ctx.fillText('TIE', this.w / 2, this.tie.y + this.tie.h * 0.90)
+      ctx.fillText('TIE', this.x + this.w / 2, this.tie.y + this.tie.h * 0.90)
     })();
 
     // // ============================================
@@ -551,7 +551,7 @@ class BetOptions {
         ctx.strokeStyle = sb.outline;
         ctx.lineWidth = 2;
         ctx.stroke();
-        ctx.font = `100 12px Trebuchet MS`;
+        ctx.font = `100 18px Trebuchet MS`;
         ctx.fillStyle = "#ffffff93"
         ctx.fillText(sb.value, x+ w/2, y + h/2)
 
