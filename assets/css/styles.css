@@ -11,6 +11,7 @@
     src: url('../fonts/Evosources.woff2') format('woff2');
 }
 
+
 :root {
   --tc-main: #ffffff;
   --bg-main: #151140;
@@ -23,6 +24,9 @@
   --skew-x5: skewX(-10deg);
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+  }
 body {
   margin: 0;
 
