@@ -459,37 +459,39 @@ class BetOptions {
 
     const colW = this.w * 0.333;
     const sideBetY = this.y + gap / 2;
-    const mainBetY = this.y + this.h * 0.4 + gap * 0.6;
+    const sideBetH = this.h * 0.4 - gap;
+    // const mainBetY = this.y + this.h * 0.4 + gap * 0.6;
+    const mainBetY = sideBetY + (sideBetH* 2) + gap * 2
     ctx.fillStyle = "#8a636328"
     const totalW = this.w - gap * 2;
-    const betStrokeWidth = 0.1
+    const betStrokeWidth = 5
  
     ctx.font = `900 ${getFontSize(this.w * 0.5, this.h * 0.5)}px Trebuchet MS`;
     ctx.textAlign = "center"
     ctx.textBaseline = "middle";
     const blueGradient = [
-      { stop: 0, color: "rgba(100, 100, 245, 0.5)" },
-      { stop: 0.75, color: "rgba(113, 113, 231, 0.5)" },
+      { stop: 0, color: "rgba(100, 100, 245, 0.2)" },
+      { stop: 0.75, color: "rgba(113, 113, 231, 0.2)" },
     ];
     const redGradient = [
-      { stop: 0, color: "rgba(170, 51, 51,  0.5)" },
-      { stop: 0.75, color: "rgba(189, 53, 53,  0.5)" },
+      { stop: 0, color: "rgba(170, 51, 51,  0.2)" },
+      { stop: 0.75, color: "rgba(189, 53, 53,  0.2)" },
     ];
     const greenGradient = [
       { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
-      { stop: 0.75, color: "rgba(83, 151, 117, 0.55)" },
+      { stop: 0.75, color: "rgba(83, 151, 117, 0.2)" },
     ];
     const hBlueGradient = [
       { stop: 0, color: "rgba(100, 100, 245, 0.6)" },
-      { stop: 0.75, color: "rgba(113, 113, 231, 0.58)" },
+      { stop: 0.75, color: "rgba(113, 113, 231, 0.5)" },
     ];
     const hRedGradient = [
       { stop: 0, color: "rgba(170, 51, 51, 0.72)" },
-      { stop: 0.75, color: "rgba(189, 53, 53, 0.53)" },
+      { stop: 0.75, color: "rgba(189, 53, 53, 0.5)" },
     ];
     const hGreenGradient = [
       { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
-      { stop: 0.75, color: "rgba(83, 151, 117, 0.55)" },
+      { stop: 0.75, color: "rgba(83, 151, 117, 0.5)" },
     ];
     // ============================================
     //  PLAYER
@@ -658,7 +660,7 @@ class BetOptions {
       ctx.fillText('TIE', this.x + this.w / 2, labelY)
 
       ctx.fillStyle = colors.NEONGREEN
-      ctx.font = `900 ${getFontSize(this.tie.w*0.8,this.tie.h*0.8)}px Trebuchet MS`;
+      ctx.font = `900 ${getFontSize(this.tie.w*0.5,this.tie.h*0.5)}px Trebuchet MS`;
       const payoutY = labelY - this.tie.h * 0.20;
       ctx.fillText('8:1', this.x + this.w / 2, payoutY)
     })();
@@ -668,12 +670,12 @@ class BetOptions {
     // ============================================
     (() => {
       let sideBets = [
-        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
-        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
         { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient, hbg: hGreenGradient },
         { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient, hbg: hGreenGradient },
+        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
+        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
         { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
-        { row: 1, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
+        { row: 2, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
       ];
 
       const count = sideBets.length;
@@ -681,20 +683,21 @@ class BetOptions {
 
       const totalW = this.w - gap * 2;
       const totalSpacing = spacing * (count - 1);
-      const w = (totalW - totalSpacing) / count;
-      const h = this.h * 0.4 - gap;
 
       let startX = this.x + gap;
 
       sideBets.forEach((sb, index) => {
         const x = startX;
-        const y = sideBetY;
-
+        const y = sb.row === 1 ? sideBetY : sideBetY + sideBetH + gap;
+        let w = (totalW - totalSpacing / 1.6) / 4;
+        if(index <= 1) {
+          w = (totalW - totalSpacing / 4) / 2;
+        }
         ctx.beginPath();
-        ctx.roundRect(x, y, w, h, bRadius);
+        ctx.roundRect(x, y, w, sideBetH, bRadius);
         const _sbAngle = 9 * Math.PI / 180;
-        const _sbCx = x + w / 2, _sbCy = y + h / 2;
-        const _sbHalf = (Math.abs(w * Math.sin(_sbAngle)) + Math.abs(h * Math.cos(_sbAngle))) / 2;
+        const _sbCx = x + w / 2, _sbCy = y + sideBetH / 2;
+        const _sbHalf = (Math.abs(w * Math.sin(_sbAngle)) + Math.abs(sideBetH * Math.cos(_sbAngle))) / 2;
         const sbGrad = ctx.createLinearGradient(
           _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
           _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
@@ -721,7 +724,7 @@ class BetOptions {
           ctx.save();
           ctx.globalAlpha = this._sbT[sb.value];
           ctx.beginPath();
-          ctx.roundRect(x, y, w, h, bRadius);
+          ctx.roundRect(x, y, w, sideBetH, bRadius);
           ctx.fillStyle = sbGradHover;
           ctx.fill();
           ctx.restore();
@@ -729,8 +732,8 @@ class BetOptions {
         // ctx.stroke();
         let isNarrow = w <= 90
         let fs = 12
-        let labelY = y + h * 0.7
-        let payoutY = labelY - h * 0.3
+        let labelY = y + sideBetH * 0.7
+        let payoutY = labelY - sideBetH * 0.3
         // narrow
         if (w <= 80) {
           fs = 11
@@ -747,17 +750,20 @@ class BetOptions {
           
           ctx.fillText(sb.value, x + w / 2, labelY);
         }
-        // ctx.fillText(sb.value, x + w / 2, y + h * 0.4);
+        // ctx.fillText(sb.value, x + w / 2, y + sideBetH * 0.4);
         ctx.font = `900 ${fs * 0.9}px Trebuchet MS`;
         ctx.fillStyle = sb.payoutColor;
         ctx.fillText(sb.payout, x + w / 2, payoutY);
         startX += w + spacing;
-
+        if(index == 1) {
+          startX = this.x + gap
+          startX = this.x + gap
+        }
         this.sideBets.push({
           x,
           y,
           w,
-          h,
+          sideBetH,
           value: sb.value
         });
       });
@@ -1025,9 +1031,9 @@ const colors = {
   STATBLUE: "rgb(74, 134, 247)",
   STATRED: "rgb(252, 61, 61)",
   STATGREEN: " rgb(51, 211, 113)",
-  NEONBLUE: "rgb(161, 193, 253)",
-  NEONRED: "rgb(253, 187, 187)",
-  NEONGREEN: " rgb(199, 250, 201)",
+  NEONBLUE: "rgb(130, 169, 255)",
+  NEONRED: "rgb(253, 120, 120)",
+  NEONGREEN: " rgb(122, 245, 126)",
   BLUE: "rgba(46, 34, 156, 0.5)",
   RED: " rgba(105, 14, 14, 0.5)",
   GREEN: " rgba(30, 97, 33, 0.5)",
@@ -1114,8 +1120,8 @@ function resize() {
   containerWidth = isMobile ? containerAvailableWidth   // full width on phone
     : Math.min(containerAvailableWidth, containerMaxWidth);
   leftGutter = (canvas.width - containerWidth) / 2;
-  videoW = containerWidth;
-  videoH = videoW * 9 / 18;
+  videoH = Math.min(containerWidth * 9 / 18, canvas.height * 0.45);
+  videoW = videoH * 18 / 9;
 
   hudY = videoH + layoutGap * 3;
   hudH = canvas.height - hudY - layoutPadding;
@@ -1238,7 +1244,7 @@ function buildChipController() {
 
   const count = items.length;
 
-  const chipG = -30;
+  const chipG = -15;
   // 1. max size that fits WIDTH
   const radiusByWidth = (chipsContainer.w - (count - 1) * chipG) / (2 * count);
 
@@ -1295,7 +1301,7 @@ function buildBetOptions() {
   betOptions = new BetOptions(
     "player",
     leftGutter,
-    hudY + topH * 0.4 + topH * 0.22,
+    hudY + topH * 0.4 + 5,
     containerWidth,
     topH * 0.5,
   )
@@ -1342,7 +1348,7 @@ function drawUI() {
   //=================================================================================
   //  CARDS - VARIABLES
   //=================================================================================
-  const gap = 2;
+  const gap = 10;
   const aspect = 9 / 14;
   // max allowed space
   const maxCardHeight = topH * 0.25 - 21;
@@ -1392,7 +1398,7 @@ function drawUI() {
 
   const components = {
     video: {
-      x: leftGutter,
+      x: (canvas.width - videoW) / 2,
       y: layoutPadding,
       w: videoW,
       h: videoH,
