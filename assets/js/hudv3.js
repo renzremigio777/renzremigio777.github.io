@@ -1,0 +1,1630 @@
+class HudTopBar {
+  constructor(x, y, w, h, bg) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    // this.bg = bg ?? "#414be2"
+    this.bg = bg
+  }
+  // 🔥 detect click inside rect
+  isInside(mx, my) {
+    return mx >= this.x &&
+      mx <= this.x + this.w &&
+      my >= this.y &&
+      my <= this.y + this.h;
+  }
+  setStatus(value, bg) {
+    this.value = value;
+    this.bg = bg;
+  }
+  draw(ctx) {
+
+    ctx.fillStyle = "#25332b";
+    // ctx.fillRect(this.x, this.y, this.w, this.h);
+
+    ctx.strokeStyle = "rgb(199, 196, 196)";
+    ctx.lineWidth = 0.1;
+    ctx.setLineDash([]);
+    // ctx.strokeRect(this.x, this.y, this.w, this.h);
+
+
+    ctx.textAlign = "start";
+    ctx.textBaseline = "middle";
+
+    //========================================================================
+    // STATS
+    //========================================================================
+    const scale = Math.max(0.01, this.h / 100);
+
+    const statItems = [
+      { type: "text", text: "#47", bg: colors.STATBLUE },
+      { type: "badge", text: "P", bg: colors.STATBLUE },
+      { type: "text", text: "24", bg: colors.STATBLUE },
+      { type: "badge", text: "B", bg: colors.STATRED },
+      { type: "text", text: "17", bg: colors.STATBLUE },
+      { type: "badge", text: "T", bg: colors.STATGREEN },
+      { type: "text", text: "6", bg: colors.STATBLUE },
+      { type: "badge", isTie: true, text: "", bg: colors.STATBLUE },
+      { type: "text", text: "4", bg: colors.STATBLUE },
+      { type: "badge", isTie: true, text: "", bg: colors.STATRED },
+      { type: "text", text: "1", bg: colors.STATRED },
+    ];
+
+    const radius = 16 * scale;
+    const gap = 25 * scale;
+    const fontSize = Math.max(12, 14 * scale);
+
+    let startX = this.x + gap;
+    const centerY = this.y + this.h / 2;
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+
+    statItems.forEach(item => {
+
+      if (item.type === "badge") {
+        ctx.beginPath();
+        ctx.arc(startX + radius, centerY - 0.5, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = item.bg;
+        ctx.lineWidth = 2
+        ctx.stroke();
+        if (item.isTie) {
+          ctx.beginPath();
+          // ctx.moveTo(startX, centerY)
+          // ctx.lineTo(startX + radius * 2 , centerY)
+          // ctx.stroke();
+          const cx = startX + radius;
+          const cy = centerY - 0.5;
+
+          ctx.save();
+
+          ctx.translate(cx, cy);
+          ctx.rotate(-Math.PI / 4); // slant "/"
+
+          // line through center
+          ctx.beginPath();
+          ctx.moveTo(-radius, 0);
+          ctx.lineTo(radius, 0);
+          ctx.stroke();
+
+          ctx.restore();
+        } else {
+          ctx.fillStyle = item.bg;
+          ctx.fill();
+        }
+
+        ctx.fillStyle = "#fff";
+        ctx.font = `900 ${fontSize - 2}px Trebuchet MS`;
+        ctx.textAlign = "center";
+        ctx.fillText(item.text, startX + radius, centerY);
+
+
+
+        startX += radius + gap;
+
+      } else {
+        ctx.fillStyle = "#fff";
+        ctx.font = `900 ${fontSize}px Trebuchet MS`;
+        ctx.textAlign = "left";
+        ctx.fillText(item.text, startX, centerY);
+
+        // measure text width for proper spacing
+        const textWidth = ctx.measureText(item.text).width;
+        startX += textWidth + gap;
+      }
+    });
+
+    //========================================================================
+    // PREDICTION
+    //========================================================================
+    const gapBetweenPills = 20 * scale;
+
+    const pills = [
+      {
+        label: "B",
+        fill: colors.RED,
+        stroke: colors.STATRED
+      },
+      {
+        label: "P",
+        fill: colors.BLUE,
+        stroke: colors.STATBLUE
+      }
+    ];
+    const pillHeight = this.h * 0.5;   // height relative to bar
+    const pillWidth = Math.min(this.w * 0.18, 80);// width relative to bar
+    const pRadius = Math.max(0, pillHeight * 0.25);
+    const endGap = 10;
+    const pillX = this.w - pillWidth - endGap
+
+    pills.forEach((item, i) => {
+      const x = this.x + this.w - (pillWidth * (i + 1)) - (gapBetweenPills * i) - endGap;
+
+      //========================
+      // PILL BACKGROUND
+      //========================
+      ctx.beginPath();
+      ctx.roundRect(
+        x,
+        centerY - pillHeight / 2,
+        pillWidth,
+        pillHeight,
+        Math.max(0, pillHeight / 2)
+      );
+      ctx.fillStyle = item.fill;
+      ctx.strokeStyle = item.stroke;
+      ctx.fill();
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+
+      //========================
+      // LABEL (B / P)
+      //========================
+      ctx.fillStyle = colors.WHITE;
+      ctx.font = `900 ${fontSize - 1}px Trebuchet MS`;
+      ctx.textAlign = "center";
+      ctx.fillText(item.label, x + pillWidth * 0.15, centerY + 1);
+
+      //========================
+      // OUTLINED CIRCLE
+      //========================
+      ctx.beginPath();
+      ctx.arc(x + pillWidth * 0.35, centerY, pRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = item.stroke;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      //========================
+      // FILLED CIRCLE
+      //========================
+      ctx.beginPath();
+      ctx.arc(x + pillWidth * 0.57, centerY, pRadius, 0, Math.PI * 2);
+      ctx.fillStyle = item.stroke;
+      ctx.fill();
+      ctx.stroke();
+
+      //========================
+      // SLASH
+      //========================
+      const cx = x + pillWidth * 0.8;
+      const cy = centerY;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-Math.PI / 4);
+
+      ctx.beginPath();
+      ctx.moveTo(-pRadius, 0);
+      ctx.lineTo(pRadius, 0);
+
+      ctx.strokeStyle = item.stroke;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.restore();
+    });
+
+  }
+}
+class StatusBar {
+  constructor(value, x, y, w, h, bg) {
+    this.value = value;
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    // this.bg = bg ?? "#414be2"
+    this.bg = bg
+    this.show = false
+  }
+  // 🔥 detect click inside rect
+  isInside(mx, my) {
+    return mx >= this.x &&
+      mx <= this.x + this.w &&
+      my >= this.y &&
+      my <= this.y + this.h;
+  }
+  setStatus(value, bg) {
+    this.value = value;
+    this.bg = bg;
+    this.show = true;
+
+    // cancel previous timer
+    if (this._timer) {
+      clearTimeout(this._timer);
+    }
+
+    // start new timer
+    this._timer = setTimeout(() => {
+      this.show = false;
+    }, 1500);
+  }
+  draw(ctx) {
+    if (this.show) {
+      ctx.fillStyle = this.bg ?? "rgba(67, 55, 124, 0.94)";
+      ctx.fillRect(this.x, this.y, this.w, this.h);
+
+      ctx.strokeStyle = "rgb(199, 196, 196)";
+      ctx.lineWidth = 0.1;
+      ctx.setLineDash([]);
+      // ctx.strokeRect(this.x, this.y, this.w, this.h);
+
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `900 ${Math.max(18, getFontSize(this.w * 1.1, this.h * 1.1))}px Trebuchet MS`;
+
+      ctx.fillStyle = colors.WHITE;
+      ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
+    }
+  }
+}
+
+class Chip {
+  constructor(value, x, y, size, bg) {
+    this.value = value;
+    this.x = x;
+    this.y = y;
+    this.size = size;
+
+    this.isHovered = false;
+    this.isActive = false;
+    this.bg = bg ?? null;
+  }
+  get radius() {
+    return this.size / 2; // ✅ single source of truth
+  }
+
+  // 🔥 detect click inside circle
+  isInside(mx, my) {
+    const dx = mx - this.x;
+    const dy = my - this.y;
+    return dx * dx + dy * dy <= this.radius * this.radius;
+  }
+
+  draw(ctx) {
+    const radius = this.radius;
+    const innerR = radius * 0.75;
+    const chipColor = this.isActive ? colors.ACTIVEBG : (this.bg ?? "rgb(255,255,255)");
+    const stripeCount = 9;
+    const stripeArc = (Math.PI * 2 / stripeCount) * 0.4;
+
+    // Base circle
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = chipColor;
+    ctx.fill();
+
+    // Stripes in outer ring
+    for (let i = 0; i < stripeCount; i++) {
+      const startAngle = (i / stripeCount) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, radius, startAngle, startAngle + stripeArc);
+      ctx.arc(this.x, this.y, innerR, startAngle + stripeArc, startAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.49)";
+      ctx.fill();
+    }
+
+    // Inner circle covers stripe middles
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, innerR, 0, Math.PI * 2);
+    ctx.fillStyle = chipColor;
+    ctx.fill();
+
+    // Outer border
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.setLineDash([]);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Inner ring border
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, innerR, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `900 ${Math.max(12, this.size * 0.35)}px Trebuchet MS`;
+
+    const formatter = new Intl.NumberFormat('en', { notation: 'compact' });
+    let formattedValue = this.value > 900 ? formatter.format(this.value) : this.value.toString();
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    ctx.fillStyle = colors.WHITE;
+    ctx.fillText(formattedValue, this.x, this.y);
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+  }
+}
+
+class QuickButton {
+  constructor(value, symbol, x, y, size, bg) {
+    this.value = value;
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.symbol = symbol ?? '☺︎'
+    this.isHovered = false;
+    this.isActive = false;
+    this.bg = bg;
+  }
+  // 🔥 detect click inside rect
+  isInside(mx, my) {
+    return mx >= this.x &&
+      mx <= this.x + this.size &&
+      my >= this.y &&
+      my <= this.y + this.size;
+  }
+  draw(ctx) {
+
+
+    ctx.fillStyle = this.bg;
+    ctx.strokeStyle = "rgb(255, 255, 255)";
+    // ctx.fillRect(this.x, this.y, this.size, this.size);
+
+    if (this.isActive) {
+      ctx.fillStyle = colors.ACTIVEBG;
+      ctx.fillRect(this.x, this.y, this.size, this.size);
+    }
+
+    ctx.lineWidth = 0.1;
+    ctx.setLineDash([]);
+    // ctx.strokeRect(this.x, this.y, this.size, this.size);
+
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `100 ${Math.max(14, this.size / 2)}px Trebuchet MS`;
+
+    ctx.fillStyle = this.isHovered
+      ? "rgba(255, 255, 255, 0.75)"
+      : "rgba(255, 255, 255, 0.29)";
+
+    ctx.fillText(this.symbol, this.x + this.size / 2, this.y + this.size / 2 - 5);
+    ctx.font = `100 ${Math.min(10, this.size / 2)}px Trebuchet MS`;
+    ctx.fillText(this.value.toUpperCase(), this.x + this.size / 2, this.y + this.size - 9);
+  }
+}
+
+class BetOptions {
+  constructor(value, x, y, w, h) {
+    this.value = value;
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+
+    this.hovered = null;
+    this.active = null;
+    this.player = {x: 0, y: 0, w: 0, h: 0}
+    this.banker = {x: 0, y: 0, w: 0, h: 0}
+    this.tie = {x: 0, y: 0, w: 0, h: 0}
+    this._playerT = 0;
+    this._bankerT = 0;
+    this._tieT = 0;
+    this._sbT = {};
+    this.sideBets = [
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+    ]
+  }
+
+  isInside(mx, my, ctx) {
+    // PLAYER (PATH-based)
+    if (this.playerPath && ctx.isPointInPath(this.playerPath, mx, my)) {
+      return { type: "player" };
+    }
+
+    // BANKER (PATH-based)
+    if (this.bankerPath && ctx.isPointInPath(this.bankerPath, mx, my)) {
+      return { type: "banker" };
+    }
+
+    // ✅ TIE (PATH-based)
+    if (this.tiePath && ctx.isPointInPath(this.tiePath, mx, my)) {
+      return { type: "tie" };
+    }
+
+    // SIDEBETS (rect)
+    for (let sb of this.sideBets) {
+      if (this.isRect(mx, my, sb)) {
+        return { type: "sidebet", data: sb };
+      }
+    }
+
+    return null;
+  }
+
+  isRect(mx, my, r) {
+    return mx >= r.x && mx <= r.x + r.w &&
+      my >= r.y && my <= r.y + r.h;
+  }
+  draw(ctx) {
+    const gap = 8;
+    const bRadius = gap * 2
+
+    const colW = this.w * 0.333;
+    const sideBetY = this.y + gap / 2;
+    const sideBetH = this.h * 0.4 - gap;
+    // const mainBetY = this.y + this.h * 0.4 + gap * 0.6;
+    const mainBetY = sideBetY + (sideBetH* 2) + gap * 2
+    ctx.fillStyle = "#8a636328"
+    const totalW = this.w - gap * 2;
+    const betStrokeWidth = 5
+ 
+    ctx.font = `900 ${getFontSize(this.w * 0.5, this.h * 0.5)}px Trebuchet MS`;
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle";
+    const blueGradient = [
+      { stop: 0, color: "rgba(100, 100, 245, 0.2)" },
+      { stop: 0.75, color: "rgba(113, 113, 231, 0.2)" },
+    ];
+    const redGradient = [
+      { stop: 0, color: "rgba(170, 51, 51,  0.2)" },
+      { stop: 0.75, color: "rgba(189, 53, 53,  0.2)" },
+    ];
+    const greenGradient = [
+      { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
+      { stop: 0.75, color: "rgba(83, 151, 117, 0.2)" },
+    ];
+    const hBlueGradient = [
+      { stop: 0, color: "rgba(100, 100, 245, 0.6)" },
+      { stop: 0.75, color: "rgba(113, 113, 231, 0.5)" },
+    ];
+    const hRedGradient = [
+      { stop: 0, color: "rgba(170, 51, 51, 0.72)" },
+      { stop: 0.75, color: "rgba(189, 53, 53, 0.5)" },
+    ];
+    const hGreenGradient = [
+      { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
+      { stop: 0.75, color: "rgba(83, 151, 117, 0.5)" },
+    ];
+    // ============================================
+    //  PLAYER
+    // ============================================
+    (() => {
+      this.player.y = mainBetY;
+      this.player.x = this.x + gap;
+      // this.player.w = this.w + gap;
+      this.player.w = this.w / 2 - gap;
+      this.player.h = this.h * 0.6
+
+      const r = Math.max(0,this.player.h / 2);
+      const cx = this.player.x + colW + r;
+      const cy = this.player.y + this.player.h / 2;
+
+      this.playerPath = new Path2D();
+      const pp = this.playerPath;
+      pp.moveTo(this.player.x + bRadius, this.player.y);
+      pp.lineTo(this.player.x + this.player.w - gap, this.player.y);
+      // concave arc (inward cut)
+      pp.arc(cx, cy, r, Math.PI + (Math.PI / 2), Math.PI, true);
+      // bottom-right corner
+      pp.arc(this.player.x + colW - bRadius, this.player.y + this.player.h, bRadius, 0, Math.PI - (Math.PI / 2), false);
+      // bottom-left corner
+      pp.arc(this.player.x + bRadius, this.player.y + this.player.h, bRadius, Math.PI / 2, Math.PI, false);
+      // top-left corner
+      pp.arc(this.player.x + bRadius, this.player.y + bRadius, bRadius, Math.PI, -Math.PI / 2, false);
+      pp.closePath();
+
+      ctx.strokeStyle = colors.STROKEBLUE;
+      ctx.lineWidth = betStrokeWidth;
+
+      const playerTarget = (this.hovered === "player" || this.active === "player") ? 1 : 0;
+      this._playerT += (playerTarget - this._playerT) * 0.12;
+
+      const playerGradBase = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
+    
+      playerGradBase.addColorStop(blueGradient[0].stop, blueGradient[0].color);
+      playerGradBase.addColorStop(blueGradient[1].stop, blueGradient[1].color);
+      ctx.fillStyle = playerGradBase;
+      ctx.fill(pp);
+
+      if (this._playerT > 0.01) {
+        const playerGradActive = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
+        playerGradActive.addColorStop(blueGradient[0].stop, blueGradient[0].color);
+        playerGradActive.addColorStop(blueGradient[1].stop, blueGradient[1].color);
+        ctx.save();
+        ctx.globalAlpha = this._playerT;
+        ctx.fillStyle = playerGradActive;
+        ctx.fill(pp);
+        ctx.restore();
+      }
+
+      // ctx.stroke(pp);
+      ctx.fillStyle = "#fff"
+      ctx.fillText('PLAYER', this.player.x + this.player.w * 0.33, this.player.y + this.player.h * 0.90)
+    })();
+    // ============================================
+    //  BANKER
+    // ============================================
+    (() => {
+      this.banker.w = this.w / 2 - gap;
+      this.banker.h = this.h * 0.6
+
+      this.banker.x = this.x + containerWidth - gap;
+      this.banker.y = mainBetY;
+
+      const r = Math.max(0, this.banker.h / 2);
+
+      const cx = this.banker.x - colW - r;
+      const cy = this.banker.y + this.banker.h / 2;
+
+      this.bankerPath = new Path2D();
+      const bp = this.bankerPath;
+      bp.moveTo(this.banker.x - bRadius, this.banker.y);
+      bp.lineTo(this.banker.x - this.banker.w, this.banker.y);
+      // concave arc (inward cut)
+      bp.arc(cx, cy, r, Math.PI + (Math.PI / 2), 0, false);
+      // bottom-left corner
+      bp.arc(this.banker.x - colW + bRadius, this.banker.y + this.banker.h, bRadius, Math.PI, Math.PI / 2, true);
+      // bottom-right corner
+      bp.arc(this.banker.x - bRadius, this.banker.y + this.banker.h, bRadius, Math.PI - (Math.PI / 2), 0, true);
+      // top-right corner
+      bp.arc(this.banker.x - bRadius, this.banker.y + bRadius, bRadius, 0, -Math.PI / 2, true);
+      bp.closePath();
+
+      ctx.strokeStyle = colors.STROKERED;
+      ctx.lineWidth = betStrokeWidth;
+      const bankerTarget = (this.hovered === "banker" || this.active === "banker") ? 1 : 0;
+      this._bankerT += (bankerTarget - this._bankerT) * 0.12;
+  
+      const bankerGradBase = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
+      bankerGradBase.addColorStop(redGradient[0].stop, redGradient[0].color);
+      bankerGradBase.addColorStop(redGradient[1].stop, redGradient[1].color);
+      ctx.fillStyle = bankerGradBase;
+      ctx.fill(bp);
+
+      if (this._bankerT > 0.01) {
+        const bankerGradActive = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
+        bankerGradActive.addColorStop(redGradient[0].stop, redGradient[0].color);
+        bankerGradActive.addColorStop(redGradient[1].stop, redGradient[1].color);
+        ctx.save();
+        ctx.globalAlpha = this._bankerT;
+        ctx.fillStyle = bankerGradActive;
+        ctx.fill(bp);
+        ctx.restore();
+      }
+      ctx.fill(bp);
+      // ctx.stroke(bp);
+      ctx.fillStyle = "#fff"
+      ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90);
+    })();
+    // ============================================
+    //  TIE
+    // ============================================
+    (() => {
+      this.tie.x = this.x + (containerWidth - colW) / 2;
+      this.tie.y = mainBetY
+      this.tie.w = colW;
+      this.tie.h = this.h * 0.6
+
+      const r = this.tie.h / 2;
+
+      const cx = this.tie.x + r + bRadius;
+      const cy = this.tie.y + this.tie.h / 2  +5 ;
+      // ctx.roundRect(this.tie.x - (this.tie.w/2) - gap, this.tie.y + gap, this.tie.w, this.tie.h , r)
+      // before drawing
+      this.tiePath = new Path2D();
+
+      const tp = this.tiePath;
+
+      // p.moveTo(this.tie.x + r + bRadius, cy);
+
+      // replace ctx.arc → p.arc
+      tp.arc(this.tie.x + r + bRadius, cy, r, Math.PI, -Math.PI / 2, false);
+      tp.arc(this.tie.x + this.tie.w - r - bRadius, cy, r, -Math.PI / 2, 0, false);
+      tp.arc(this.tie.x + this.tie.w - bRadius, this.tie.y + this.tie.h, bRadius, -Math.PI + (Math.PI / 2), -Math.PI + (Math.PI / 2), false);
+      tp.arc(this.tie.x + colW - bRadius * 2, this.tie.y + this.tie.h, bRadius, 0, Math.PI - Math.PI / 2, false);
+      tp.arc(this.tie.x + bRadius + bRadius, this.tie.y + this.tie.h, bRadius, Math.PI / 2, Math.PI, false);
+
+      tp.closePath();
+      ctx.strokeStyle = colors.STROKEGREEN;
+      ctx.lineWidth = betStrokeWidth;
+      const tieTarget = (this.hovered === "tie" || this.active === "tie") ? 1 : 0;
+      this._tieT += (tieTarget - this._tieT) * 0.12;
+      
+      const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
+      tieGradBase.addColorStop(greenGradient[0].stop, greenGradient[0].color);
+      tieGradBase.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+      ctx.fillStyle = tieGradBase;
+      ctx.fill(tp);
+
+      if (this._tieT > 0.01) {
+        const tieGradActive = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
+        tieGradActive.addColorStop(greenGradient[0].stop, greenGradient[0].color);
+        tieGradActive.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+        ctx.save();
+        ctx.globalAlpha = this._tieT;
+        ctx.fillStyle = tieGradActive;
+        ctx.fill(tp);
+        ctx.restore();
+      }
+      // ctx.stroke(tp);
+      ctx.fillStyle = "#fff"
+      const labelY = this.tie.y + this.tie.h * 0.90;
+      ctx.fillText('TIE', this.x + this.w / 2, labelY)
+
+      ctx.fillStyle = colors.NEONGREEN
+      ctx.font = `900 ${getFontSize(this.tie.w*0.5,this.tie.h*0.5)}px Trebuchet MS`;
+      const payoutY = labelY - this.tie.h * 0.20;
+      ctx.fillText('8:1', this.x + this.w / 2, payoutY)
+    })();
+
+    // ============================================
+    //  SIDEBETS
+    // ============================================
+    (() => {
+      this.sideBets = [];
+      let sideBets = [
+        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient, hbg: hGreenGradient },
+        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient, hbg: hGreenGradient },
+        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
+        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
+        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
+        { row: 2, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
+      ];
+
+      const count = sideBets.length;
+      const spacing = gap;
+
+      const totalW = this.w - gap * 2;
+      const totalSpacing = spacing * (count - 1);
+
+      let startX = this.x + gap;
+
+      sideBets.forEach((sb, index) => {
+        const x = startX;
+        const y = sb.row === 1 ? sideBetY : sideBetY + sideBetH + gap;
+        let w = (totalW - totalSpacing / 1.6) / 4;
+        if(index <= 1) {
+          w = (totalW - totalSpacing / 4) / 2;
+        }
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, sideBetH, bRadius);
+        const _sbAngle = 9 * Math.PI / 180;
+        const _sbCx = x + w / 2, _sbCy = y + sideBetH / 2;
+        const _sbHalf = (Math.abs(w * Math.sin(_sbAngle)) + Math.abs(sideBetH * Math.cos(_sbAngle))) / 2;
+        const sbGrad = ctx.createLinearGradient(
+          _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
+          _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
+        );
+        sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
+        sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
+
+        const sbTarget = (this.hovered === sb.value || this.active === sb.value) ? 1 : 0;
+        if (this._sbT[sb.value] === undefined) this._sbT[sb.value] = 0;
+        this._sbT[sb.value] += (sbTarget - this._sbT[sb.value]) * 0.12;
+
+        ctx.fillStyle = sbGrad;
+        ctx.strokeStyle = sb.outline;
+        ctx.lineWidth = betStrokeWidth;
+        ctx.fill();
+
+        if (this._sbT[sb.value] > 0.01) {
+          const sbGradHover = ctx.createLinearGradient(
+            _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
+            _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
+          );
+          sbGradHover.addColorStop(sb.bg[0].stop, sb.bg[0].color);
+          sbGradHover.addColorStop(sb.bg[1].stop, sb.bg[1].color);
+          ctx.save();
+          ctx.globalAlpha = this._sbT[sb.value];
+          ctx.beginPath();
+          ctx.roundRect(x, y, w, sideBetH, bRadius);
+          ctx.fillStyle = sbGradHover;
+          ctx.fill();
+          ctx.restore();
+        }
+        // ctx.stroke();
+        let isNarrow = w <= 90
+        let fs = 12
+        let labelY = y + sideBetH * 0.7
+        let payoutY = labelY - sideBetH * 0.3
+        // narrow
+        if (w <= 80) {
+          fs = 11
+        }
+        
+        ctx.font = `900 ${fs}px Trebuchet MS`;
+        ctx.fillStyle = "#ffffffcc";
+        const words = sb.value.split(" ");
+        // if (words.length === 2 && isNarrow) {
+        if ([2,3].includes(index) && isNarrow) {
+          ctx.fillText(words[0], x + w / 2, labelY - fs * 0.5);
+          ctx.fillText(words[1], x + w / 2, labelY + fs * 0.5);
+        } else {
+          
+          ctx.fillText(sb.value, x + w / 2, labelY);
+        }
+        // ctx.fillText(sb.value, x + w / 2, y + sideBetH * 0.4);
+        ctx.font = `900 ${fs * 0.9}px Trebuchet MS`;
+        ctx.fillStyle = sb.payoutColor;
+        ctx.fillText(sb.payout, x + w / 2, payoutY);
+        startX += w + spacing;
+        if(index == 1) {
+          startX = this.x + gap
+          startX = this.x + gap
+        }
+        this.sideBets.push({
+          x,
+          y,
+          w,
+          h: sideBetH,
+          value: sb.value
+        });
+      });
+    })();
+    //
+
+  }
+}
+
+
+const values = ["P", "B", "T"];
+const resultData = []
+
+for (let i = 0; i < 15; i++) {
+  const randomValue = values[Math.floor(Math.random() * values.length)];
+  resultData.push({ value: randomValue });
+}
+class ScoreBoard {
+  constructor(type, x, y, w, h, rows) {
+    this.type = type;
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.rows = rows;
+
+    this.cellH = Math.max(1, this.h / this.rows);
+    this.cellW = this.cellH;
+
+    // this.cols = Math.floor(this.w / this.cellW);
+    this.cols = Math.floor(this.w / this.cellW);
+
+    // this.w = this.cols * this.cellW;
+    // 👇 shrink width to fit perfectly
+    this.gridWidth = this.cols * this.cellW + 1;
+    this.offsetX = (this.w - this.gridWidth) / 2;
+
+    this.smallRoadState = { col: 0, row: 0 };
+    this.smallRoadData = []; // 👈 ADD THIS
+  }
+  buildSmallRoad() {
+    const state = { col: 0, row: 0 };
+    const colHeight = 6;
+
+    this.smallRoadData = [];
+
+    for (let i = 0; i < resultData.length; i++) {
+      const result = resultData[i];
+      const prev = resultData[i - 1]?.value;
+      const changed = prev && prev !== result.value;
+
+      this.smallRoadData.push({
+        value: result.value,
+        col: state.col,
+        row: state.row
+      });
+
+      if (changed || state.row >= colHeight - 1) {
+        state.col++;
+        state.row = 0;
+      } else {
+        state.row++;
+      }
+    }
+  }
+  draw(ctx) {
+    const startX = this.x + this.offsetX;
+
+    ctx.fillStyle = "#11101463";
+    ctx.fillRect(startX, this.y, this.gridWidth, this.h);
+    ctx.strokeStyle = "rgba(213, 196, 253, 0.8)";
+
+    ctx.beginPath();
+    // horizontal
+    for (let i = 1; i < this.rows; i++) {
+      const y = Math.round(this.y + i * this.cellH) + 0.5;
+      ctx.moveTo(startX, y);
+      ctx.lineTo(startX + this.gridWidth, y);
+    }
+
+    // vertical
+    for (let i = 1; i < this.cols; i++) {
+      const x = Math.round(startX + i * this.cellW) + 0.5;
+      ctx.moveTo(x, this.y);
+      ctx.lineTo(x, this.y + this.h);
+    }
+    ctx.lineWidth = 0.1;
+    ctx.stroke();
+
+
+    if (this.type === "bigroad") {
+      const y = Math.round(this.y + 6 * this.cellH) + 0.5;
+
+
+      ctx.beginPath();
+      ctx.moveTo(startX, y);
+      ctx.lineTo(startX + this.gridWidth, y);
+
+      ctx.strokeStyle = "rgba(179, 186, 247, 0.6)";
+      ctx.lineWidth = 0.2;
+      ctx.stroke();
+
+
+      const endY = this.y + this.h;
+      const thirds = 3; // number of sections
+
+      for (let i = 1; i < thirds; i++) {
+        const colIndex = Math.floor(this.cols * i / thirds);
+        const x = Math.round(startX + colIndex * this.cellW) + 0.5;
+
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, endY);
+
+        ctx.stroke();
+      }
+
+    }
+
+    //================================================
+    // DATA
+    //================================================
+    const row = 0;
+    const col = 0;
+
+    const cx = startX + col * this.cellW + this.cellW / 2;
+    const cy = this.y + row * this.cellH + this.cellH / 2;
+
+    const radius = Math.max(0, this.cellW * 0.4);
+
+    let currentY = cy;
+    let currentX = cx;
+    let smallRoadX = 0;
+    resultData.forEach((result, index) => {
+      const color = result.value === "P" ? colors.STATBLUE :
+        result.value === "B" ? colors.STATRED :
+          result.value === "T" ? colors.STATGREEN : "#0000";
+      switch (this.type) {
+        case "beadroad":
+          // circle
+          ctx.beginPath();
+          ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
+          ctx.fillStyle = color;
+          ctx.strokeStyle = color;
+          ctx.fill();
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          // text
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          ctx.fillStyle = colors.WHITE;
+          const fontSize = radius * 1.4; // scale with circle
+          ctx.font = `900 ${fontSize}px Trebuchet MS`;
+          ctx.fillText(result.value, currentX, currentY); // ✅ centered
+
+          // SHIFT ROW
+          currentY += this.cellH + 0.25
+
+          // SHIFT COLUMN
+          if (index % 6 === 5) {
+            currentY = cy;
+            currentX += this.cellW + 0.25
+          }
+          break;
+        case "bigroad":
+
+          (() => {
+            // SHIFT COLUMN
+            const previousValue = resultData[index - 1]?.value ?? null
+            if (index % 6 === 5 || (previousValue && previousValue !== result.value)) {
+              currentY = cy;
+              currentX += this.cellW
+            }
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = result.value === "P" ? colors.STATBLUE :
+              result.value === "B" ? colors.STATRED :
+                result.value === "T" ? colors.STATGREEN : "#0000";
+            ctx.lineWidth = 1.5
+
+            ctx.stroke();
+
+            // SHIFT ROW
+            currentY += this.cellH + 0.25;
+          })();
+
+          const y = Math.round(this.y + 6 * this.cellH) + 0.7;
+          const sRad = Math.min(this.cellW, this.cellH) * 0.125;
+          // SMALL ROAD
+
+          (() => {
+            const state = this.smallRoadData[index];
+            if (!state) return;
+
+            const baseX = startX;
+            const baseY = y;
+
+            // 🔥 each 2 rows = 1 cell
+            const cellRow = Math.floor(state.row / 2);
+            const halfOffset = state.row % 2; // 0 = top, 1 = bottom
+
+            const cx =
+              baseX +
+              state.col * this.cellW * 0.504 +
+              this.cellW * 0.25;
+
+            const cy =
+              baseY +
+              cellRow * this.cellH +
+              (halfOffset * (this.cellH * 0.4)) +
+              (this.cellH * 0.25);
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, sRad, 0, Math.PI * 2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          })();
+          // IG EYE
+          // (() => {
+          //   const colIndex = Math.floor(this.cols * 1 / 3);
+          //   const x = Math.round(startX + colIndex * this.cellW) + 0.5;
+
+          //   ctx.beginPath();
+          //   ctx.arc(x, y, sRad, 0, Math.PI * 2);
+          //   ctx.fillStyle = color;
+          //   ctx.fill();
+          // })();
+
+          // // COCKROACH
+          // (() => {
+          //   const colIndex = Math.floor(this.cols * 2 / 3);
+          //   const x = Math.round(startX + colIndex * this.cellW) + 0.5;
+
+          //   ctx.beginPath();
+          //   ctx.arc(x, y, sRad, 0, Math.PI * 2);
+          //   ctx.fillStyle = colors.NEONBLUE;
+          //   ctx.fill();
+          // })();
+
+
+          break;
+      }
+    });
+  }
+}
+
+//===========================
+//  SETUP CANVAS
+//===========================
+
+const canvas = document.querySelector('canvas')
+const ctx = canvas.getContext('2d')
+const scale = 1;
+let hovered = null;
+let clicked = null;
+
+const colors = {
+  ACTIVEBG: "rgba(15, 14, 14,0.5)",
+  STROKEBLUE: "#afadff25",
+  STROKERED: "#ff474759",
+  STROKEGREEN: "#4cc96160",
+  STATBLUE: "rgb(74, 134, 247)",
+  STATRED: "rgb(252, 61, 61)",
+  STATGREEN: " rgb(51, 211, 113)",
+  NEONBLUE: "rgb(130, 169, 255)",
+  NEONRED: "rgb(253, 120, 120)",
+  NEONGREEN: " rgb(122, 245, 126)",
+  BLUE: "rgba(46, 34, 156, 0.5)",
+  RED: " rgba(105, 14, 14, 0.5)",
+  GREEN: " rgba(30, 97, 33, 0.5)",
+  HOVERBLUE: "rgba(46, 34, 156, 0.53)",
+  HOVERRED: " rgb(105, 14, 14)",
+  HOVERGREEN: " rgb(30, 97, 33)",
+  ACTIVEBLUE: "rgb(76, 57, 252)",
+  ACTIVERED: " rgba(197, 54, 54, 1)",
+  ACTIVEGREEN: " rgb(59, 161, 65)",
+  WHITE: " rgba(255, 255, 255, 1)",
+  TRANSPARENT: " rgba(255, 255, 255, 0)",
+}
+
+
+//=================================================================================
+//  COMPONENTS
+//=================================================================================
+const buttons = [];
+const chips = [];
+const quickTools = [];
+let hudTopBar = null;
+let statusBar = null;
+let beadRoad = null;
+let bigRoad = null;
+let betOptions = null;
+let bankerCell = null;
+
+//======================================
+//  DRAW CONTAINER
+//======================================
+const layoutPadding = 0;
+const layoutGap = 0;
+let containerAvailableWidth = 0;
+let containerMaxWidth = 980;
+let containerWidth = containerMaxWidth;
+let leftGutter = 0;
+
+
+//======================================
+//  ROOT LAYOUT RATIO
+//======================================
+let videoW = 0;
+let videoH = 0;
+
+let hudY = 0;
+let hudH = 0;
+//======================================
+//  HUD LAYOUT RATIO
+//======================================
+let topRatio = 0;
+let bottomRatio = 0;
+
+// let topH = 0;
+// let bottomH = 0;
+let topH = 0;
+let bottomH = 0;
+//=================================================================================
+// UTILITIES
+//=================================================================================
+function resize() {
+  // const dpr = window.devicePixelRatio || 1;
+  const dpr = 1;
+  const vw = window.visualViewport?.width || window.innerWidth;
+  const vh = window.visualViewport?.height || window.innerHeight;
+
+  canvas.width = vw * dpr;
+  canvas.height = vh * dpr;
+
+  canvas.style.width = vw + "px";
+  canvas.style.height = vh + "px";
+
+  // ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // ctx.scale(dpr, dpr);
+
+  //=========================================
+  //  MOBILE BREAKPOINT
+  //=========================================
+  const isMobile = canvas.width <= 980;
+  const spacing = 10;
+  const buttonGap = spacing / 2;
+
+  containerAvailableWidth = canvas.width - layoutPadding * 2;
+  containerMaxWidth = 980;
+  containerWidth = isMobile ? containerAvailableWidth   // full width on phone
+    : Math.min(containerAvailableWidth, containerMaxWidth);
+  leftGutter = (canvas.width - containerWidth) / 2;
+  videoH = Math.min(containerWidth * 9 / 18, canvas.height * 0.45);
+  videoW = videoH * 18 / 9;
+
+  hudY = videoH + layoutGap * 3;
+  hudH = canvas.height - hudY - layoutPadding;
+
+  topRatio = 0.7;   // 70%
+  bottomRatio = 0.3; // 30%
+
+  topH = hudH * topRatio - layoutGap / 1;
+  bottomH = hudH * bottomRatio - layoutGap / 2;
+
+}
+
+function getFontSize(width, height) {
+  const base = Math.min(width, height);
+
+  // safe scaling factor (tune this)
+  return Math.max(15, Math.floor(base * 0.20));
+}
+function buildStatusBar() {
+  let topBarContainer = {
+    x: leftGutter,
+    y: hudY,
+    w: containerWidth,
+    h: topH * 0.1,
+  };
+
+  statusBar = new StatusBar(
+    'PLACE YOUR BET',
+    topBarContainer.x,
+    topBarContainer.y,
+    topBarContainer.w,
+    topBarContainer.h
+  );
+}
+function buildHudTopBar() {
+  let topBarContainer = {
+    x: leftGutter,
+    y: hudY,
+    w: containerWidth,
+    h: topH * 0.1,
+  };
+
+  hudTopBar = new HudTopBar(
+    topBarContainer.x,
+    topBarContainer.y,
+    topBarContainer.w,
+    topBarContainer.h
+  );
+}
+
+function buildScoreBoard() {
+  // roadMapGrid = new ScoreBoard(
+  //   leftGutter ,
+  //   hudY + topH * 1.04 ,
+  //   containerWidth ,
+  //   bottomH - 15,
+  //   rows,
+  //   colums
+  // );
+  const startX = (canvas.width - containerWidth) * 0.5;
+  beadRoad = new ScoreBoard(
+    'beadroad',
+    startX,
+    hudY + topH * 0.1,
+    containerWidth * 0.5,
+    topH * 0.3,
+    6
+  );
+
+  bigRoad = new ScoreBoard(
+    'bigroad',
+    startX + (containerWidth * 0.5),
+    hudY + topH * 0.1,
+    containerWidth * 0.5,
+    topH * 0.3,
+    9
+  );
+
+}
+
+function buildButtons(components) {
+  buttons.length = 0;
+  for (const [key, obj] of Object.entries(components)) {
+    if (obj.isButton) {
+      buttons.push({
+        id: key,
+        x: obj.x,
+        y: obj.y,
+        w: obj.w,
+        h: obj.h,
+        bg: obj.bg,
+        hoverBg: obj.hoverBg,
+        activeBg: obj.activeBg,
+      });
+    }
+  }
+}
+function buildChipController() {
+  const chipsContainer =
+  {
+    id: "chips",
+    x: leftGutter,
+    y: hudY + topH * 1.25,
+    w: containerWidth,
+    h: bottomH / 3,
+  };
+
+  const items = [
+    { type: "chip", value: 100, bg: "rgb(110, 124, 136)" },
+    { type: "chip", value: 200, bg: "rgb(53, 119, 189)" },
+    { type: "chip", value: 500, bg: "rgb(28, 167, 60)" },
+    { type: "chip", value: 1000, bg: "rgb(206, 160, 22)" },
+    { type: "chip", value: 2000, bg: "rgb(90, 151, 21)" },
+    { type: "chip", value: 5000, bg: "rgb(204, 46, 62)" },
+
+    { type: "tool", value: "undo", bg: "rgba(85, 85, 85, 1)" },
+    { type: "tool", value: "rebet", bg: "rgba(85, 85, 85, 1)" },
+    { type: "tool", value: "cancel", bg: "rgba(85, 85, 85, 1)" },
+  ];
+
+  const count = items.length;
+
+  const chipG = -15;
+  // 1. max size that fits WIDTH
+  const radiusByWidth = (chipsContainer.w - (count - 1) * chipG) / (2 * count);
+
+  // 2. max size that fits HEIGHT
+  const radiusByHeight = chipsContainer.h;
+
+  // 3. final radius (must satisfy both)
+  const chipR = Math.min(radiusByWidth, radiusByHeight);
+  const chipD = chipR * 2;
+
+  // total width of all chips
+  const chipTotalW = count * chipD + (count - 1) * chipG;
+
+  // ✅ correct starting X (left edge of centered group)
+  let startX =
+    chipsContainer.x + (chipsContainer.w - chipTotalW) / 2;
+
+  // ✅ vertical center inside container
+  const centerY = chipsContainer.y + chipsContainer.h / 2;
+
+  chips.length = 0;
+  quickTools.length = 0;
+  items.forEach((item, index) => {
+    const centerX = startX + chipR;
+
+    if (item.type === "chip") {
+      const chip = new Chip(item.value, centerX, centerY, chipR, item.bg);
+      chips.push(chip);
+    }
+
+    if (item.type === "tool") {
+
+      const symbol =
+        item.value === "undo" ? "↺" :
+          item.value === "rebet" ? "↻" :
+            "×";
+
+      const btn = new QuickButton(
+        item.value,
+        symbol,
+        centerX - chipR / 2,   // ✅ center → top-left ONLY
+        centerY - chipR / 2,   // ✅ same vertical alignment
+        chipR,              // ✅ use diameter, not radius
+        item.bg
+      );
+
+      quickTools.push(btn);
+    }
+
+    startX += chipD + chipG + (index === 5 ? 8 : 0);
+  });
+}
+function buildBetOptions() {
+  betOptions = new BetOptions(
+    "player",
+    leftGutter,
+    hudY + topH * 0.4 + 5,
+    containerWidth,
+    topH * 0.5,
+  )
+  console.log(betOptions)
+}
+
+
+
+
+
+//======================================================
+// VIDEO
+//======================================================
+const video = document.createElement("video");
+function initVideo() {
+
+  video.src = "https://www.w3schools.com/tags/movie.mp4";
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true; // REQUIRED for autoplay on mobile
+  video.playsInline = true; // IMPORTANT for iOS Safari
+
+  video.play();
+}
+
+
+function drawVideo(ctx, video, x, y, w, h) {
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+
+  const scale = Math.min(w / vw, h / vh);
+
+  const dw = vw * scale;
+  const dh = vh * scale;
+
+  const dx = x + (w - dw) / 2;
+  const dy = y + (h - dh) / 2;
+
+  ctx.drawImage(video, dx, dy, dw, dh);
+}
+
+function drawUI() {
+
+  //=================================================================================
+  //  CARDS - VARIABLES
+  //=================================================================================
+  const gap = 10;
+  const aspect = 9 / 14;
+  // max allowed space
+  const maxCardHeight = topH * 0.25 - 21;
+  const maxCardWidth = containerWidth / 8; // adjust depending on how tight you want components
+
+  // derive safe height from width constraint
+  const widthBasedHeight = maxCardWidth / aspect;
+
+  // pick the smaller so it always fits screen
+  const cardHeight = Math.min(maxCardHeight, widthBasedHeight);
+  const cardWidth = cardHeight * aspect;
+
+  // 3 cards per group
+  const groupWidth = (cardWidth * 2) + cardHeight + (gap * 4);
+  const resultBarY = hudY + topH * 0.4;
+  const resultBarH = topH * 0.22;
+  const cardStartY = resultBarY + (resultBarH - cardHeight);
+
+  const betRow1Y = cardStartY + resultBarH;
+  const betRow1H = topH * 0.25;
+  const betRow2Y = betRow1Y + betRow1H;
+  const betRow2H = topH * 0.15;
+  const betRow3Y = betRow2Y + betRow2H;
+  const betRow3H = betRow2H
+
+  const chipRowY = hudY + topH * 0.90;
+
+  // center reference
+  const midX = canvas.width / 2;
+
+  // start positions (left group ends at center gap)
+
+  const centerGap = 10;
+  const leftStartX = midX - centerGap / 2 - groupWidth;
+
+
+  const p1x = leftStartX + (cardWidth) + (gap * 3);
+  const p2x = leftStartX + (cardWidth * 2) + (gap * 4);
+  const p3x = leftStartX
+
+  const mirror = (x) => midX + (midX - (x + cardWidth));
+
+  const b1x = mirror(p1x);
+  const b2x = mirror(p2x);
+  const b3x = mirror(p3x);
+
+
+  const components = {
+    video: {
+      x: (canvas.width - videoW) / 2,
+      y: layoutPadding,
+      w: videoW,
+      h: videoH,
+      bg: "rgba(0, 0, 0, 1)",
+      isVideo: true
+    },
+  };
+
+
+  buildButtons(components);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgb(39, 32, 66)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const hudShadow = ctx.createLinearGradient(0, hudY, 0, canvas.height);
+
+  hudShadow.addColorStop(0, "rgba(0, 0, 0, 0.5)");
+  hudShadow.addColorStop(1, "rgba(0, 0, 0, 0.9)");
+  ctx.fillStyle = hudShadow;
+  // ctx.fillRect(0, 0, canvas.width, canvas.height);
+  //=================================================================================
+  //  DRAW HUD TOP BAR
+  //=================================================================================
+  hudTopBar.draw(ctx)
+  //=================================================================================
+  //  DRAW SCOREBOARD
+  //=================================================================================
+  beadRoad.draw(ctx)
+  bigRoad.draw(ctx)
+  //=================================================================================
+  //  DRAW BET OPTIONS
+  //=================================================================================
+  betOptions.draw(ctx)
+  //=================================================================================
+  //  CHIPS CONTROLLER
+  //=================================================================================
+  chips.forEach(chip => chip.draw(ctx));
+  quickTools.forEach(chip => chip.draw(ctx));
+
+  //=================================================================================
+  //  VIDEO
+  //=================================================================================
+
+  const v = components.video;
+
+  if (video.readyState >= 2) {
+    ctx.fillStyle = "rgba(15, 15, 15, 0.39)";
+    ctx.fillRect(v.x, v.y, v.w, v.h);
+    drawVideo(ctx, video, v.x, v.y, v.w, v.h);
+  }
+
+  for (const [index, obj] of Object.entries(components)) {
+    //=====================================================
+    // BORDER
+    //=====================================================
+    if (obj.border) {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.18)"
+      ctx.strokeStyle = obj.border;
+      ctx.setLineDash([5, 5]); // 5px line, 5px gap
+      // ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+    }
+    else {
+      ctx.setLineDash([]); // reset
+    }
+
+    //===================================
+    // FONT WEIGHT
+    //===================================
+    let fontWeight = obj.fontWeight ?? '100'
+
+
+    //===================================
+    // BUTTON STATE
+    //===================================
+    let bg = obj.bg ?? "rgb(19, 17, 17)";
+    const isClicked = index === clicked;
+    const isHovered = index === hovered;
+
+    if (isClicked) {
+      bg = colors.ACTIVEBG;
+      ctx.fillStyle = bg;
+      ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+    } else if (isHovered) {
+
+    }
+
+    if (obj.bg) {
+      // ctx.fillStyle = bg;
+      // ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+    }
+
+    ctx.fillStyle = obj.c ?? (isHovered ? "rgba(255, 255, 255, 0.06)" : "rgba(255, 255, 255, 0.06)");
+    ctx.font = `${fontWeight} ${obj.fontSize ?? getFontSize(obj.w, obj.h)}px Trebuchet MS`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    // ctx.fillText(
+    //   index.toUpperCase(),
+    //   obj.x + obj.w / 2,
+    //   obj.y + obj.h / 2
+    // );
+
+  }
+  //=================================================================================
+  //  DRAW STATUS BAR
+  //=================================================================================
+  statusBar.draw(ctx)
+
+}
+
+
+
+
+//===========================================================================/
+// EVENT LISTENERS
+//===========================================================================/
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+
+  const mX = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const mY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+  let isHovering = false;
+
+  // =========================
+  // CHIPS
+  // =========================
+  chips.forEach(c => c.isHovered = false);
+
+  const chipHovered = chips.find(chip => chip.isInside(mX, mY));
+  if (chipHovered) {
+    chipHovered.isHovered = true;
+    isHovering = true;
+  }
+  // =========================
+  // QUICK TOOLS
+  // =========================
+  quickTools.forEach(b => b.isHovered = false);
+  const toolHovered = quickTools.find(tool => tool.isInside(mX, mY));
+  if (toolHovered) {
+    toolHovered.isHovered = true;
+    isHovering = true;
+  }
+
+  // =========================
+  // BET OPIONS
+  // =========================
+  const betHovered = betOptions.isInside(mX, mY, ctx);
+  if (betHovered) {
+    betOptions.hovered = betHovered.type === "sidebet" ? betHovered.data.value : betHovered.type;
+    isHovering = true;
+  } else {
+    betOptions.hovered = null;
+  }
+
+  canvas.style.cursor = isHovering ? "pointer" : "default";
+});
+canvas.addEventListener("pointerdown", (e) => {
+  const rect = canvas.getBoundingClientRect();
+
+  const mX = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const mY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+  //=========================
+  // CHIPS (circle hit test)
+  //=========================
+  const chipFound = chips.find(chip => chip.isInside(mX, mY));
+
+  if (chipFound) {
+    chipFound.isActive = !chipFound.isActive;
+    console.log(
+      "%c$ " + chipFound.value,
+      "background-color: #222; color: #ac9b02; padding: 0.5rem 1rem;"
+    );
+
+    statusBar.setStatus(`You pressed $${chipFound.value}`)
+    return;
+  }
+  const toolFound = quickTools.find(tool => tool.isInside(mX, mY));
+
+  if (toolFound) {
+    toolFound.isActive = !toolFound.isActive;
+    console.log(
+      "%c" + toolFound.value,
+      "background-color: #222; color: #ffffff; padding: 0.5rem 1rem;"
+    );
+    statusBar.setStatus(`You pressed ${toolFound.value.toUpperCase()}`)
+    return;
+  }
+
+  const betTouched = betOptions.isInside(mX, mY, ctx);
+  if (betTouched) {
+    betOptions.active = betTouched.type === "sidebet" ? betTouched.data.value : betTouched.type;
+    statusBar.setStatus(`You pressed ${betOptions.active.toUpperCase()}`)
+  } 
+  
+});
+canvas.addEventListener("pointerup", (e) => {
+  clicked = null;
+  chips.forEach(chip => chip.isActive = false);
+  quickTools.forEach(tool => tool.isActive = false);
+  // betOptions.hovered = null;
+  // betOptions.active = null;
+});
+
+
+
+//===========================================================================/
+// STARTING POINT
+//===========================================================================/
+function loop() {
+  drawUI();
+  requestAnimationFrame(loop);
+}
+
+initVideo();
+
+function main() {
+  resize();
+  buildBetOptions();
+  buildChipController();
+  buildStatusBar();
+  buildScoreBoard();
+  buildHudTopBar();
+  bigRoad.buildSmallRoad();
+}
+main();
+window.addEventListener("resize", main);
+
+loop();
