@@ -53,7 +53,7 @@ class HudTopBar {
 
     const radius = 16 * scale;
     const gap = 25 * scale;
-    const fontSize = Math.max(12, 14 * scale);
+    const fontSize = Math.max(12, 14)* dpr;
 
     let startX = this.x + gap;
     const centerY = this.y + this.h / 2;
@@ -67,7 +67,7 @@ class HudTopBar {
         ctx.beginPath();
         ctx.arc(startX + radius, centerY - 0.5, radius, 0, Math.PI * 2);
         ctx.strokeStyle = item.bg;
-        ctx.lineWidth = 2
+        ctx.lineWidth = 2* dpr
         ctx.stroke();
         if (item.isTie) {
           ctx.beginPath();
@@ -133,7 +133,7 @@ class HudTopBar {
       }
     ];
     const pillHeight = this.h * 0.5;   // height relative to bar
-    const pillWidth = Math.min(this.w * 0.18, 80);// width relative to bar
+    const pillWidth = Math.min(this.w * 0.18, 70)* dpr;// width relative to bar
     const pRadius = Math.max(0, pillHeight * 0.25);
     const endGap = 10;
     const pillX = this.w - pillWidth - endGap
@@ -155,7 +155,7 @@ class HudTopBar {
       ctx.fillStyle = item.fill;
       ctx.strokeStyle = item.stroke;
       ctx.fill();
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = 1* dpr;
       ctx.stroke();
 
       //========================
@@ -250,7 +250,7 @@ class StatusBar {
       ctx.font = `900 ${Math.max(18, getFontSize(this.w * 1.1, this.h * 1.1))}px Trebuchet MS`;
 
       ctx.fillStyle = "rgb(255, 255, 255)";
-      ctx.shadowColor = "#443723"
+      ctx.shadowColor = "#50432f"
       ctx.shadowBlur = 10;
       ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
       ctx.restore();
@@ -281,7 +281,7 @@ class Chip {
   }
 
   draw(ctx) {
-    const radius = this.radius;
+    const radius = this.radius + (this.radius * dpr) * 0.25;
     const innerR = radius * 0.75;
     const chipColor = this.isActive ? colors.ACTIVEBG : (this.bg ?? "rgb(255,255,255)");
     const stripeCount = 9;
@@ -327,7 +327,7 @@ class Chip {
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `900 ${Math.max(12, this.size * 0.35)}px Trebuchet MS`;
+    ctx.font = `900 ${Math.max(13, this.size * 0.20) * dpr}px Trebuchet MS`;
 
     const formatter = new Intl.NumberFormat('en', { notation: 'compact' });
     let formattedValue = this.value > 900 ? formatter.format(this.value) : this.value.toString();
@@ -388,10 +388,14 @@ class QuickButton {
       : "rgba(255, 255, 255, 0.29)";
 
     ctx.fillText(this.symbol, this.x + this.size / 2, this.y + this.size / 2 - 5);
-    ctx.font = `100 ${Math.min(10, this.size / 2)}px Trebuchet MS`;
+    ctx.font = `100 ${Math.min(10, this.size / 2) * dpr}px Trebuchet MS`;
     ctx.fillText(this.value.toUpperCase(), this.x + this.size / 2, this.y + this.size - 9);
   }
 }
+
+const BET_BLUE  = [{ stop: 0, color: "rgba(100, 100, 245, 0.2)" },  { stop: 0.75, color: "rgba(113, 113, 231, 0.21)" }];
+const BET_RED   = [{ stop: 0, color: "rgba(184, 50, 50, 0.37)" },   { stop: 0.75, color: "rgba(189, 53, 53, 0.21)" }];
+const BET_GREEN = [{ stop: 0, color: "rgba(46, 146, 91, 0.6)" },    { stop: 0.75, color: "rgba(83, 151, 117, 0.36)" }];
 
 class BetOptions {
   constructor(value, x, y, w, h) {
@@ -463,7 +467,7 @@ class BetOptions {
     const totalW = this.w - gap * 2;
     const betStrokeWidth = 5
 
-    ctx.font = `900 ${getFontSize(this.w * 0.5, this.h * 0.5)}px Trebuchet MS`;
+    ctx.font = `900 ${Math.max(15, 24)*dpr}px Trebuchet MS`;
     ctx.textAlign = "center"
     ctx.textBaseline = "middle";
     const blueGradient = [
@@ -749,9 +753,9 @@ class BetOptions {
         }
         // ctx.stroke();
         let isNarrow = w <= 90
-        let fs = 12
+        let fs = Math.max(12, 14) * dpr;
         let labelY = y + sideBetH * 0.7
-        let payoutY = labelY - sideBetH * 0.3
+        let payoutY = labelY - sideBetH * 0.2
         // narrow
         if (w <= 80) {
           fs = 11
@@ -809,7 +813,7 @@ class ScoreBoard {
     this.rows = rows;
 
     this.cellH = Math.max(1, this.h / this.rows);
-    this.cellW = this.cellH;
+    this.cellW = this.cellH ;
 
     // this.cols = Math.floor(this.w / this.cellW);
     this.cols = Math.floor(this.w / this.cellW);
@@ -817,7 +821,7 @@ class ScoreBoard {
     // this.w = this.cols * this.cellW;
     // 👇 shrink width to fit perfectly
     this.gridWidth = this.cols * this.cellW + 1;
-    this.offsetX = (this.w - this.gridWidth) / 2;
+    this.offsetX = 0//(this.w - this.gridWidth) / 2;
 
     this.smallRoadState = { col: 0, row: 0 };
     this.smallRoadData = []; // 👈 ADD THIS
@@ -1111,17 +1115,20 @@ let bottomH = 0;
 //=================================================================================
 // UTILITIES
 //=================================================================================
+let dpr = window.devicePixelRatio || 1;
 function resize() {
-  // const dpr = window.devicePixelRatio || 1;
-  const dpr = 1;
+  dpr = window.devicePixelRatio || 1;
   const vw = window.visualViewport?.width || window.innerWidth;
   const vh = window.visualViewport?.height || window.innerHeight;
 
-  canvas.width = vw * dpr;
-  canvas.height = vh * dpr;
+  canvas.width = vw* dpr;
+  canvas.height = vh* dpr;
 
-  canvas.style.width = vw + "px";
-  canvas.style.height = vh + "px";
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+
+  // canvas.style.width = vw + "px";
+  // canvas.style.height = vh + "px";
 
   // ctx.setTransform(1, 0, 0, 1, 0, 0);
   // ctx.scale(dpr, dpr);
@@ -1134,7 +1141,7 @@ function resize() {
   const buttonGap = spacing / 2;
 
   containerAvailableWidth = canvas.width - layoutPadding * 2;
-  containerMaxWidth = 980;
+  containerMaxWidth = 980* dpr;
   containerWidth = isMobile ? containerAvailableWidth   // full width on phone
     : Math.min(containerAvailableWidth, containerMaxWidth);
   leftGutter = (canvas.width - containerWidth) / 2;
@@ -1206,14 +1213,14 @@ function buildScoreBoard() {
   //   rows,
   //   colums
   // );
-  const startX = (canvas.width - containerWidth) * 0.5;
+  const startX = (canvas.width - containerWidth) * 0.5 + 10;
   beadRoad = new ScoreBoard(
     'beadroad',
     startX,
     hudY + topH * 0.1,
     containerWidth * 0.5,
     topH * 0.3,
-    6
+    9
   );
 
   bigRoad = new ScoreBoard(
@@ -1269,7 +1276,7 @@ function buildChipController() {
 
   const count = items.length;
 
-  const chipG = -15;
+  const chipG = 0;
   // 1. max size that fits WIDTH
   const radiusByWidth = (chipsContainer.w - (count - 1) * chipG) / (2 * count);
 

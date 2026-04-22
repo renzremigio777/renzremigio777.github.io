@@ -1403,7 +1403,7 @@ function drawUI() {
       w: videoW,
       h: videoH,
       bg: "rgba(0, 0, 0, 1)",
-      isVideo: true
+      isVideo: truevi
     },
 
     // topBar: {
