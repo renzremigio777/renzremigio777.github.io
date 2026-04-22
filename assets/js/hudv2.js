@@ -303,7 +303,7 @@ class Chip {
       ctx.arc(this.x, this.y, radius, startAngle, startAngle + stripeArc);
       ctx.arc(this.x, this.y, innerR, startAngle + stripeArc, startAngle, true);
       ctx.closePath();
-      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.49)";
       ctx.fill();
     }
 
@@ -314,12 +314,12 @@ class Chip {
     ctx.fill();
 
     // Outer border
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.6)";
-    ctx.setLineDash([]);
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // ctx.beginPath();
+    // ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+    // ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    // ctx.setLineDash([]);
+    // ctx.lineWidth = 1;
+    // ctx.stroke();
 
     // Inner ring border
     ctx.beginPath();
