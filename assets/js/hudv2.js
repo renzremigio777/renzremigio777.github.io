@@ -412,6 +412,7 @@ class BetOptions {
     this._playerT = 0;
     this._bankerT = 0;
     this._tieT = 0;
+    this._sbT = {};
     this.sideBets = [
       // { x: 0, y: 0, w: 0, h: 0 },
       // { x: 0, y: 0, w: 0, h: 0 },
@@ -467,16 +468,28 @@ class BetOptions {
     ctx.textAlign = "center"
     ctx.textBaseline = "middle";
     const blueGradient = [
-      { stop: 0, color: "rgba(100, 100, 245, 0.6)" },
-      { stop: 0.75, color: "rgba(113, 113, 231, 0.81)" },
+      { stop: 0, color: "rgba(100, 100, 245, 0.5)" },
+      { stop: 0.75, color: "rgba(113, 113, 231, 0.5)" },
     ];
     const redGradient = [
-      { stop: 0, color: "rgba(170, 51, 51, 0.72)" },
-      { stop: 0.75, color: "rgba(189, 53, 53, 0.81)" },
+      { stop: 0, color: "rgba(170, 51, 51,  0.5)" },
+      { stop: 0.75, color: "rgba(189, 53, 53,  0.5)" },
     ];
     const greenGradient = [
       { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
-      { stop: 0.75, color: "rgba(50, 218, 134, 0.81)" },
+      { stop: 0.75, color: "rgba(83, 151, 117, 0.55)" },
+    ];
+    const hBlueGradient = [
+      { stop: 0, color: "rgba(100, 100, 245, 0.6)" },
+      { stop: 0.75, color: "rgba(113, 113, 231, 0.58)" },
+    ];
+    const hRedGradient = [
+      { stop: 0, color: "rgba(170, 51, 51, 0.72)" },
+      { stop: 0.75, color: "rgba(189, 53, 53, 0.53)" },
+    ];
+    const hGreenGradient = [
+      { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
+      { stop: 0.75, color: "rgba(83, 151, 117, 0.55)" },
     ];
     // ============================================
     //  PLAYER
@@ -521,8 +534,8 @@ class BetOptions {
 
       if (this._playerT > 0.01) {
         const playerGradActive = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
-        playerGradActive.addColorStop(0, colors.STROKEBLUE);
-        playerGradActive.addColorStop(1, colors.BLUE);
+        playerGradActive.addColorStop(blueGradient[0].stop, blueGradient[0].color);
+        playerGradActive.addColorStop(blueGradient[1].stop, blueGradient[1].color);
         ctx.save();
         ctx.globalAlpha = this._playerT;
         ctx.fillStyle = playerGradActive;
@@ -530,7 +543,7 @@ class BetOptions {
         ctx.restore();
       }
 
-      ctx.stroke(pp);
+      // ctx.stroke(pp);
       ctx.fillStyle = "#fff"
       ctx.fillText('PLAYER', this.player.x + this.player.w * 0.33, this.player.y + this.player.h * 0.90)
     })();
@@ -576,8 +589,8 @@ class BetOptions {
 
       if (this._bankerT > 0.01) {
         const bankerGradActive = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
-        bankerGradActive.addColorStop(0, colors.STROKERED);
-        bankerGradActive.addColorStop(1, colors.RED);
+        bankerGradActive.addColorStop(redGradient[0].stop, redGradient[0].color);
+        bankerGradActive.addColorStop(redGradient[1].stop, redGradient[1].color);
         ctx.save();
         ctx.globalAlpha = this._bankerT;
         ctx.fillStyle = bankerGradActive;
@@ -585,7 +598,7 @@ class BetOptions {
         ctx.restore();
       }
       ctx.fill(bp);
-      ctx.stroke(bp);
+      // ctx.stroke(bp);
       ctx.fillStyle = "#fff"
       ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90);
     })();
@@ -620,7 +633,7 @@ class BetOptions {
       tp.closePath();
       ctx.strokeStyle = colors.STROKEGREEN;
       ctx.lineWidth = betStrokeWidth;
-     const tieTarget = (this.hovered === "tie" || this.active === "tie") ? 1 : 0;
+      const tieTarget = (this.hovered === "tie" || this.active === "tie") ? 1 : 0;
       this._tieT += (tieTarget - this._tieT) * 0.12;
       
       const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
@@ -631,15 +644,15 @@ class BetOptions {
 
       if (this._tieT > 0.01) {
         const tieGradActive = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
-        tieGradActive.addColorStop(0, colors.STROKEGREEN);
-        tieGradActive.addColorStop(0.75, colors.GREEN);
+        tieGradActive.addColorStop(greenGradient[0].stop, greenGradient[0].color);
+        tieGradActive.addColorStop(greenGradient[1].stop, greenGradient[1].color);
         ctx.save();
         ctx.globalAlpha = this._tieT;
         ctx.fillStyle = tieGradActive;
         ctx.fill(tp);
         ctx.restore();
       }
-      ctx.stroke(tp);
+      // ctx.stroke(tp);
       ctx.fillStyle = "#fff"
       const labelY = this.tie.y + this.tie.h * 0.90;
       ctx.fillText('TIE', this.x + this.w / 2, labelY)
@@ -655,12 +668,12 @@ class BetOptions {
     // ============================================
     (() => {
       let sideBets = [
-        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient },
-        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient },
-        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient },
-        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient },
-        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient },
-        { row: 1, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient },
+        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
+        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
+        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient, hbg: hGreenGradient },
+        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient, hbg: hGreenGradient },
+        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
+        { row: 1, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
       ];
 
       const count = sideBets.length;
@@ -679,19 +692,45 @@ class BetOptions {
 
         ctx.beginPath();
         ctx.roundRect(x, y, w, h, bRadius);
-        const sbGrad = ctx.createLinearGradient(x, y, x, y + h);
+        const _sbAngle = 9 * Math.PI / 180;
+        const _sbCx = x + w / 2, _sbCy = y + h / 2;
+        const _sbHalf = (Math.abs(w * Math.sin(_sbAngle)) + Math.abs(h * Math.cos(_sbAngle))) / 2;
+        const sbGrad = ctx.createLinearGradient(
+          _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
+          _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
+        );
+        sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
+        sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
         if (this.active === sb.value) {
           sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
           sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
-        } else {
-          sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
-          sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
-        }
+        } 
+       
+        const sbTarget = (this.hovered === sb.value || this.active === sb.value) ? 1 : 0;
+        if (this._sbT[sb.value] === undefined) this._sbT[sb.value] = 0;
+        this._sbT[sb.value] += (sbTarget - this._sbT[sb.value]) * 0.12;
+
         ctx.fillStyle = sbGrad;
         ctx.strokeStyle = sb.outline;
         ctx.lineWidth = betStrokeWidth;
         ctx.fill();
-        ctx.stroke();
+
+        if (this._sbT[sb.value] > 0.01) {
+          const sbGradHover = ctx.createLinearGradient(
+            _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
+            _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
+          );
+          sbGradHover.addColorStop(sb.hbg[0].stop, sb.hbg[0].color);
+          sbGradHover.addColorStop(sb.hbg[1].stop, sb.hbg[1].color);
+          ctx.save();
+          ctx.globalAlpha = this._sbT[sb.value];
+          ctx.beginPath();
+          ctx.roundRect(x, y, w, h, bRadius);
+          ctx.fillStyle = sbGradHover;
+          ctx.fill();
+          ctx.restore();
+        }
+        // ctx.stroke();
         let isNarrow = w <= 90
         let fs = 12
         let labelY = y + h * 0.7
@@ -821,8 +860,8 @@ class ScoreBoard {
       ctx.moveTo(startX, y);
       ctx.lineTo(startX + this.gridWidth, y);
 
-      ctx.strokeStyle = "rgba(255,255,255,0.6)";
-      ctx.lineWidth = 0.3;
+      ctx.strokeStyle = "rgba(179, 186, 247, 0.6)";
+      ctx.lineWidth = 0.2;
       ctx.stroke();
 
 
