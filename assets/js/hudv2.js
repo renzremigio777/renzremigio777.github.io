@@ -394,7 +394,7 @@ class BetOptions {
     const totalW = this.w - gap * 2;
 
  
-    ctx.font = `900 ${getFontSize(this.w*0.75,this.h*0.65)}px Trebuchet MS`;
+    ctx.font = `900 ${getFontSize(this.w * 0.5, this.h * 0.5)}px Trebuchet MS`;
     ctx.textAlign = "center"
     ctx.textBaseline = "middle";
     // ============================================
@@ -521,7 +521,7 @@ class BetOptions {
       ctx.fillText('TIE', this.x + this.w / 2, labelY)
 
       ctx.fillStyle = colors.NEONGREEN
-      ctx.font = `900 ${getFontSize(this.tie.w/2,this.tie.h/2)}px Trebuchet MS`;
+      ctx.font = `900 ${getFontSize(this.tie.w*0.8,this.tie.h*0.8)}px Trebuchet MS`;
       const payoutY = labelY - this.tie.h * 0.20;
       ctx.fillText('8:0', this.x + this.w / 2, payoutY)
     })();
