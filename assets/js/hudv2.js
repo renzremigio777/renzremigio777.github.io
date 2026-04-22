@@ -524,12 +524,12 @@ class BetOptions {
     // //  SIDEBETS
     (() => {
       let sideBets = [
-        { row:2, value: "P PAIR", outline: colors.STROKEBLUE },
-        { row:2, value: "P BONUS", outline: colors.STROKEBLUE },
-        { row:1, value: "PERFECT PAIR", outline: colors.STROKERED },
-        { row:1, value: "EITHER PAIR", outline: colors.STROKERED },
-        { row:2, value: "B BONUS", outline: colors.STROKERED },
-        { row:1, value: "B PAIR", outline: colors.STROKERED },
+        { row:2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE },
+        { row:2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE },
+        { row:1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKERED },
+        { row:1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKERED },
+        { row:2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED },
+        { row:1, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED },
       ];
 
       const count = sideBets.length;
@@ -549,18 +549,20 @@ class BetOptions {
         ctx.beginPath();
         ctx.roundRect(x, y, w, h, bRadius * 0.5);
         ctx.strokeStyle = sb.outline;
-        ctx.lineWidth = 2;
+        ctx.lineWidth =2;
         ctx.stroke();
-        const fs = 12//getFontSize(w/2, h/2);
-        ctx.font = `100 ${fs}px Trebuchet MS`;
+        const fs = Math.min(getFontSize(w, h),11);
+        ctx.font = `900 ${fs}px Trebuchet MS`;
         ctx.fillStyle = "#ffffff93";
         const words = sb.value.split(" ");
         if (words.length === 2) {
-          ctx.fillText(words[0], x + w / 2, y + h / 2 - fs * 0.6);
-          ctx.fillText(words[1], x + w / 2, y + h / 2 + fs * 0.6);
+          ctx.fillText(words[0], x + w / 2, y + h * 0.4 - fs * 0.5);
+          ctx.fillText(words[1], x + w / 2, y + h * 0.4 + fs * 0.5);
         } else {
-          ctx.fillText(sb.value, x + w / 2, y + h / 2);
+          ctx.fillText(sb.value, x + w / 2, y + h * 0.4);
         }
+        ctx.fillStyle = sb.payoutColor;
+        ctx.fillText(sb.payout, x + w / 2, y + h * 0.6 + fs * 0.5);
         startX += w + spacing;
       });
     })();
