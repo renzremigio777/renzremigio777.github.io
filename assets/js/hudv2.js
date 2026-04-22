@@ -242,7 +242,7 @@ class StatusBar {
   }
   draw(ctx) {
     if (this.show) {
-      ctx.fillStyle = this.bg ?? "#106650";
+      ctx.fillStyle = this.bg ?? "rgba(66, 64, 64, 0.95)";
       ctx.fillRect(this.x, this.y, this.w, this.h);
 
       ctx.strokeStyle = "rgb(199, 196, 196)";
@@ -376,6 +376,7 @@ class BetOptions {
     this.h = h;
 
     this.hovered = null;
+    this.active = null;
     this.player = {x: 0, y: 0, w: 0, h: 0}
     this.banker = {x: 0, y: 0, w: 0, h: 0}
     this.tie = {x: 0, y: 0, w: 0, h: 0}
@@ -463,7 +464,7 @@ class BetOptions {
 
       ctx.strokeStyle = colors.STROKEBLUE;
       ctx.lineWidth = 2;
-      ctx.fillStyle = this.hovered === "player" ? colors.STROKEBLUE : colors.BLUE;
+      ctx.fillStyle = (this.hovered === "player" || this.active === "player") ? colors.STROKEBLUE : colors.BLUE;
       ctx.fill(pp);
       ctx.stroke(pp);
       ctx.fillStyle = "#fff"
@@ -500,7 +501,7 @@ class BetOptions {
 
       ctx.strokeStyle = colors.STROKERED;
       ctx.lineWidth = 2;
-      ctx.fillStyle = this.hovered === "banker" ? colors.STROKERED : colors.RED;
+      ctx.fillStyle = (this.hovered === "banker" || this.active === "banker") ? colors.STROKERED : colors.RED;
       ctx.fill(bp);
       ctx.stroke(bp);
       ctx.fillStyle = "#fff"
@@ -537,7 +538,7 @@ class BetOptions {
       p.closePath();
       ctx.strokeStyle = colors.STROKEGREEN;
       ctx.lineWidth = 2;
-      ctx.fillStyle = this.hovered === "tie" ? colors.STROKEGREEN : colors.GREEN;
+      ctx.fillStyle = (this.hovered === "tie" || this.active === "tie") ? colors.STROKEGREEN : colors.GREEN;
       ctx.fill(p);
       ctx.stroke(p);
       ctx.fillStyle = "#fff"
@@ -579,13 +580,11 @@ class BetOptions {
 
         ctx.beginPath();
         ctx.roundRect(x, y, w, h, bRadius * 0.5);
-        ctx.fillStyle = sb.bg;
+        // ctx.fillStyle = (this.hovered === sb.value || this.active === sb.value) ? sb.outline : sb.bg;
+        ctx.fillStyle = ( this.active === sb.value) ? sb.outline : sb.bg;
         ctx.strokeStyle = sb.outline;
         ctx.lineWidth = 2;
-          ctx.fill();
-        if (this.hovered === sb.value) {
-          ctx.fillStyle = sb.outline;
-        }
+        ctx.fill();
         ctx.stroke();
         let isNarrow = w <= 80
         let fs = 12
@@ -1717,29 +1716,19 @@ canvas.addEventListener("pointerdown", (e) => {
     return;
   }
 
-  //=========================
-  // BUTTONS (rect hit test)
-  //=========================
-  const found = buttons.find(btn =>
-    mX >= btn.x &&
-    mX <= btn.x + btn.w &&
-    mY >= btn.y &&
-    mY <= btn.y + btn.h
-  );
-
-  if (found) {
-    clicked = found.id;
-    console.log(
-      "%c" + found.activeBg,
-      `background-color: ${found.activeBg}; padding: 0.5rem 1rem`
-    );
-    statusBar.setStatus(`${found.id.toUpperCase()}`, found.activeBg)
-  }
+  const betTouched = betOptions.isInside(mX, mY, ctx);
+  if (betTouched) {
+    betOptions.active = betTouched.type === "sidebet" ? betTouched.data.value : betTouched.type;
+    statusBar.setStatus(`You pressed ${betOptions.active.toUpperCase()}`)
+  } 
+  
 });
 canvas.addEventListener("pointerup", (e) => {
   clicked = null;
   chips.forEach(chip => chip.isActive = false);
   quickTools.forEach(tool => tool.isActive = false);
+  // betOptions.hovered = null;
+  // betOptions.active = null;
 });
 
 
