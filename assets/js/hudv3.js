@@ -455,8 +455,8 @@ class BetOptions {
       my >= r.y && my <= r.y + r.h;
   }
   draw(ctx) {
-    const gap = 8;
-    const bRadius = gap * 2
+    const gap = 8 * dpr;
+    const bRadius = gap * 2;
 
     const colW = this.w * 0.333;
     const sideBetY = this.y + gap / 2;
@@ -1138,7 +1138,7 @@ function resize() {
   //=========================================
   const isMobile = canvas.width <= 980;
   const spacing = 10;
-  const buttonGap = spacing / 2;
+  const buttonGap = spacing / 2 ;
 
   containerAvailableWidth = canvas.width - layoutPadding * 2;
   containerMaxWidth = 980* dpr;
