@@ -35,7 +35,7 @@ class HudTopBar {
     //========================================================================
     // STATS
     //========================================================================
-    const scale = this.h / 100;
+    const scale = Math.max(0.01, this.h / 100);
 
     const statItems = [
       { type: "text", text: "#47", bg: colors.NEONBLUE },
@@ -524,12 +524,12 @@ class BetOptions {
     // //  SIDEBETS
     (() => {
       let sideBets = [
-        { value: "P PAIR", outline: colors.STROKEBLUE },
-        { value: "P BONUS", outline: colors.STROKEBLUE },
-        { value: "PERFECT PAIR", outline: colors.STROKERED },
-        { value: "E PAIR", outline: colors.STROKERED },
-        { value: "B BONUS", outline: colors.STROKERED },
-        { value: "B PAIR", outline: colors.STROKERED },
+        { row:2, value: "P PAIR", outline: colors.STROKEBLUE },
+        { row:2, value: "P BONUS", outline: colors.STROKEBLUE },
+        { row:1, value: "PERFECT PAIR", outline: colors.STROKERED },
+        { row:1, value: "EITHER PAIR", outline: colors.STROKERED },
+        { row:2, value: "B BONUS", outline: colors.STROKERED },
+        { row:1, value: "B PAIR", outline: colors.STROKERED },
       ];
 
       const count = sideBets.length;
@@ -551,10 +551,16 @@ class BetOptions {
         ctx.strokeStyle = sb.outline;
         ctx.lineWidth = 2;
         ctx.stroke();
-        ctx.font = `100 18px Trebuchet MS`;
-        ctx.fillStyle = "#ffffff93"
-        ctx.fillText(sb.value, x+ w/2, y + h/2)
-
+        const fs = 12//getFontSize(w/2, h/2);
+        ctx.font = `100 ${fs}px Trebuchet MS`;
+        ctx.fillStyle = "#ffffff93";
+        const words = sb.value.split(" ");
+        if (words.length === 2) {
+          ctx.fillText(words[0], x + w / 2, y + h / 2 - fs * 0.6);
+          ctx.fillText(words[1], x + w / 2, y + h / 2 + fs * 0.6);
+        } else {
+          ctx.fillText(sb.value, x + w / 2, y + h / 2);
+        }
         startX += w + spacing;
       });
     })();
@@ -881,7 +887,8 @@ let bottomH = 0;
 // UTILITIES
 //=================================================================================
 function resize() {
-  const dpr = window.devicePixelRatio || 1;
+  // const dpr = window.devicePixelRatio || 1;
+  const dpr = 1;
   const vw = window.visualViewport?.width || window.innerWidth;
   const vh = window.visualViewport?.height || window.innerHeight;
 
