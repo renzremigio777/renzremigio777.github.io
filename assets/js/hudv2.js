@@ -394,7 +394,7 @@ class BetOptions {
     const totalW = this.w - gap * 2;
 
  
-    ctx.font = `900 25px Trebuchet MS`;
+    ctx.font = `900 ${getFontSize(this.w*0.75,this.h*0.65)}px Trebuchet MS`;
     ctx.textAlign = "center"
     ctx.textBaseline = "middle";
     // ============================================
@@ -542,7 +542,7 @@ class BetOptions {
 
       let startX = this.x + gap;
 
-      sideBets.forEach(sb => {
+      sideBets.forEach((sb, index) => {
         const x = startX;
         const y = sideBetY;
 
@@ -551,18 +551,30 @@ class BetOptions {
         ctx.strokeStyle = sb.outline;
         ctx.lineWidth =2;
         ctx.stroke();
-        const fs = Math.min(getFontSize(w, h),11);
+        let isNarrow = w <= 80
+        let fs = 12
+        let labelY = y + h * 0.7
+        let payoutY = labelY - h * 0.3
+        // narrow
+        if (w <= 80) {
+          fs = 10
+        }
+        
         ctx.font = `900 ${fs}px Trebuchet MS`;
         ctx.fillStyle = "#ffffff93";
         const words = sb.value.split(" ");
-        if (words.length === 2) {
-          ctx.fillText(words[0], x + w / 2, y + h * 0.4 - fs * 0.5);
-          ctx.fillText(words[1], x + w / 2, y + h * 0.4 + fs * 0.5);
+        // if (words.length === 2 && isNarrow) {
+        if ([2,3].includes(index) && isNarrow) {
+          ctx.fillText(words[0], x + w / 2, labelY - fs * 0.5);
+          ctx.fillText(words[1], x + w / 2, labelY + fs * 0.5);
         } else {
-          ctx.fillText(sb.value, x + w / 2, y + h * 0.4);
+          
+          ctx.fillText(sb.value, x + w / 2, labelY);
         }
+        // ctx.fillText(sb.value, x + w / 2, y + h * 0.4);
+        ctx.font = `900 ${fs * 0.9}px Trebuchet MS`;
         ctx.fillStyle = sb.payoutColor;
-        ctx.fillText(sb.payout, x + w / 2, y + h * 0.6 + fs * 0.5);
+        ctx.fillText(sb.payout, x + w / 2, payoutY);
         startX += w + spacing;
       });
     })();
