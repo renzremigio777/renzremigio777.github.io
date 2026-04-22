@@ -242,21 +242,18 @@ class StatusBar {
   }
   draw(ctx) {
     if (this.show) {
-      ctx.fillStyle = this.bg ?? "rgba(67, 55, 124, 0.94)";
+      ctx.fillStyle = this.bg ?? "rgba(151, 248, 15, 0.76)";
       ctx.fillRect(this.x, this.y, this.w, this.h);
-
-      ctx.strokeStyle = "rgb(199, 196, 196)";
-      ctx.lineWidth = 0.1;
-      ctx.setLineDash([]);
-      // ctx.strokeRect(this.x, this.y, this.w, this.h);
-
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.font = `900 ${Math.max(18, getFontSize(this.w * 1.1, this.h * 1.1))}px Trebuchet MS`;
 
-      ctx.fillStyle = colors.WHITE;
+      ctx.fillStyle = "rgb(255, 255, 255)";
+      ctx.shadowColor = "#443723"
+      ctx.shadowBlur = 10;
       ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
+      ctx.restore();
     }
   }
 }
@@ -471,15 +468,15 @@ class BetOptions {
     ctx.textBaseline = "middle";
     const blueGradient = [
       { stop: 0, color: "rgba(100, 100, 245, 0.2)" },
-      { stop: 0.75, color: "rgba(113, 113, 231, 0.2)" },
+      { stop: 0.75, color: "rgba(113, 113, 231, 0.21)" },
     ];
     const redGradient = [
-      { stop: 0, color: "rgba(170, 51, 51,  0.2)" },
-      { stop: 0.75, color: "rgba(189, 53, 53,  0.2)" },
+      { stop: 0, color: "rgba(184, 50, 50, 0.37)" },
+      { stop: 0.75, color: "rgba(189, 53, 53, 0.21)" },
     ];
     const greenGradient = [
       { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
-      { stop: 0.75, color: "rgba(83, 151, 117, 0.2)" },
+      { stop: 0.75, color: "rgba(83, 151, 117, 0.36)" },
     ];
     const hBlueGradient = [
       { stop: 0, color: "rgba(100, 100, 245, 0.6)" },
@@ -1439,9 +1436,9 @@ function drawUI() {
   buildButtons(components);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const hudShadow = ctx.createLinearGradient(0, hudY, 0, canvas.height);
-  hudShadow.addColorStop(0, 'rgba(109, 86, 192, 0.87)');
-  hudShadow.addColorStop(0.5, 'rgba(22, 21, 70, 0.38)');
-  hudShadow.addColorStop(1, 'rgba(60, 89, 185, 0.9)');
+  hudShadow.addColorStop(0, 'rgba(109, 86, 192, 0.5)');
+  hudShadow.addColorStop(0.5, 'rgba(22, 21, 70, 0.25)');
+  hudShadow.addColorStop(1, 'rgba(60, 89, 185, 0.5)');
   ctx.fillStyle = hudShadow;
   ctx.fillRect(leftGutter, hudY, containerWidth, canvas.height - hudY);
   //=================================================================================
