@@ -375,13 +375,49 @@ class BetOptions {
     this.w = w;
     this.h = h;
 
+    this.hovered = null;
     this.player = {x: 0, y: 0, w: 0, h: 0}
     this.banker = {x: 0, y: 0, w: 0, h: 0}
     this.tie = {x: 0, y: 0, w: 0, h: 0}
+    this.sideBets = [
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+      // { x: 0, y: 0, w: 0, h: 0 },
+    ]
   }
 
-  isInside(mx, my) {
+  isInside(mx, my, ctx) {
+    // PLAYER (PATH-based)
+    if (this.playerPath && ctx.isPointInPath(this.playerPath, mx, my)) {
+      return { type: "player" };
+    }
 
+    // BANKER (PATH-based)
+    if (this.bankerPath && ctx.isPointInPath(this.bankerPath, mx, my)) {
+      return { type: "banker" };
+    }
+
+    // ✅ TIE (PATH-based)
+    if (this.tiePath && ctx.isPointInPath(this.tiePath, mx, my)) {
+      return { type: "tie" };
+    }
+
+    // SIDEBETS (rect)
+    for (let sb of this.sideBets) {
+      if (this.isRect(mx, my, sb)) {
+        return { type: "sidebet", data: sb };
+      }
+    }
+
+    return null;
+  }
+
+  isRect(mx, my, r) {
+    return mx >= r.x && mx <= r.x + r.w &&
+      my >= r.y && my <= r.y + r.h;
   }
   draw(ctx) {
     const gap = 8;
@@ -411,29 +447,25 @@ class BetOptions {
       const cx = this.player.x + colW + r;
       const cy = this.player.y + this.player.h / 2;
 
-      ctx.beginPath();
-      ctx.moveTo(this.player.x + bRadius, this.player.y);
-      // ctx.lineTo(x + colW + r +colW /4 + gap, y);
-      ctx.lineTo(this.player.x + this.player.w - gap, this.player.y);
-
+      this.playerPath = new Path2D();
+      const pp = this.playerPath;
+      pp.moveTo(this.player.x + bRadius, this.player.y);
+      pp.lineTo(this.player.x + this.player.w - gap, this.player.y);
       // concave arc (inward cut)
-      ctx.arc( cx, cy, r, Math.PI + (Math.PI / 2), Math.PI, true);
-      
+      pp.arc(cx, cy, r, Math.PI + (Math.PI / 2), Math.PI, true);
       // bottom-right corner
-      ctx.arc(this.player.x + colW - bRadius, this.player.y + this.player.h, bRadius, 0, Math.PI - (Math.PI / 2), false);
-      
+      pp.arc(this.player.x + colW - bRadius, this.player.y + this.player.h, bRadius, 0, Math.PI - (Math.PI / 2), false);
       // bottom-left corner
-      ctx.arc(this.player.x + bRadius, this.player.y + this.player.h,bRadius, Math.PI / 2,Math.PI,false);
-      
+      pp.arc(this.player.x + bRadius, this.player.y + this.player.h, bRadius, Math.PI / 2, Math.PI, false);
       // top-left corner
-      ctx.arc(this.player.x + bRadius, this.player.y + bRadius, bRadius, Math.PI, -Math.PI / 2, false );
-      ctx.closePath();
-      
+      pp.arc(this.player.x + bRadius, this.player.y + bRadius, bRadius, Math.PI, -Math.PI / 2, false);
+      pp.closePath();
+
       ctx.strokeStyle = colors.STROKEBLUE;
-      ctx.fillStyle = colors.BLUE;
       ctx.lineWidth = 2;
-      ctx.stroke();
-      // // ctx.fill();
+      ctx.fillStyle = this.hovered === "player" ? colors.STROKEBLUE : colors.BLUE;
+      ctx.fill(pp);
+      ctx.stroke(pp);
       ctx.fillStyle = "#fff"
       ctx.fillText('PLAYER', this.player.x + this.player.w * 0.33, this.player.y + this.player.h * 0.90)
     })();
@@ -447,34 +479,30 @@ class BetOptions {
       this.banker.x = this.x + containerWidth - gap;
       this.banker.y = mainBetY;
 
-      const r = (this.banker.h / 2);
+      const r = Math.max(0, this.banker.h / 2);
 
       const cx = this.banker.x - colW - r;
       const cy = this.banker.y + this.banker.h / 2;
 
-      ctx.beginPath();
-      ctx.moveTo(this.banker.x - bRadius, this.banker.y);
-      ctx.lineTo(this.banker.x - this.banker.w  , this.banker.y);
-
+      this.bankerPath = new Path2D();
+      const bp = this.bankerPath;
+      bp.moveTo(this.banker.x - bRadius, this.banker.y);
+      bp.lineTo(this.banker.x - this.banker.w, this.banker.y);
       // concave arc (inward cut)
-      ctx.arc( cx, cy, r, Math.PI + (Math.PI / 2), 0, false);
-
+      bp.arc(cx, cy, r, Math.PI + (Math.PI / 2), 0, false);
       // bottom-left corner
-      ctx.arc(this.banker.x - colW + bRadius, this.banker.y + this.banker.h, bRadius, Math.PI, Math.PI / 2, true);
-
-
+      bp.arc(this.banker.x - colW + bRadius, this.banker.y + this.banker.h, bRadius, Math.PI, Math.PI / 2, true);
       // bottom-right corner
-      ctx.arc(this.banker.x - bRadius, this.banker.y + this.banker.h, bRadius, Math.PI - (Math.PI / 2), 0, true);
-
+      bp.arc(this.banker.x - bRadius, this.banker.y + this.banker.h, bRadius, Math.PI - (Math.PI / 2), 0, true);
       // top-right corner
-      ctx.arc( this.banker.x - bRadius, this.banker.y + bRadius, bRadius, 0, -Math.PI / 2, true);
-
+      bp.arc(this.banker.x - bRadius, this.banker.y + bRadius, bRadius, 0, -Math.PI / 2, true);
+      bp.closePath();
 
       ctx.strokeStyle = colors.STROKERED;
-      ctx.fillStyle = colors.RED;
       ctx.lineWidth = 2;
-      ctx.stroke();
-      // ctx.fill();
+      ctx.fillStyle = this.hovered === "banker" ? colors.STROKERED : colors.RED;
+      ctx.fill(bp);
+      ctx.stroke(bp);
       ctx.fillStyle = "#fff"
       ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90);
     })();
@@ -492,30 +520,26 @@ class BetOptions {
       const cx = this.tie.x + this.tie.w / 2;
       const cy = this.tie.y + this.tie.h / 2 + 5;
       // ctx.roundRect(this.tie.x - (this.tie.w/2) - gap, this.tie.y + gap, this.tie.w, this.tie.h , r)
-      ctx.beginPath();
+      // before drawing
+      this.tiePath = new Path2D();
 
-      // top-left curve
-      ctx.arc( this.tie.x + r + bRadius, cy, r, Math.PI, -Math.PI / 2, false
-      );
+      const p = this.tiePath;
 
-      // top-right curve
-      ctx.arc( this.tie.x + this.tie.w - r - bRadius, cy, r, -Math.PI / 2, 0, false);
-      // ctx.lineTo(this.tie.x + this.tie.w - r + 15 , this.tie.y + this.tie.h)
-      // bottom-right
-      ctx.arc( this.tie.x + this.tie.w - bRadius, this.tie.y + this.tie.h, bRadius, -Math.PI + (Math.PI / 2), -Math.PI + (Math.PI / 2), false);
+      // p.moveTo(this.tie.x + r + bRadius, cy);
 
-      ctx.arc(  this.tie.x + colW - bRadius * 2, this.tie.y + this.tie.h, bRadius, 0, Math.PI - Math.PI / 2, false);
+      // replace ctx.arc → p.arc
+      p.arc(this.tie.x + r + bRadius, cy, r, Math.PI, -Math.PI / 2, false);
+      p.arc(this.tie.x + this.tie.w - r - bRadius, cy, r, -Math.PI / 2, 0, false);
+      p.arc(this.tie.x + this.tie.w - bRadius, this.tie.y + this.tie.h, bRadius, -Math.PI + (Math.PI / 2), -Math.PI + (Math.PI / 2), false);
+      p.arc(this.tie.x + colW - bRadius * 2, this.tie.y + this.tie.h, bRadius, 0, Math.PI - Math.PI / 2, false);
+      p.arc(this.tie.x + bRadius + bRadius, this.tie.y + this.tie.h, bRadius, Math.PI / 2, Math.PI, false);
 
-      // // bottom-left
-      ctx.arc(  this.tie.x + bRadius + bRadius,  this.tie.y + this.tie.h,  bRadius,  Math.PI / 2,  Math.PI,  0,  Math.PI / 2,  false);
-
-      ctx.closePath();
-      ctx.stroke();
+      p.closePath();
       ctx.strokeStyle = colors.STROKEGREEN;
-      ctx.fillStyle = colors.GREEN;
       ctx.lineWidth = 2;
-      ctx.stroke();
-      // ctx.fill();
+      ctx.fillStyle = this.hovered === "tie" ? colors.STROKEGREEN : colors.GREEN;
+      ctx.fill(p);
+      ctx.stroke(p);
       ctx.fillStyle = "#fff"
       const labelY = this.tie.y + this.tie.h * 0.90;
       ctx.fillText('TIE', this.x + this.w / 2, labelY)
@@ -523,19 +547,20 @@ class BetOptions {
       ctx.fillStyle = colors.NEONGREEN
       ctx.font = `900 ${getFontSize(this.tie.w*0.8,this.tie.h*0.8)}px Trebuchet MS`;
       const payoutY = labelY - this.tie.h * 0.20;
-      ctx.fillText('8:0', this.x + this.w / 2, payoutY)
+      ctx.fillText('8:1', this.x + this.w / 2, payoutY)
     })();
 
-    // // ============================================
-    // //  SIDEBETS
+    // ============================================
+    //  SIDEBETS
+    // ============================================
     (() => {
       let sideBets = [
-        { row:2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE },
-        { row:2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE },
-        { row:1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKERED },
-        { row:1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKERED },
-        { row:2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED },
-        { row:1, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED },
+        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
+        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
+        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
+        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
+        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED },
+        { row: 1, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED },
       ];
 
       const count = sideBets.length;
@@ -554,8 +579,13 @@ class BetOptions {
 
         ctx.beginPath();
         ctx.roundRect(x, y, w, h, bRadius * 0.5);
+        ctx.fillStyle = sb.bg;
         ctx.strokeStyle = sb.outline;
-        ctx.lineWidth =2;
+        ctx.lineWidth = 2;
+          ctx.fill();
+        if (this.hovered === sb.value) {
+          ctx.fillStyle = sb.outline;
+        }
         ctx.stroke();
         let isNarrow = w <= 80
         let fs = 12
@@ -582,6 +612,14 @@ class BetOptions {
         ctx.fillStyle = sb.payoutColor;
         ctx.fillText(sb.payout, x + w / 2, payoutY);
         startX += w + spacing;
+
+        this.sideBets.push({
+          x,
+          y,
+          w,
+          h,
+          value: sb.value
+        });
       });
     })();
     //
@@ -843,7 +881,7 @@ const colors = {
   ACTIVEBG: "rgba(15, 14, 14,0.5)",
   STROKEBLUE: "#9b85ff4d",
   STROKERED: "#ff474759",
-  STROKEGREEN: "#33a0584d",
+  STROKEGREEN: "#4cc96160",
   NEONBLUE: "rgb(68, 133, 255)",
   NEONRED: "rgb(243, 68, 68)",
   NEONGREEN: " rgb(28, 161, 34)",
@@ -1134,6 +1172,7 @@ function buildBetOptions() {
   // hudY + topH * 0.1
   // const resultBarY = hudY + topH * 0.4;
   // const resultBarH = topH * 0.22;
+  
   betOptions = new BetOptions(
     "player",
     leftGutter,
@@ -1141,6 +1180,8 @@ function buildBetOptions() {
     containerWidth,
     topH * 0.5,
   )
+
+  console.log(betOptions)
 
 
 }
@@ -1631,23 +1672,15 @@ canvas.addEventListener("mousemove", (e) => {
   }
 
   // =========================
-  // BUTTONS
+  // BET OPIONS
   // =========================
-
-
-  // const placeBetFound = buttons.find(btn =>
-  //   mX >= btn.x &&
-  //   mX <= btn.x + btn.w &&
-  //   mY >= btn.y &&
-  //   mY <= btn.y + btn.h
-  // );
-
-  // hovered = null;
-
-  // if (placeBetFound) {
-  //   hovered = placeBetFound.id;
-  //   isHovering = true;
-  // }
+  const betHovered = betOptions.isInside(mX, mY, ctx);
+  if (betHovered) {
+    betOptions.hovered = betHovered.type === "sidebet" ? betHovered.data.value : betHovered.type;
+    isHovering = true;
+  } else {
+    betOptions.hovered = null;
+  }
 
   canvas.style.cursor = isHovering ? "pointer" : "default";
 });
