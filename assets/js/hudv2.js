@@ -459,7 +459,7 @@ class BetOptions {
 
     const colW = this.w * 0.333;
     const sideBetY = this.y + gap / 2;
-    const mainBetY = this.y + this.h * 0.4 + gap * 0.5;
+    const mainBetY = this.y + this.h * 0.4 + gap * 0.6;
     ctx.fillStyle = "#8a636328"
     const totalW = this.w - gap * 2;
     const betStrokeWidth = 0.1
@@ -613,8 +613,8 @@ class BetOptions {
 
       const r = this.tie.h / 2;
 
-      const cx = this.tie.x + this.tie.w / 2;
-      const cy = this.tie.y + this.tie.h / 2 + 7.5;
+      const cx = this.tie.x + r + bRadius;
+      const cy = this.tie.y + this.tie.h / 2  +5 ;
       // ctx.roundRect(this.tie.x - (this.tie.w/2) - gap, this.tie.y + gap, this.tie.w, this.tie.h , r)
       // before drawing
       this.tiePath = new Path2D();
