@@ -134,7 +134,7 @@ class HudTopBar {
     ];
     const pillHeight = this.h * 0.5;   // height relative to bar
     const pillWidth = Math.min(this.w * 0.18, 80);// width relative to bar
-    const pRadius = pillHeight * 0.25;
+    const pRadius = Math.max(0, pillHeight * 0.25);
     const endGap = 10;
     const pillX = this.w - pillWidth - endGap
 
@@ -150,7 +150,7 @@ class HudTopBar {
         centerY - pillHeight / 2,
         pillWidth,
         pillHeight,
-        pillHeight / 2
+        Math.max(0, pillHeight / 2)
       );
       ctx.fillStyle = item.fill;
       ctx.strokeStyle = item.stroke;
@@ -407,7 +407,7 @@ class BetOptions {
       this.player.w = this.w / 2 - gap;
       this.player.h = this.h * 0.6
 
-      const r = (this.player.h / 2);
+      const r = Math.max(0,this.player.h / 2);
       const cx = this.player.x + colW + r;
       const cy = this.player.y + this.player.h / 2;
 
@@ -476,7 +476,7 @@ class BetOptions {
       ctx.stroke();
       // ctx.fill();
       ctx.fillStyle = "#fff"
-      ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90)
+      ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90);
     })();
     // ============================================
     //  TIE
@@ -517,7 +517,13 @@ class BetOptions {
       ctx.stroke();
       // ctx.fill();
       ctx.fillStyle = "#fff"
-      ctx.fillText('TIE', this.x + this.w / 2, this.tie.y + this.tie.h * 0.90)
+      const labelY = this.tie.y + this.tie.h * 0.90;
+      ctx.fillText('TIE', this.x + this.w / 2, labelY)
+
+      ctx.fillStyle = colors.NEONGREEN
+      ctx.font = `900 ${getFontSize(this.tie.w/2,this.tie.h/2)}px Trebuchet MS`;
+      const payoutY = labelY - this.tie.h * 0.20;
+      ctx.fillText('8:0', this.x + this.w / 2, payoutY)
     })();
 
     // // ============================================
@@ -600,7 +606,7 @@ class ScoreBoard {
     this.h = h;
     this.rows = rows;
 
-    this.cellH = this.h / this.rows;
+    this.cellH = Math.max(1, this.h / this.rows);
     this.cellW = this.cellH;
 
     // this.cols = Math.floor(this.w / this.cellW);
@@ -703,7 +709,7 @@ class ScoreBoard {
     const cx = startX + col * this.cellW + this.cellW / 2;
     const cy = this.y + row * this.cellH + this.cellH / 2;
 
-    const radius = this.cellW * 0.4;
+    const radius = Math.max(0, this.cellW * 0.4);
 
     let currentY = cy;
     let currentX = cx;
