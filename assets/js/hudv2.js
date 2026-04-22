@@ -285,36 +285,65 @@ class Chip {
 
   draw(ctx) {
     const radius = this.radius;
+    const innerR = radius * 0.65;
+    const chipColor = this.isActive ? colors.ACTIVEBG : (this.bg ?? "rgb(255,255,255)");
+    const stripeCount = 8;
+    const stripeArc = (Math.PI * 2 / stripeCount) * 0.4;
 
+    // Base circle
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = chipColor;
+    ctx.fill();
 
-    ctx.fillStyle = this.bg ?? "rgb(255, 255, 255)";
-    // ctx.fill();
-    ctx.strokeStyle = "rgb(255, 255, 255)";
-    // 🎨 visual states
-
-    if (this.isActive) {
-      ctx.fillStyle = colors.ACTIVEBG;
+    // Stripes in outer ring
+    for (let i = 0; i < stripeCount; i++) {
+      const startAngle = (i / stripeCount) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, radius, startAngle, startAngle + stripeArc);
+      ctx.arc(this.x, this.y, innerR, startAngle + stripeArc, startAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
       ctx.fill();
     }
 
-    ctx.setLineDash([5, 5]);
-    ctx.lineWidth = 0.1;
+    // Inner circle covers stripe middles
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, innerR, 0, Math.PI * 2);
+    ctx.fillStyle = chipColor;
+    ctx.fill();
 
+    // Outer border
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.setLineDash([]);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Inner ring border
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, innerR, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.lineWidth = 0.5;
     ctx.stroke();
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `900 ${Math.max(14, this.size / 2.5)}px Trebuchet MS`;
+    ctx.font = `900 ${Math.max(12, this.size * 0.35)}px Trebuchet MS`;
 
-    const formatter = new Intl.NumberFormat('en', {
-      notation: 'compact'
-    });
-
+    const formatter = new Intl.NumberFormat('en', { notation: 'compact' });
     let formattedValue = this.value > 900 ? formatter.format(this.value) : this.value.toString();
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
     ctx.fillStyle = colors.WHITE;
     ctx.fillText(formattedValue, this.x, this.y);
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
   }
 }
 
@@ -579,7 +608,7 @@ class BetOptions {
         const y = sideBetY;
 
         ctx.beginPath();
-        ctx.roundRect(x, y, w, h, bRadius * 0.5);
+        ctx.roundRect(x, y, w, h, bRadius);
         // ctx.fillStyle = (this.hovered === sb.value || this.active === sb.value) ? sb.outline : sb.bg;
         ctx.fillStyle = ( this.active === sb.value) ? sb.outline : sb.bg;
         ctx.strokeStyle = sb.outline;
@@ -589,10 +618,10 @@ class BetOptions {
         let isNarrow = w <= 90
         let fs = 12
         let labelY = y + h * 0.7
-        let payoutY = labelY - h * 0.3
+        let payoutY = labelY - h * 0.2
         // narrow
         if (w <= 80) {
-          fs = 10
+          fs = 11
         }
         
         ctx.font = `900 ${fs}px Trebuchet MS`;
@@ -1094,12 +1123,12 @@ function buildChipController() {
 
   const count = items.length;
 
-  const chipG = -20;
+  const chipG = -30;
   // 1. max size that fits WIDTH
   const radiusByWidth = (chipsContainer.w - (count - 1) * chipG) / (2 * count);
 
   // 2. max size that fits HEIGHT
-  const radiusByHeight = chipsContainer.h / 1.5;
+  const radiusByHeight = chipsContainer.h;
 
   // 3. final radius (must satisfy both)
   const chipR = Math.min(radiusByWidth, radiusByHeight);
@@ -1148,30 +1177,6 @@ function buildChipController() {
   });
 }
 function buildBetOptions() {
-  const items = [
-    { type: "chip", value: "player", bg: colors.BLUE },
-    { type: "chip", value: "tie", bg: colors.GREEN },
-    { type: "chip", value: "banker", bg: colors.RED },
-  ];
-
-  // items.forEach(item => {
-  //   //  "player": {
-  //   //   id: "player",
-  //   //   x: leftGutter,
-  //   //   y: betRow1Y,
-  //   //   w: containerWidth * 0.3332,
-  //   //   h: betRow1H,
-  //   //   // bg: colors.BLUE,
-  //   //   hoverBg: colors.HOVERBLUE,
-  //   //   activeBg: colors.ACTIVEBLUE,
-  //   //   border: "rgb(255, 255, 255)",
-  //   //   isButton: true
-  //   // },
-  // }); 
-  // hudY + topH * 0.1
-  // const resultBarY = hudY + topH * 0.4;
-  // const resultBarH = topH * 0.22;
-  
   betOptions = new BetOptions(
     "player",
     leftGutter,
@@ -1179,10 +1184,7 @@ function buildBetOptions() {
     containerWidth,
     topH * 0.5,
   )
-
   console.log(betOptions)
-
-
 }
 
 
