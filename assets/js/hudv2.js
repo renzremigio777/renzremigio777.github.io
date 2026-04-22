@@ -586,7 +586,7 @@ class BetOptions {
         ctx.lineWidth = 2;
         ctx.fill();
         ctx.stroke();
-        let isNarrow = w <= 80
+        let isNarrow = w <= 90
         let fs = 12
         let labelY = y + h * 0.7
         let payoutY = labelY - h * 0.3
