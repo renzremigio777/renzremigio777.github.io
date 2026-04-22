@@ -465,7 +465,7 @@ class BetOptions {
     ctx.fillStyle = "#8a636328"
     const totalW = this.w - gap * 2;
     const betStrokeWidth = 5
- 
+
     ctx.font = `900 ${getFontSize(this.w * 0.5, this.h * 0.5)}px Trebuchet MS`;
     ctx.textAlign = "center"
     ctx.textBaseline = "middle";
@@ -493,9 +493,12 @@ class BetOptions {
       { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
       { stop: 0.75, color: "rgba(83, 151, 117, 0.5)" },
     ];
+
+   
     // ============================================
     //  PLAYER
     // ============================================
+   
     (() => {
       this.player.y = mainBetY;
       this.player.x = this.x + gap;
@@ -528,11 +531,15 @@ class BetOptions {
       this._playerT += (playerTarget - this._playerT) * 0.12;
 
       const playerGradBase = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
-    
+
       playerGradBase.addColorStop(blueGradient[0].stop, blueGradient[0].color);
       playerGradBase.addColorStop(blueGradient[1].stop, blueGradient[1].color);
+      ctx.save();
+      ctx.shadowColor = colors.STROKEBLUE;
+      ctx.shadowBlur = 1;
       ctx.fillStyle = playerGradBase;
       ctx.fill(pp);
+      ctx.restore();
 
       if (this._playerT > 0.01) {
         const playerGradActive = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
@@ -544,6 +551,8 @@ class BetOptions {
         ctx.fill(pp);
         ctx.restore();
       }
+     
+     
 
       // ctx.stroke(pp);
       ctx.fillStyle = "#fff"
@@ -582,10 +591,13 @@ class BetOptions {
       ctx.lineWidth = betStrokeWidth;
       const bankerTarget = (this.hovered === "banker" || this.active === "banker") ? 1 : 0;
       this._bankerT += (bankerTarget - this._bankerT) * 0.12;
-  
+
       const bankerGradBase = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
       bankerGradBase.addColorStop(redGradient[0].stop, redGradient[0].color);
       bankerGradBase.addColorStop(redGradient[1].stop, redGradient[1].color);
+      ctx.save();
+      ctx.shadowColor = colors.STROKERED;
+      ctx.shadowBlur = 1;
       ctx.fillStyle = bankerGradBase;
       ctx.fill(bp);
 
@@ -637,12 +649,16 @@ class BetOptions {
       ctx.lineWidth = betStrokeWidth;
       const tieTarget = (this.hovered === "tie" || this.active === "tie") ? 1 : 0;
       this._tieT += (tieTarget - this._tieT) * 0.12;
-      
+
       const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
       tieGradBase.addColorStop(greenGradient[0].stop, greenGradient[0].color);
       tieGradBase.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+      ctx.save();
+      ctx.shadowColor = colors.STROKEGREEN;
+      ctx.shadowBlur = 18;
       ctx.fillStyle = tieGradBase;
       ctx.fill(tp);
+      ctx.restore();
 
       if (this._tieT > 0.01) {
         const tieGradActive = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
@@ -710,10 +726,14 @@ class BetOptions {
         if (this._sbT[sb.value] === undefined) this._sbT[sb.value] = 0;
         this._sbT[sb.value] += (sbTarget - this._sbT[sb.value]) * 0.12;
 
+        ctx.save();
+        ctx.shadowColor = sb.outline;
+        ctx.shadowBlur = 14;
         ctx.fillStyle = sbGrad;
         ctx.strokeStyle = sb.outline;
         ctx.lineWidth = betStrokeWidth;
         ctx.fill();
+        ctx.restore();
 
         if (this._sbT[sb.value] > 0.01) {
           const sbGradHover = ctx.createLinearGradient(
@@ -739,7 +759,7 @@ class BetOptions {
         if (w <= 80) {
           fs = 11
         }
-        
+
         ctx.font = `900 ${fs}px Trebuchet MS`;
         ctx.fillStyle = "#ffffffcc";
         const words = sb.value.split(" ");
@@ -748,7 +768,7 @@ class BetOptions {
           ctx.fillText(words[0], x + w / 2, labelY - fs * 0.5);
           ctx.fillText(words[1], x + w / 2, labelY + fs * 0.5);
         } else {
-          
+
           ctx.fillText(sb.value, x + w / 2, labelY);
         }
         // ctx.fillText(sb.value, x + w / 2, y + sideBetH * 0.4);
@@ -1026,7 +1046,7 @@ let clicked = null;
 
 const colors = {
   ACTIVEBG: "rgba(15, 14, 14,0.5)",
-  STROKEBLUE: "#afadff25",
+  STROKEBLUE: "#8d8bfc9d",
   STROKERED: "#ff474759",
   STROKEGREEN: "#4cc96160",
   STATBLUE: "rgb(74, 134, 247)",
@@ -1121,8 +1141,15 @@ function resize() {
   containerWidth = isMobile ? containerAvailableWidth   // full width on phone
     : Math.min(containerAvailableWidth, containerMaxWidth);
   leftGutter = (canvas.width - containerWidth) / 2;
-  videoH = Math.min(containerWidth * 9 / 18, canvas.height * 0.45);
-  videoW = videoH * 18 / 9;
+  videoW = Math.min(containerWidth, canvas.height * 16 / 9);
+  videoH = videoW * 9 / 16;
+
+ 
+  if(canvas.height < 900) {
+    videoH = Math.min(containerWidth * 9 / 16, canvas.height * 0.35);
+    videoW = videoH * 16 / 9;
+
+  }
 
   hudY = videoH + layoutGap * 3;
   hudH = canvas.height - hudY - layoutPadding;
@@ -1411,14 +1438,12 @@ function drawUI() {
 
   buildButtons(components);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "rgb(39, 32, 66)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
   const hudShadow = ctx.createLinearGradient(0, hudY, 0, canvas.height);
-
-  hudShadow.addColorStop(0, "rgba(0, 0, 0, 0.5)");
-  hudShadow.addColorStop(1, "rgba(0, 0, 0, 0.9)");
+  hudShadow.addColorStop(0, 'rgba(109, 86, 192, 0.87)');
+  hudShadow.addColorStop(0.5, 'rgba(22, 21, 70, 0.38)');
+  hudShadow.addColorStop(1, 'rgba(60, 89, 185, 0.9)');
   ctx.fillStyle = hudShadow;
-  // ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(leftGutter, hudY, containerWidth, canvas.height - hudY);
   //=================================================================================
   //  DRAW HUD TOP BAR
   //=================================================================================
@@ -1592,8 +1617,8 @@ canvas.addEventListener("pointerdown", (e) => {
   if (betTouched) {
     betOptions.active = betTouched.type === "sidebet" ? betTouched.data.value : betTouched.type;
     statusBar.setStatus(`You pressed ${betOptions.active.toUpperCase()}`)
-  } 
-  
+  }
+
 });
 canvas.addEventListener("pointerup", (e) => {
   clicked = null;
