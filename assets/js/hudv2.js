@@ -242,7 +242,7 @@ class StatusBar {
   }
   draw(ctx) {
     if (this.show) {
-      ctx.fillStyle = this.bg ?? "rgba(66, 64, 64, 0.95)";
+      ctx.fillStyle = this.bg ?? "rgba(67, 55, 124, 0.94)";
       ctx.fillRect(this.x, this.y, this.w, this.h);
 
       ctx.strokeStyle = "rgb(199, 196, 196)";
@@ -701,11 +701,7 @@ class BetOptions {
         );
         sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
         sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
-        if (this.active === sb.value) {
-          sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
-          sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
-        } 
-       
+
         const sbTarget = (this.hovered === sb.value || this.active === sb.value) ? 1 : 0;
         if (this._sbT[sb.value] === undefined) this._sbT[sb.value] = 0;
         this._sbT[sb.value] += (sbTarget - this._sbT[sb.value]) * 0.12;
