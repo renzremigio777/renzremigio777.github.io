@@ -38,17 +38,17 @@ class HudTopBar {
     const scale = Math.max(0.01, this.h / 100);
 
     const statItems = [
-      { type: "text", text: "#47", bg: colors.NEONBLUE },
-      { type: "badge", text: "P", bg: colors.NEONBLUE },
-      { type: "text", text: "24", bg: colors.NEONBLUE },
-      { type: "badge", text: "B", bg: colors.NEONRED },
-      { type: "text", text: "17", bg: colors.NEONBLUE },
-      { type: "badge", text: "T", bg: colors.NEONGREEN },
-      { type: "text", text: "6", bg: colors.NEONBLUE },
-      { type: "badge", isTie: true, text: "", bg: colors.NEONBLUE },
-      { type: "text", text: "4", bg: colors.NEONBLUE },
-      { type: "badge", isTie: true, text: "", bg: colors.NEONRED },
-      { type: "text", text: "1", bg: colors.NEONRED },
+      { type: "text", text: "#47", bg: colors.STATBLUE },
+      { type: "badge", text: "P", bg: colors.STATBLUE },
+      { type: "text", text: "24", bg: colors.STATBLUE },
+      { type: "badge", text: "B", bg: colors.STATRED },
+      { type: "text", text: "17", bg: colors.STATBLUE },
+      { type: "badge", text: "T", bg: colors.STATGREEN },
+      { type: "text", text: "6", bg: colors.STATBLUE },
+      { type: "badge", isTie: true, text: "", bg: colors.STATBLUE },
+      { type: "text", text: "4", bg: colors.STATBLUE },
+      { type: "badge", isTie: true, text: "", bg: colors.STATRED },
+      { type: "text", text: "1", bg: colors.STATRED },
     ];
 
     const radius = 16 * scale;
@@ -124,12 +124,12 @@ class HudTopBar {
       {
         label: "B",
         fill: colors.RED,
-        stroke: colors.NEONRED
+        stroke: colors.STATRED
       },
       {
         label: "P",
         fill: colors.BLUE,
-        stroke: colors.NEONBLUE
+        stroke: colors.STATBLUE
       }
     ];
     const pillHeight = this.h * 0.5;   // height relative to bar
@@ -285,9 +285,9 @@ class Chip {
 
   draw(ctx) {
     const radius = this.radius;
-    const innerR = radius * 0.65;
+    const innerR = radius * 0.75;
     const chipColor = this.isActive ? colors.ACTIVEBG : (this.bg ?? "rgb(255,255,255)");
-    const stripeCount = 8;
+    const stripeCount = 9;
     const stripeArc = (Math.PI * 2 / stripeCount) * 0.4;
 
     // Base circle
@@ -409,6 +409,9 @@ class BetOptions {
     this.player = {x: 0, y: 0, w: 0, h: 0}
     this.banker = {x: 0, y: 0, w: 0, h: 0}
     this.tie = {x: 0, y: 0, w: 0, h: 0}
+    this._playerT = 0;
+    this._bankerT = 0;
+    this._tieT = 0;
     this.sideBets = [
       // { x: 0, y: 0, w: 0, h: 0 },
       // { x: 0, y: 0, w: 0, h: 0 },
@@ -458,11 +461,23 @@ class BetOptions {
     const mainBetY = this.y + this.h * 0.4 + gap * 0.5;
     ctx.fillStyle = "#8a636328"
     const totalW = this.w - gap * 2;
-
+    const betStrokeWidth = 0.1
  
     ctx.font = `900 ${getFontSize(this.w * 0.5, this.h * 0.5)}px Trebuchet MS`;
     ctx.textAlign = "center"
     ctx.textBaseline = "middle";
+    const blueGradient = [
+      { stop: 0, color: "rgba(100, 100, 245, 0.6)" },
+      { stop: 0.75, color: "rgba(113, 113, 231, 0.81)" },
+    ];
+    const redGradient = [
+      { stop: 0, color: "rgba(170, 51, 51, 0.72)" },
+      { stop: 0.75, color: "rgba(189, 53, 53, 0.81)" },
+    ];
+    const greenGradient = [
+      { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
+      { stop: 0.75, color: "rgba(50, 218, 134, 0.81)" },
+    ];
     // ============================================
     //  PLAYER
     // ============================================
@@ -492,9 +507,29 @@ class BetOptions {
       pp.closePath();
 
       ctx.strokeStyle = colors.STROKEBLUE;
-      ctx.lineWidth = 2;
-      ctx.fillStyle = (this.hovered === "player" || this.active === "player") ? colors.STROKEBLUE : colors.BLUE;
+      ctx.lineWidth = betStrokeWidth;
+
+      const playerTarget = (this.hovered === "player" || this.active === "player") ? 1 : 0;
+      this._playerT += (playerTarget - this._playerT) * 0.12;
+
+      const playerGradBase = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
+    
+      playerGradBase.addColorStop(blueGradient[0].stop, blueGradient[0].color);
+      playerGradBase.addColorStop(blueGradient[1].stop, blueGradient[1].color);
+      ctx.fillStyle = playerGradBase;
       ctx.fill(pp);
+
+      if (this._playerT > 0.01) {
+        const playerGradActive = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
+        playerGradActive.addColorStop(0, colors.STROKEBLUE);
+        playerGradActive.addColorStop(1, colors.BLUE);
+        ctx.save();
+        ctx.globalAlpha = this._playerT;
+        ctx.fillStyle = playerGradActive;
+        ctx.fill(pp);
+        ctx.restore();
+      }
+
       ctx.stroke(pp);
       ctx.fillStyle = "#fff"
       ctx.fillText('PLAYER', this.player.x + this.player.w * 0.33, this.player.y + this.player.h * 0.90)
@@ -529,8 +564,26 @@ class BetOptions {
       bp.closePath();
 
       ctx.strokeStyle = colors.STROKERED;
-      ctx.lineWidth = 2;
-      ctx.fillStyle = (this.hovered === "banker" || this.active === "banker") ? colors.STROKERED : colors.RED;
+      ctx.lineWidth = betStrokeWidth;
+      const bankerTarget = (this.hovered === "banker" || this.active === "banker") ? 1 : 0;
+      this._bankerT += (bankerTarget - this._bankerT) * 0.12;
+  
+      const bankerGradBase = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
+      bankerGradBase.addColorStop(redGradient[0].stop, redGradient[0].color);
+      bankerGradBase.addColorStop(redGradient[1].stop, redGradient[1].color);
+      ctx.fillStyle = bankerGradBase;
+      ctx.fill(bp);
+
+      if (this._bankerT > 0.01) {
+        const bankerGradActive = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
+        bankerGradActive.addColorStop(0, colors.STROKERED);
+        bankerGradActive.addColorStop(1, colors.RED);
+        ctx.save();
+        ctx.globalAlpha = this._bankerT;
+        ctx.fillStyle = bankerGradActive;
+        ctx.fill(bp);
+        ctx.restore();
+      }
       ctx.fill(bp);
       ctx.stroke(bp);
       ctx.fillStyle = "#fff"
@@ -548,28 +601,45 @@ class BetOptions {
       const r = this.tie.h / 2;
 
       const cx = this.tie.x + this.tie.w / 2;
-      const cy = this.tie.y + this.tie.h / 2 + 5;
+      const cy = this.tie.y + this.tie.h / 2 + 7.5;
       // ctx.roundRect(this.tie.x - (this.tie.w/2) - gap, this.tie.y + gap, this.tie.w, this.tie.h , r)
       // before drawing
       this.tiePath = new Path2D();
 
-      const p = this.tiePath;
+      const tp = this.tiePath;
 
       // p.moveTo(this.tie.x + r + bRadius, cy);
 
       // replace ctx.arc → p.arc
-      p.arc(this.tie.x + r + bRadius, cy, r, Math.PI, -Math.PI / 2, false);
-      p.arc(this.tie.x + this.tie.w - r - bRadius, cy, r, -Math.PI / 2, 0, false);
-      p.arc(this.tie.x + this.tie.w - bRadius, this.tie.y + this.tie.h, bRadius, -Math.PI + (Math.PI / 2), -Math.PI + (Math.PI / 2), false);
-      p.arc(this.tie.x + colW - bRadius * 2, this.tie.y + this.tie.h, bRadius, 0, Math.PI - Math.PI / 2, false);
-      p.arc(this.tie.x + bRadius + bRadius, this.tie.y + this.tie.h, bRadius, Math.PI / 2, Math.PI, false);
+      tp.arc(this.tie.x + r + bRadius, cy, r, Math.PI, -Math.PI / 2, false);
+      tp.arc(this.tie.x + this.tie.w - r - bRadius, cy, r, -Math.PI / 2, 0, false);
+      tp.arc(this.tie.x + this.tie.w - bRadius, this.tie.y + this.tie.h, bRadius, -Math.PI + (Math.PI / 2), -Math.PI + (Math.PI / 2), false);
+      tp.arc(this.tie.x + colW - bRadius * 2, this.tie.y + this.tie.h, bRadius, 0, Math.PI - Math.PI / 2, false);
+      tp.arc(this.tie.x + bRadius + bRadius, this.tie.y + this.tie.h, bRadius, Math.PI / 2, Math.PI, false);
 
-      p.closePath();
+      tp.closePath();
       ctx.strokeStyle = colors.STROKEGREEN;
-      ctx.lineWidth = 2;
-      ctx.fillStyle = (this.hovered === "tie" || this.active === "tie") ? colors.STROKEGREEN : colors.GREEN;
-      ctx.fill(p);
-      ctx.stroke(p);
+      ctx.lineWidth = betStrokeWidth;
+     const tieTarget = (this.hovered === "tie" || this.active === "tie") ? 1 : 0;
+      this._tieT += (tieTarget - this._tieT) * 0.12;
+      
+      const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
+      tieGradBase.addColorStop(greenGradient[0].stop, greenGradient[0].color);
+      tieGradBase.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+      ctx.fillStyle = tieGradBase;
+      ctx.fill(tp);
+
+      if (this._tieT > 0.01) {
+        const tieGradActive = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
+        tieGradActive.addColorStop(0, colors.STROKEGREEN);
+        tieGradActive.addColorStop(0.75, colors.GREEN);
+        ctx.save();
+        ctx.globalAlpha = this._tieT;
+        ctx.fillStyle = tieGradActive;
+        ctx.fill(tp);
+        ctx.restore();
+      }
+      ctx.stroke(tp);
       ctx.fillStyle = "#fff"
       const labelY = this.tie.y + this.tie.h * 0.90;
       ctx.fillText('TIE', this.x + this.w / 2, labelY)
@@ -585,12 +655,12 @@ class BetOptions {
     // ============================================
     (() => {
       let sideBets = [
-        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
-        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
-        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
-        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
-        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED },
-        { row: 1, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED },
+        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient },
+        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient },
+        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient },
+        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient },
+        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient },
+        { row: 1, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient },
       ];
 
       const count = sideBets.length;
@@ -609,23 +679,30 @@ class BetOptions {
 
         ctx.beginPath();
         ctx.roundRect(x, y, w, h, bRadius);
-        // ctx.fillStyle = (this.hovered === sb.value || this.active === sb.value) ? sb.outline : sb.bg;
-        ctx.fillStyle = ( this.active === sb.value) ? sb.outline : sb.bg;
+        const sbGrad = ctx.createLinearGradient(x, y, x, y + h);
+        if (this.active === sb.value) {
+          sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
+          sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
+        } else {
+          sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
+          sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
+        }
+        ctx.fillStyle = sbGrad;
         ctx.strokeStyle = sb.outline;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = betStrokeWidth;
         ctx.fill();
         ctx.stroke();
         let isNarrow = w <= 90
         let fs = 12
         let labelY = y + h * 0.7
-        let payoutY = labelY - h * 0.2
+        let payoutY = labelY - h * 0.3
         // narrow
         if (w <= 80) {
           fs = 11
         }
         
         ctx.font = `900 ${fs}px Trebuchet MS`;
-        ctx.fillStyle = "#ffffff93";
+        ctx.fillStyle = "#ffffffcc";
         const words = sb.value.split(" ");
         // if (words.length === 2 && isNarrow) {
         if ([2,3].includes(index) && isNarrow) {
@@ -714,9 +791,9 @@ class ScoreBoard {
   draw(ctx) {
     const startX = this.x + this.offsetX;
 
-    ctx.fillStyle = "#4a6d5f21";
+    ctx.fillStyle = "#11101463";
     ctx.fillRect(startX, this.y, this.gridWidth, this.h);
-    ctx.strokeStyle = "rgba(255, 250, 250, 0.86)";
+    ctx.strokeStyle = "rgba(213, 196, 253, 0.8)";
 
     ctx.beginPath();
     // horizontal
@@ -781,9 +858,9 @@ class ScoreBoard {
     let currentX = cx;
     let smallRoadX = 0;
     resultData.forEach((result, index) => {
-      const color = result.value === "P" ? colors.NEONBLUE :
-        result.value === "B" ? colors.NEONRED :
-          result.value === "T" ? colors.NEONGREEN : "#0000";
+      const color = result.value === "P" ? colors.STATBLUE :
+        result.value === "B" ? colors.STATRED :
+          result.value === "T" ? colors.STATGREEN : "#0000";
       switch (this.type) {
         case "beadroad":
           // circle
@@ -823,9 +900,9 @@ class ScoreBoard {
             }
             ctx.beginPath();
             ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
-            ctx.strokeStyle = result.value === "P" ? colors.NEONBLUE :
-              result.value === "B" ? colors.NEONRED :
-                result.value === "T" ? colors.NEONGREEN : "#0000";
+            ctx.strokeStyle = result.value === "P" ? colors.STATBLUE :
+              result.value === "B" ? colors.STATRED :
+                result.value === "T" ? colors.STATGREEN : "#0000";
             ctx.lineWidth = 1.5
 
             ctx.stroke();
@@ -907,12 +984,15 @@ let clicked = null;
 
 const colors = {
   ACTIVEBG: "rgba(15, 14, 14,0.5)",
-  STROKEBLUE: "#9b85ff4d",
+  STROKEBLUE: "#afadff25",
   STROKERED: "#ff474759",
   STROKEGREEN: "#4cc96160",
-  NEONBLUE: "rgb(68, 133, 255)",
-  NEONRED: "rgb(243, 68, 68)",
-  NEONGREEN: " rgb(28, 161, 34)",
+  STATBLUE: "rgb(74, 134, 247)",
+  STATRED: "rgb(252, 61, 61)",
+  STATGREEN: " rgb(51, 211, 113)",
+  NEONBLUE: "rgb(161, 193, 253)",
+  NEONRED: "rgb(253, 187, 187)",
+  NEONGREEN: " rgb(199, 250, 201)",
   BLUE: "rgba(46, 34, 156, 0.5)",
   RED: " rgba(105, 14, 14, 0.5)",
   GREEN: " rgba(30, 97, 33, 0.5)",
