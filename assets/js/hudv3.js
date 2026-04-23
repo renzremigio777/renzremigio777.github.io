@@ -14,10 +14,6 @@ class HudTopBar {
       my >= this.y &&
       my <= this.y + this.h;
   }
-  setStatus(value, bg) {
-    this.value = value;
-    this.bg = bg;
-  }
   draw(ctx) {
 
     ctx.fillStyle = "#25332b";
@@ -228,7 +224,7 @@ class Modal {
   setStatus(value, bg) {
     this.value = value;
     this.bg = bg;
-    this.show = true;
+    // this.show = true;
 
     // cancel previous timer
     if (this._timer) {
@@ -246,9 +242,9 @@ class Modal {
       ctx.strokeStyle = "rgba(179, 238, 69, 0.55)";
       
       const fs = Math.max(15, getFontSize(this.w * 0.5, this.h * 0.5)) * dpr;
-     ctx.beginPath();
-      ctx.roundRect(this.x, this.y, this.w, this.h, 4);
-      ctx.fill();
+      // ctx.beginPath();
+      // ctx.roundRect(this.x, this.y, this.w, this.h, 4);
+      // ctx.fill();
       // ctx.fillRect(this.x, this.y, this.w, this.h);
       // ctx.strokeRect(this.x, this.y, this.w, this.h);
 
@@ -256,11 +252,14 @@ class Modal {
       ctx.textBaseline = "middle";
       ctx.font = `900 ${fs}px Trebuchet MS`;
 
+              
+
+      // ctx.save();
       ctx.fillStyle = "rgb(255, 255, 255)";
-      ctx.shadowColor = "#8d89a3be"
-      ctx.shadowBlur = 10;
+      // ctx.shadowColor = "#8d89a3be"
+      // ctx.shadowBlur = 10;
       ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
-      ctx.restore();
+      // ctx.restore();
     }
   }
 }
@@ -542,26 +541,22 @@ class BetOptions {
       const playerTarget = (this.hovered === "player" || this.active === "player") ? 1 : 0;
       this._playerT += (playerTarget - this._playerT) * 0.12;
 
-      const playerGradBase = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
+      // const playerGradBase = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
 
-      playerGradBase.addColorStop(blueGradient[0].stop, blueGradient[0].color);
-      playerGradBase.addColorStop(blueGradient[1].stop, blueGradient[1].color);
-      ctx.save();
-      ctx.shadowColor = colors.STROKEBLUE;
-      ctx.shadowBlur = 1;
-      ctx.fillStyle = playerGradBase;
-      ctx.fill(pp);
-      ctx.restore();
+      // playerGradBase.addColorStop(blueGradient[0].stop, blueGradient[0].color);
+      // playerGradBase.addColorStop(blueGradient[1].stop, blueGradient[1].color);
+      // ctx.save();
+      // ctx.shadowColor = colors.STROKEBLUE;
+      // ctx.shadowBlur = 1;
+      // ctx.restore();
+      ctx.fillStyle = colors.BLUE
+        ctx.fill(pp);
 
       if (this._playerT > 0.01) {
-        const playerGradActive = ctx.createLinearGradient(this.player.x, this.player.y, this.player.x, this.player.y + this.player.h);
-        playerGradActive.addColorStop(blueGradient[0].stop, blueGradient[0].color);
-        playerGradActive.addColorStop(blueGradient[1].stop, blueGradient[1].color);
-        ctx.save();
-        ctx.globalAlpha = this._playerT;
-        ctx.fillStyle = playerGradActive;
+        // ctx.save();
+        // ctx.globalAlpha = this._playerT;
         ctx.fill(pp);
-        ctx.restore();
+        // ctx.restore();
       }
      
      
@@ -603,26 +598,22 @@ class BetOptions {
       const bankerTarget = (this.hovered === "banker" || this.active === "banker") ? 1 : 0;
       this._bankerT += (bankerTarget - this._bankerT) * 0.12;
 
-      const bankerGradBase = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
-      bankerGradBase.addColorStop(redGradient[0].stop, redGradient[0].color);
-      bankerGradBase.addColorStop(redGradient[1].stop, redGradient[1].color);
-      ctx.save();
-      ctx.shadowColor = colors.STROKERED;
-      ctx.shadowBlur = 1;
-      ctx.fillStyle = bankerGradBase;
+      // const bankerGradBase = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
+      // bankerGradBase.addColorStop(redGradient[0].stop, redGradient[0].color);
+      // bankerGradBase.addColorStop(redGradient[1].stop, redGradient[1].color);
+      // ctx.save();
+      // ctx.shadowColor = colors.STROKERED;
+      // ctx.shadowBlur = 1;
+      ctx.fillStyle=colors.RED;
       ctx.fill(bp);
+      // ctx.restore();
 
       if (this._bankerT > 0.01) {
-        const bankerGradActive = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
-        bankerGradActive.addColorStop(redGradient[0].stop, redGradient[0].color);
-        bankerGradActive.addColorStop(redGradient[1].stop, redGradient[1].color);
-        ctx.save();
-        ctx.globalAlpha = this._bankerT;
-        ctx.fillStyle = bankerGradActive;
-        ctx.fill(bp);
-        ctx.restore();
+        // ctx.save();
+        // ctx.globalAlpha = this._bankerT;
+        // ctx.fill(bp);
+        // ctx.restore();
       }
-      ctx.fill(bp);
       // ctx.stroke(bp);
       ctx.fillStyle = "#fff"
       ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90);
@@ -661,26 +652,28 @@ class BetOptions {
       const tieTarget = (this.hovered === "tie" || this.active === "tie") ? 1 : 0;
       this._tieT += (tieTarget - this._tieT) * 0.12;
 
-      const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
-      tieGradBase.addColorStop(greenGradient[0].stop, greenGradient[0].color);
-      tieGradBase.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+      // const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
+      // tieGradBase.addColorStop(greenGradient[0].stop, greenGradient[0].color);
+      // tieGradBase.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+      // ctx.fillStyle = tieGradBase;
 
-      ctx.save();
-      ctx.shadowColor = colors.STROKEGREEN;
-      ctx.shadowBlur = 18;
-      ctx.fillStyle = tieGradBase;
+      // ctx.save();
+      // ctx.shadowColor = colors.STROKEGREEN;
+      // ctx.shadowBlur = 18;
+      // ctx.restore();
+
+      ctx.fillStyle = colors.GREEN;
       ctx.fill(tp);
-      ctx.restore();
 
       if (this._tieT > 0.01) {
-        const tieGradActive = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
-        tieGradActive.addColorStop(greenGradient[0].stop, greenGradient[0].color);
-        tieGradActive.addColorStop(greenGradient[1].stop, greenGradient[1].color);
-        ctx.save();
-        ctx.globalAlpha = this._tieT;
-        ctx.fillStyle = tieGradActive;
-        ctx.fill(tp);
-        ctx.restore();
+        // const tieGradActive = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
+        // tieGradActive.addColorStop(greenGradient[0].stop, greenGradient[0].color);
+        // tieGradActive.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+        // ctx.save();
+        // ctx.globalAlpha = this._tieT;
+        // ctx.fillStyle = tieGradActive;
+        // ctx.fill(tp);
+        // ctx.restore();
       }
       // ctx.stroke(tp);
       ctx.fillStyle = "#fff"
@@ -699,12 +692,12 @@ class BetOptions {
     (() => {
       this.sideBets = [];
       let sideBets = [
-        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient, hbg: hGreenGradient },
-        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: greenGradient, hbg: hGreenGradient },
-        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
-        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: blueGradient, hbg: hBlueGradient },
-        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
-        { row: 2, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: redGradient, hbg: hRedGradient },
+        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
+        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
+        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
+        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
+        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED},
+        { row: 2, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED},
       ];
 
       const count = sideBets.length;
@@ -727,40 +720,34 @@ class BetOptions {
         const _sbAngle = 9 * Math.PI / 180;
         const _sbCx = x + w / 2, _sbCy = y + sideBetH / 2;
         const _sbHalf = (Math.abs(w * Math.sin(_sbAngle)) + Math.abs(sideBetH * Math.cos(_sbAngle))) / 2;
-        const sbGrad = ctx.createLinearGradient(
-          _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
-          _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
-        );
-        sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
-        sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
+        // const sbGrad = ctx.createLinearGradient(
+        //   _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
+        //   _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
+        // );
+        // sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
+        // sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
 
         const sbTarget = (this.hovered === sb.value || this.active === sb.value) ? 1 : 0;
         if (this._sbT[sb.value] === undefined) this._sbT[sb.value] = 0;
         this._sbT[sb.value] += (sbTarget - this._sbT[sb.value]) * 0.12;
 
-        ctx.save();
-        ctx.shadowColor = sb.outline;
-        ctx.shadowBlur = 14;
-        ctx.fillStyle = sbGrad;
-        ctx.strokeStyle = sb.outline;
+        // ctx.save();
+        // ctx.shadowColor = sb.outline;
+        // ctx.shadowBlur = 14;
+        // ctx.fillStyle = sbGrad;
+        // ctx.strokeStyle = sb.outline;
         ctx.lineWidth = betStrokeWidth;
+        ctx.fillStyle = sb.bg;
         ctx.fill();
         ctx.restore();
 
         if (this._sbT[sb.value] > 0.01) {
-          const sbGradHover = ctx.createLinearGradient(
-            _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
-            _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
-          );
-          sbGradHover.addColorStop(sb.bg[0].stop, sb.bg[0].color);
-          sbGradHover.addColorStop(sb.bg[1].stop, sb.bg[1].color);
-          ctx.save();
-          ctx.globalAlpha = this._sbT[sb.value];
-          ctx.beginPath();
-          ctx.roundRect(x, y, w, sideBetH, bRadius);
-          ctx.fillStyle = sbGradHover;
-          ctx.fill();
-          ctx.restore();
+          // ctx.save();
+          // ctx.globalAlpha = this._sbT[sb.value];
+          // ctx.beginPath();
+          // ctx.roundRect(x, y, w, sideBetH, bRadius);
+          // ctx.fill();
+          // ctx.restore();
         }
         // ctx.stroke();
         let isNarrow = w <= 90
@@ -1064,9 +1051,9 @@ const colors = {
   NEONBLUE: "rgb(130, 169, 255)",
   NEONRED: "rgb(253, 120, 120)",
   NEONGREEN: " rgb(122, 245, 126)",
-  BLUE: "rgba(46, 34, 156, 0.5)",
-  RED: " rgba(105, 14, 14, 0.5)",
-  GREEN: " rgba(30, 97, 33, 0.5)",
+  BLUE: "rgb(74, 88, 221)",
+  RED: " rgb(160, 80, 80)",
+  GREEN: " rgb(74, 156, 108)",
   HOVERBLUE: "rgba(46, 34, 156, 0.53)",
   HOVERRED: " rgb(105, 14, 14)",
   HOVERGREEN: " rgb(30, 97, 33)",
@@ -1449,11 +1436,11 @@ function drawUI() {
 
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const hudShadow = ctx.createLinearGradient(0, hudY, 0, canvas.height);
-  hudShadow.addColorStop(0, 'rgba(109, 86, 192, 0.5)');
-  hudShadow.addColorStop(0.5, 'rgba(22, 21, 70, 0.25)');
-  hudShadow.addColorStop(1, 'rgba(60, 89, 185, 0.5)');
-  ctx.fillStyle = hudShadow;
+  // const hudShadow = ctx.createLinearGradient(0, hudY, 0, canvas.height);
+  // hudShadow.addColorStop(0, 'rgba(109, 86, 192, 0.5)');
+  // hudShadow.addColorStop(0.5, 'rgba(22, 21, 70, 0.25)');
+  // hudShadow.addColorStop(1, 'rgba(60, 89, 185, 0.5)');
+  // ctx.fillStyle = hudShadow;
   ctx.fillRect(leftGutter, hudY, containerWidth, canvas.height - hudY);
   //=================================================================================
   //  DRAW HUD TOP BAR
