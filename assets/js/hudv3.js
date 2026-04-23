@@ -246,9 +246,10 @@ class Modal {
       ctx.strokeStyle = "rgba(179, 238, 69, 0.55)";
       
       const fs = Math.max(15, getFontSize(this.w * 0.5, this.h * 0.5)) * dpr;
-      // ctx.roundRect(this.x, this.y, this.w, this.h, 4);
+     ctx.beginPath();
+      ctx.roundRect(this.x, this.y, this.w, this.h, 4);
       ctx.fill();
-      ctx.restore();
+      // ctx.fillRect(this.x, this.y, this.w, this.h);
       // ctx.strokeRect(this.x, this.y, this.w, this.h);
 
       ctx.textAlign = "center";
@@ -428,6 +429,10 @@ class BetOptions {
       // { x: 0, y: 0, w: 0, h: 0 },
       // { x: 0, y: 0, w: 0, h: 0 },
     ]
+
+    this.playerPath = new Path2D();
+    this.tiePath = new Path2D();
+    this.bankerPath = new Path2D();
   }
 
   isInside(mx, my, ctx) {
@@ -517,7 +522,7 @@ class BetOptions {
       const cx = this.player.x + colW + r;
       const cy = this.player.y + this.player.h / 2;
 
-      this.playerPath = new Path2D();
+      
       const pp = this.playerPath;
       pp.moveTo(this.player.x + bRadius, this.player.y);
       pp.lineTo(this.player.x + this.player.w - gap, this.player.y);
@@ -580,7 +585,6 @@ class BetOptions {
       const cx = this.banker.x - colW - r;
       const cy = this.banker.y + this.banker.h / 2;
 
-      this.bankerPath = new Path2D();
       const bp = this.bankerPath;
       bp.moveTo(this.banker.x - bRadius, this.banker.y);
       bp.lineTo(this.banker.x - this.banker.w, this.banker.y);
@@ -638,7 +642,7 @@ class BetOptions {
       const cy = this.tie.y + this.tie.h / 2  +5 ;
       // ctx.roundRect(this.tie.x - (this.tie.w/2) - gap, this.tie.y + gap, this.tie.w, this.tie.h , r)
       // before drawing
-      this.tiePath = new Path2D();
+     
 
       const tp = this.tiePath;
 
