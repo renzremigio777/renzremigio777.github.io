@@ -207,7 +207,7 @@ class HudTopBar {
 
   }
 }
-class StatusBar {
+class Modal {
   constructor(value, x, y, w, h, bg) {
     this.value = value;
     this.x = x;
@@ -242,12 +242,14 @@ class StatusBar {
   }
   draw(ctx) {
     if (this.show) {
-      ctx.fillStyle = this.bg ?? "rgba(151, 248, 15, 0.76)";
+      ctx.fillStyle = this.bg ?? "rgba(14, 8, 34, 0.55)";
+      ctx.lineWidth = 1
       ctx.fillRect(this.x, this.y, this.w, this.h);
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `900 ${Math.max(18, getFontSize(this.w * 1.1, this.h * 1.1))}px Trebuchet MS`;
+      ctx.font = `900 ${Math.max(18, getFontSize(this.w * 0.5, this.h * 0.5) * dpr)}px Trebuchet MS`;
 
       ctx.fillStyle = "rgb(255, 255, 255)";
       ctx.shadowColor = "#50432f"
@@ -479,8 +481,8 @@ class BetOptions {
       { stop: 0.75, color: "rgba(189, 53, 53, 0.21)" },
     ];
     const greenGradient = [
-      { stop: 0, color: "rgba(46, 146, 91, 0.6)" },
-      { stop: 0.75, color: "rgba(83, 151, 117, 0.36)" },
+      { stop: 0, color: "rgba(174, 248, 207, 0.6)" },
+      { stop: 0.75, color: "rgba(157, 219, 188, 0.36)" },
     ];
     const hBlueGradient = [
       { stop: 0, color: "rgba(100, 100, 245, 0.6)" },
@@ -654,6 +656,7 @@ class BetOptions {
       const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
       tieGradBase.addColorStop(greenGradient[0].stop, greenGradient[0].color);
       tieGradBase.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+
       ctx.save();
       ctx.shadowColor = colors.STROKEGREEN;
       ctx.shadowBlur = 18;
@@ -888,7 +891,6 @@ class ScoreBoard {
       ctx.lineWidth = 0.2;
       ctx.stroke();
 
-
       const endY = this.y + this.h;
       const thirds = 3; // number of sections
 
@@ -896,14 +898,12 @@ class ScoreBoard {
         const colIndex = Math.floor(this.cols * i / thirds);
         const x = Math.round(startX + colIndex * this.cellW) + 0.5;
 
-
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(x, endY);
 
         ctx.stroke();
       }
-
     }
 
     //================================================
@@ -928,7 +928,7 @@ class ScoreBoard {
         case "beadroad":
           // circle
           ctx.beginPath();
-          ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
+          ctx.arc(currentX, currentY, radius, 0, Math.PI * 2)
           ctx.fillStyle = color;
           ctx.strokeStyle = color;
           ctx.fill();
@@ -1077,7 +1077,7 @@ const buttons = [];
 const chips = [];
 const quickTools = [];
 let hudTopBar = null;
-let statusBar = null;
+let modal = null;
 let beadRoad = null;
 let bigRoad = null;
 let betOptions = null;
@@ -1172,18 +1172,18 @@ function getFontSize(width, height) {
   // safe scaling factor (tune this)
   return Math.max(15, Math.floor(base * 0.20));
 }
-function buildStatusBar() {
+function buildModal() {
   let topBarContainer = {
-    x: leftGutter,
-    y: hudY,
-    w: containerWidth,
-    h: topH * 0.1,
+    x: leftGutter + containerWidth * 0.25,
+    y: hudY + hudH * 0.5,
+    w: containerWidth * 0.5,
+    h: topH * 0.15,
   };
 
-  statusBar = new StatusBar(
+  modal = new Modal(
     'PLACE YOUR BET',
     topBarContainer.x,
-    topBarContainer.y,
+    topBarContainer.y - topBarContainer.h,
     topBarContainer.w,
     topBarContainer.h
   );
@@ -1268,7 +1268,6 @@ function buildChipController() {
     { type: "chip", value: 1000, bg: "rgb(206, 160, 22)" },
     { type: "chip", value: 2000, bg: "rgb(90, 151, 21)" },
     { type: "chip", value: 5000, bg: "rgb(204, 46, 62)" },
-
     { type: "tool", value: "undo", bg: "rgba(85, 85, 85, 1)" },
     { type: "tool", value: "rebet", bg: "rgba(85, 85, 85, 1)" },
     { type: "tool", value: "cancel", bg: "rgba(85, 85, 85, 1)" },
@@ -1533,7 +1532,7 @@ function drawUI() {
   //=================================================================================
   //  DRAW STATUS BAR
   //=================================================================================
-  statusBar.draw(ctx)
+  modal.draw(ctx)
 
 }
 
@@ -1602,7 +1601,7 @@ canvas.addEventListener("pointerdown", (e) => {
       "background-color: #222; color: #ac9b02; padding: 0.5rem 1rem;"
     );
 
-    statusBar.setStatus(`You pressed $${chipFound.value}`)
+    modal.setStatus(`You pressed $${chipFound.value}`)
     return;
   }
   const toolFound = quickTools.find(tool => tool.isInside(mX, mY));
@@ -1613,14 +1612,14 @@ canvas.addEventListener("pointerdown", (e) => {
       "%c" + toolFound.value,
       "background-color: #222; color: #ffffff; padding: 0.5rem 1rem;"
     );
-    statusBar.setStatus(`You pressed ${toolFound.value.toUpperCase()}`)
+    modal.setStatus(`You pressed ${toolFound.value.toUpperCase()}`)
     return;
   }
 
   const betTouched = betOptions.isInside(mX, mY, ctx);
   if (betTouched) {
     betOptions.active = betTouched.type === "sidebet" ? betTouched.data.value : betTouched.type;
-    statusBar.setStatus(`You pressed ${betOptions.active.toUpperCase()}`)
+    modal.setStatus(`You pressed ${betOptions.active.toUpperCase()}`)
   }
 
 });
@@ -1648,7 +1647,7 @@ function main() {
   resize();
   buildBetOptions();
   buildChipController();
-  buildStatusBar();
+  buildModal();
   buildScoreBoard();
   buildHudTopBar();
   bigRoad.buildSmallRoad();
