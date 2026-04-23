@@ -691,7 +691,7 @@ class BetOptions {
     // ============================================
     (() => {
       this.sideBets = [];
-      let sideBets = [
+      let sideOptions = [
         { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
         { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
         { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
@@ -700,7 +700,7 @@ class BetOptions {
         { row: 2, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED},
       ];
 
-      const count = sideBets.length;
+      const count = sideOptions.length;
       const spacing = gap;
 
       const totalW = this.w - gap * 2;
@@ -708,7 +708,7 @@ class BetOptions {
 
       let startX = this.x + gap;
 
-      sideBets.forEach((sb, index) => {
+      sideOptions.forEach((sb, index) => {
         const x = startX;
         const y = sb.row === 1 ? sideBetY : sideBetY + sideBetH + gap;
         let w = (totalW - totalSpacing / 1.6) / 4;
@@ -736,10 +736,10 @@ class BetOptions {
         // ctx.shadowBlur = 14;
         // ctx.fillStyle = sbGrad;
         // ctx.strokeStyle = sb.outline;
-        ctx.lineWidth = betStrokeWidth;
+        // ctx.lineWidth = betStrokeWidth;
         ctx.fillStyle = sb.bg;
         ctx.fill();
-        ctx.restore();
+        // ctx.restore();
 
         if (this._sbT[sb.value] > 0.01) {
           // ctx.save();
