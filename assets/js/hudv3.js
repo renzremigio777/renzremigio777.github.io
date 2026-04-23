@@ -242,12 +242,14 @@ class Modal {
   }
   draw(ctx) {
     if (this.show) {
-      ctx.fillStyle = this.bg ?? "rgb(136, 116, 255)";
+      ctx.fillStyle = this.bg ?? "rgb(115, 100, 255)";
       ctx.strokeStyle = "rgba(179, 238, 69, 0.55)";
       
       const fs = Math.max(15, getFontSize(this.w * 0.5, this.h * 0.5)) * dpr;
-      ctx.fillRect(this.x, this.y, this.w, this.h);
-      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      // ctx.roundRect(this.x, this.y, this.w, this.h, 4);
+      ctx.fill();
+      ctx.restore();
+      // ctx.strokeRect(this.x, this.y, this.w, this.h);
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -1175,10 +1177,11 @@ function getFontSize(width, height) {
   return Math.max(15, Math.floor(base * 0.20));
 }
 function buildModal() {
+  const gap = 5
   let topBarContainer = {
-    x: leftGutter + 10,
-    y: hudY - 10,
-    w: containerWidth - 20 ,
+    x: leftGutter + gap,
+    y: hudY - gap,
+    w: containerWidth - (gap * 2) ,
     h: 60,
   };
 
