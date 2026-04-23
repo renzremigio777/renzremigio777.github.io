@@ -238,21 +238,23 @@ class Modal {
     // start new timer
     this._timer = setTimeout(() => {
       this.show = false;
-    }, 1500);
+    }, 2000);
   }
   draw(ctx) {
     if (this.show) {
-      ctx.fillStyle = this.bg ?? "rgba(14, 8, 34, 0.55)";
-      ctx.lineWidth = 1
+      ctx.fillStyle = this.bg ?? "rgb(136, 116, 255)";
+      ctx.strokeStyle = "rgba(179, 238, 69, 0.55)";
+      
+      const fs = Math.max(15, getFontSize(this.w * 0.5, this.h * 0.5)) * dpr;
       ctx.fillRect(this.x, this.y, this.w, this.h);
       ctx.strokeRect(this.x, this.y, this.w, this.h);
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `900 ${Math.max(18, getFontSize(this.w * 0.5, this.h * 0.5) * dpr)}px Trebuchet MS`;
+      ctx.font = `900 ${fs}px Trebuchet MS`;
 
       ctx.fillStyle = "rgb(255, 255, 255)";
-      ctx.shadowColor = "#50432f"
+      ctx.shadowColor = "#8d89a3be"
       ctx.shadowBlur = 10;
       ctx.fillText(this.value, this.x + this.w / 2, this.y + this.h / 2);
       ctx.restore();
@@ -462,7 +464,7 @@ class BetOptions {
 
     const colW = this.w * 0.333;
     const sideBetY = this.y + gap / 2;
-    const sideBetH = this.h * 0.4 - gap;
+    const sideBetH = this.h * 0.3 - gap;
     // const mainBetY = this.y + this.h * 0.4 + gap * 0.6;
     const mainBetY = sideBetY + (sideBetH* 2) + gap * 2
     ctx.fillStyle = "#8a636328"
@@ -1174,10 +1176,10 @@ function getFontSize(width, height) {
 }
 function buildModal() {
   let topBarContainer = {
-    x: leftGutter + containerWidth * 0.25,
-    y: hudY + hudH * 0.5,
-    w: containerWidth * 0.5,
-    h: topH * 0.15,
+    x: leftGutter + 10,
+    y: hudY - 10,
+    w: containerWidth - 20 ,
+    h: 60,
   };
 
   modal = new Modal(
@@ -1439,7 +1441,6 @@ function drawUI() {
   };
 
 
-  buildButtons(components);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const hudShadow = ctx.createLinearGradient(0, hudY, 0, canvas.height);
   hudShadow.addColorStop(0, 'rgba(109, 86, 192, 0.5)');
