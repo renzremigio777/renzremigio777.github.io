@@ -33,7 +33,7 @@ const REGION_INFO = {
   p_pair:  { label: 'P PAIR',  odds: '11 : 1',   desc: "Player's first two cards are a pair.",   color: '#7752ff' },
   b_bonus: { label: 'B BONUS', odds: '4 : 1',    desc: 'Banker wins by a natural or large margin.', color: '#f55858' },
   b_pair:  { label: 'B PAIR',  odds: '11 : 1',   desc: "Banker's first two cards are a pair.",   color: '#f55858' },
-  chip:    { label: 'CHIP',    odds: '—',         desc: 'Select your bet denomination.',          color: '#e8c84a' },
+  // chip:    { label: 'CHIP',    odds: '—',         desc: 'Select your bet denomination.',          color: '#e8c84a' },
 };
 
 let containerAvailableWidth = 0;
