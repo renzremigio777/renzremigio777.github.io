@@ -9,9 +9,24 @@ let height = window.innerHeight;
 let scale = window.devicePixelRatio;
 let tileSize = Math.min(width, height) / 32;
 let scrollX = 0;
-let maxScrollX = canvas.width; // depends on your content width
 let isTouching = false;
 let screenX = 0;
+
+
+const maxWidth = 800; // your max container width
+const padding = 16;
+
+
+
+let containerAvailableWidth = 0;
+let containerMaxWidth =580;
+let containerWidth = containerMaxWidth;
+let maxScrollX = containerMaxWidth; // depends on your content width
+let leftGutter = 0;
+
+// optional height (full or constrained)
+const containerY = 0;
+const containerHeight = canvas.height;
 
 
 const values = ["P", "B", "T"];
@@ -68,43 +83,42 @@ const getBreakpoint = (w) => {
 
 const computeGeometry = () => {
 
-  const bp = getBreakpoint(canvas.width);
-
+  const bp = getBreakpoint(containerWidth);
 
   // --- Video ---
   const video = {
-    X: 0,
+    X: leftGutter,
     Y: 0,
-    W: canvas.width,
+    W: containerWidth,
     H: canvas.height * 0.5
   }
 
   // --- Bet Options ---
   const betOptionsW = Math.min(
-    canvas.width * 0.98,  // preferred responsive width
-    canvas.width / 2 - canvas.width / 2                  // max width (set your limit)
+    containerWidth * 0.98,  // preferred responsive width
+    containerWidth / 2 - containerWidth / 2                  // max width (set your limit)
   );
 
   const betOptions = {
-    X: canvas.width / 2 - canvas.width /2 ,
+    X: leftGutter ,
     Y: canvas.height * 0.4,
-    W: canvas.width,
+    W: containerWidth,
     H: canvas.height * 0.23
   }
 
   // --- Statistics ---
   const statistics = {
-    X: 0,
+    X: leftGutter,
     Y: canvas.height * 0.62 ,
-    W: canvas.width,
+    W: containerWidth,
     H: canvas.height * 0.18
   }
 
   // --- Menu Bar ---
   const menuBar = {
-    X: 0,
+    X: leftGutter,
     Y: canvas.height * 0.80,
-    W: canvas.width,
+    W: containerWidth,
     H: canvas.height * 0.20
   }
 
@@ -767,14 +781,6 @@ const drawStatistics = (GEOMETRY) => {
 
 
   // --- SCROLLABLE START -********************************************************************************
-  ctx.save();
-  ctx.translate(-scrollX, 0);
-
-
-  const gridA = constructGrid(9, 21, scoreBoard.X, scoreBoard.Y, scoreBoard.H ,1,3,6);
-  const gridE = constructGrid(6, 54, scoreBoard.X + gridA.totalWidth, scoreBoard.Y, scoreBoard.H);
-
- 
   const populateBeadRoad = (grid) => {
     const { rows, cols, posX, posY, gridHeight, cellW, cellH, totalWidth } = grid
 
@@ -985,6 +991,16 @@ const drawStatistics = (GEOMETRY) => {
       row+=0.5;
     });
   }
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(scoreBoard.X, scoreBoard.Y, containerWidth, scoreBoard.H);
+  ctx.clip();
+  ctx.translate(-scrollX, 0);
+
+
+  const gridA = constructGrid(9, 21, scoreBoard.X, scoreBoard.Y, scoreBoard.H ,1,3,6);
+  const gridE = constructGrid(6, 54, scoreBoard.X + gridA.totalWidth, scoreBoard.Y, scoreBoard.H);
+ 
 
   populateBigRoad(gridA)
   populateBigEye(gridA)
@@ -993,7 +1009,7 @@ const drawStatistics = (GEOMETRY) => {
   populateBeadRoad(gridE)
   
 
-  maxScrollX = (gridA.totalWidth + gridE.totalWidth)/2;
+  maxScrollX = (gridA.totalWidth + gridE.totalWidth)/5;
 
 
   ctx.restore();
@@ -1402,18 +1418,33 @@ const drawMenuBar = (GEOMETRY) => {
 const resize = (e) => {
   width = window.innerWidth;
   height = window.innerHeight;
-  scale = window.devicePixelRatio;
+  scale = window.devicePixelRatio || 1;
 
 
-  canvas.width = width * scale;
-  canvas.height = height * scale;
+
+  const vw = window.visualViewport?.width || window.innerWidth;
+  const vh = window.visualViewport?.height || window.innerHeight;
+  canvas.width = vw * scale;
+  canvas.height = vh * scale;
   canvas.style.width = width + 'px';
   canvas.style.height = height + 'px';
 
-  scrollX = 0;
-  maxScrollX = canvas.width; // depends on your content width
 
   tileSize = Math.min(canvas.width, canvas.height) / 32 ;
+  
+  const isMobile = canvas.width <=580;
+  const spacing = 10;
+  const buttonGap = spacing / 2;
+
+  containerAvailableWidth = canvas.width;
+  containerMaxWidth =580 * scale;
+  containerWidth = isMobile ? containerAvailableWidth   // full width on phone
+    : Math.min(containerAvailableWidth, containerMaxWidth);
+  leftGutter = (canvas.width - containerWidth) / 2;
+
+
+  scrollX = 0;
+  maxScrollX = containerWidth; // depends on your content width
 }
 
 
