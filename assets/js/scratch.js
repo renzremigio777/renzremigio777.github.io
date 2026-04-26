@@ -274,9 +274,8 @@ const drawbetOptions = (GEOMETRY) => {
   const borderRadius = GEOMETRY['betOptions'].H * 0.15;
   const borderWidth = 2.5 * scale;
 
-  const mainBetfontSize = clamp(18, GEOMETRY['betOptions'].W * 0.33 / 2 ,22);
-  const sideBetfontSize = clamp(10,GEOMETRY['betOptions'].W * 0.25 / 2, 16);
-
+  const mainBetfontSize = clamp(12, GEOMETRY['betOptions'].W * 0.033, 16) * scale;
+  const sideBetfontSize = clamp(10, GEOMETRY['betOptions'].W * 0.025, 12) * scale;
 
   ctx.setLineDash([])
 
@@ -310,7 +309,7 @@ const drawbetOptions = (GEOMETRY) => {
   const playerArcX = player.CX + player.R * Math.cos(playerStartAngle);
 
   const playerCardsG = 5 * scale
-  const playerCardW = clamp(20, (player.TW - player.R) * 0.25, 33);
+  const playerCardW = clamp(20 * scale, (player.TW - player.R) * 0.2, 32 * scale);
   const playerCardH = playerCardW * (4 / 3);
   const playerCardR = 2 * scale;
 
@@ -390,7 +389,7 @@ const drawbetOptions = (GEOMETRY) => {
   const bankerArcY = banker.CY + banker.R * Math.sin(bankerStartAngle);
 
   const bankerCardsG = 5 * scale
-  const bankerCardW = clamp(20, (banker.TW - banker.R) * 0.25, 33);
+  const bankerCardW = clamp(20 * scale, (banker.TW - banker.R) * 0.2, 33 * scale);
   const bankerCardH = bankerCardW * (4 / 3);
   const bankerCardR = 2 * scale;
 
