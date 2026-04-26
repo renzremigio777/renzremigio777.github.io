@@ -21,7 +21,7 @@ const hudPanel = {
 
 function getFontSize(width, height) {
   // pick a safe ratio
-  const sizeByWidth = width * 0.07;   // 10% of width
+  const sizeByWidth =  width * 0.07;   // 10% of width
   const sizeByHeight = height * 0.90; // 30% of height
 
   return Math.floor(Math.min(sizeByWidth, sizeByHeight));

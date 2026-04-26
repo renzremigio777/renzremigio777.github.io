@@ -523,17 +523,17 @@ class BetOptions {
 
       
       const pp = this.playerPath;
-      pp.moveTo(this.player.x + bRadius, this.player.y);
-      pp.lineTo(this.player.x + this.player.w - gap, this.player.y);
+      ctx.moveTo(this.player.x + bRadius, this.player.y);
+      ctx.lineTo(this.player.x + this.player.w - gap, this.player.y);
       // concave arc (inward cut)
-      pp.arc(cx, cy, r, Math.PI + (Math.PI / 2), Math.PI, true);
+      ctx.arc(cx, cy, r, Math.PI + (Math.PI / 2), Math.PI, true);
       // bottom-right corner
-      pp.arc(this.player.x + colW - bRadius, this.player.y + this.player.h, bRadius, 0, Math.PI - (Math.PI / 2), false);
+      ctx.arc(this.player.x + colW - bRadius, this.player.y + this.player.h, bRadius, 0, Math.PI - (Math.PI / 2), false);
       // bottom-left corner
-      pp.arc(this.player.x + bRadius, this.player.y + this.player.h, bRadius, Math.PI / 2, Math.PI, false);
+      ctx.arc(this.player.x + bRadius, this.player.y + this.player.h, bRadius, Math.PI / 2, Math.PI, false);
       // top-left corner
-      pp.arc(this.player.x + bRadius, this.player.y + bRadius, bRadius, Math.PI, -Math.PI / 2, false);
-      pp.closePath();
+      ctx.arc(this.player.x + bRadius, this.player.y + bRadius, bRadius, Math.PI, -Math.PI / 2, false);
+      ctx.closePath();
 
       ctx.strokeStyle = colors.STROKEBLUE;
       ctx.lineWidth = betStrokeWidth;
@@ -549,13 +549,12 @@ class BetOptions {
       // ctx.shadowColor = colors.STROKEBLUE;
       // ctx.shadowBlur = 1;
       // ctx.restore();
-      ctx.fillStyle = colors.BLUE
-        ctx.fill(pp);
-
+      ctx.fillStyle = colors.BLUE;
+      ctx.fill();
       if (this._playerT > 0.01) {
         // ctx.save();
         // ctx.globalAlpha = this._playerT;
-        ctx.fill(pp);
+        // ctx.fill(pp);
         // ctx.restore();
       }
      
@@ -565,229 +564,229 @@ class BetOptions {
       ctx.fillStyle = "#fff"
       ctx.fillText('PLAYER', this.player.x + this.player.w * 0.33, this.player.y + this.player.h * 0.90)
     })();
-    // ============================================
-    //  BANKER
-    // ============================================
-    (() => {
-      this.banker.w = this.w / 2 - gap;
-      this.banker.h = this.h * 0.6
+    // // ============================================
+    // //  BANKER
+    // // ============================================
+    // (() => {
+    //   this.banker.w = this.w / 2 - gap;
+    //   this.banker.h = this.h * 0.6
 
-      this.banker.x = this.x + containerWidth - gap;
-      this.banker.y = mainBetY;
+    //   this.banker.x = this.x + containerWidth - gap;
+    //   this.banker.y = mainBetY;
 
-      const r = Math.max(0, this.banker.h / 2);
+    //   const r = Math.max(0, this.banker.h / 2);
 
-      const cx = this.banker.x - colW - r;
-      const cy = this.banker.y + this.banker.h / 2;
+    //   const cx = this.banker.x - colW - r;
+    //   const cy = this.banker.y + this.banker.h / 2;
 
-      const bp = this.bankerPath;
-      bp.moveTo(this.banker.x - bRadius, this.banker.y);
-      bp.lineTo(this.banker.x - this.banker.w, this.banker.y);
-      // concave arc (inward cut)
-      bp.arc(cx, cy, r, Math.PI + (Math.PI / 2), 0, false);
-      // bottom-left corner
-      bp.arc(this.banker.x - colW + bRadius, this.banker.y + this.banker.h, bRadius, Math.PI, Math.PI / 2, true);
-      // bottom-right corner
-      bp.arc(this.banker.x - bRadius, this.banker.y + this.banker.h, bRadius, Math.PI - (Math.PI / 2), 0, true);
-      // top-right corner
-      bp.arc(this.banker.x - bRadius, this.banker.y + bRadius, bRadius, 0, -Math.PI / 2, true);
-      bp.closePath();
+    //   const bp = this.bankerPath;
+    //   bp.moveTo(this.banker.x - bRadius, this.banker.y);
+    //   bp.lineTo(this.banker.x - this.banker.w, this.banker.y);
+    //   // concave arc (inward cut)
+    //   bp.arc(cx, cy, r, Math.PI + (Math.PI / 2), 0, false);
+    //   // bottom-left corner
+    //   bp.arc(this.banker.x - colW + bRadius, this.banker.y + this.banker.h, bRadius, Math.PI, Math.PI / 2, true);
+    //   // bottom-right corner
+    //   bp.arc(this.banker.x - bRadius, this.banker.y + this.banker.h, bRadius, Math.PI - (Math.PI / 2), 0, true);
+    //   // top-right corner
+    //   bp.arc(this.banker.x - bRadius, this.banker.y + bRadius, bRadius, 0, -Math.PI / 2, true);
+    //   bp.closePath();
 
-      ctx.strokeStyle = colors.STROKERED;
-      ctx.lineWidth = betStrokeWidth;
-      const bankerTarget = (this.hovered === "banker" || this.active === "banker") ? 1 : 0;
-      this._bankerT += (bankerTarget - this._bankerT) * 0.12;
+    //   ctx.strokeStyle = colors.STROKERED;
+    //   ctx.lineWidth = betStrokeWidth;
+    //   const bankerTarget = (this.hovered === "banker" || this.active === "banker") ? 1 : 0;
+    //   this._bankerT += (bankerTarget - this._bankerT) * 0.12;
 
-      // const bankerGradBase = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
-      // bankerGradBase.addColorStop(redGradient[0].stop, redGradient[0].color);
-      // bankerGradBase.addColorStop(redGradient[1].stop, redGradient[1].color);
-      // ctx.save();
-      // ctx.shadowColor = colors.STROKERED;
-      // ctx.shadowBlur = 1;
-      ctx.fillStyle=colors.RED;
-      ctx.fill(bp);
-      // ctx.restore();
+    //   // const bankerGradBase = ctx.createLinearGradient(this.banker.x, this.banker.y, this.banker.x, this.banker.y + this.banker.h);
+    //   // bankerGradBase.addColorStop(redGradient[0].stop, redGradient[0].color);
+    //   // bankerGradBase.addColorStop(redGradient[1].stop, redGradient[1].color);
+    //   // ctx.save();
+    //   // ctx.shadowColor = colors.STROKERED;
+    //   // ctx.shadowBlur = 1;
+    //   ctx.fillStyle=colors.RED;
+    //   ctx.fill(bp);
+    //   // ctx.restore();
 
-      if (this._bankerT > 0.01) {
-        // ctx.save();
-        // ctx.globalAlpha = this._bankerT;
-        // ctx.fill(bp);
-        // ctx.restore();
-      }
-      // ctx.stroke(bp);
-      ctx.fillStyle = "#fff"
-      ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90);
-    })();
-    // ============================================
-    //  TIE
-    // ============================================
-    (() => {
-      this.tie.x = this.x + (containerWidth - colW) / 2;
-      this.tie.y = mainBetY
-      this.tie.w = colW;
-      this.tie.h = this.h * 0.6
+    //   if (this._bankerT > 0.01) {
+    //     // ctx.save();
+    //     // ctx.globalAlpha = this._bankerT;
+    //     // ctx.fill(bp);
+    //     // ctx.restore();
+    //   }
+    //   // ctx.stroke(bp);
+    //   ctx.fillStyle = "#fff"
+    //   ctx.fillText('BANKER', this.banker.x - this.banker.w * 0.33, this.banker.y + this.banker.h * 0.90);
+    // })();
+    // // ============================================
+    // //  TIE
+    // // ============================================
+    // (() => {
+    //   this.tie.x = this.x + (containerWidth - colW) / 2;
+    //   this.tie.y = mainBetY
+    //   this.tie.w = colW;
+    //   this.tie.h = this.h * 0.6
 
-      const r = this.tie.h / 2;
+    //   const r = this.tie.h / 2;
 
-      const cx = this.tie.x + r + bRadius;
-      const cy = this.tie.y + this.tie.h / 2  +5 ;
-      // ctx.roundRect(this.tie.x - (this.tie.w/2) - gap, this.tie.y + gap, this.tie.w, this.tie.h , r)
-      // before drawing
+    //   const cx = this.tie.x + r + bRadius;
+    //   const cy = this.tie.y + this.tie.h / 2  +5 ;
+    //   // ctx.roundRect(this.tie.x - (this.tie.w/2) - gap, this.tie.y + gap, this.tie.w, this.tie.h , r)
+    //   // before drawing
      
 
-      const tp = this.tiePath;
+    //   const tp = this.tiePath;
 
-      // p.moveTo(this.tie.x + r + bRadius, cy);
+    //   // p.moveTo(this.tie.x + r + bRadius, cy);
 
-      // replace ctx.arc → p.arc
-      tp.arc(this.tie.x + r + bRadius, cy, r, Math.PI, -Math.PI / 2, false);
-      tp.arc(this.tie.x + this.tie.w - r - bRadius, cy, r, -Math.PI / 2, 0, false);
-      tp.arc(this.tie.x + this.tie.w - bRadius, this.tie.y + this.tie.h, bRadius, -Math.PI + (Math.PI / 2), -Math.PI + (Math.PI / 2), false);
-      tp.arc(this.tie.x + colW - bRadius * 2, this.tie.y + this.tie.h, bRadius, 0, Math.PI - Math.PI / 2, false);
-      tp.arc(this.tie.x + bRadius + bRadius, this.tie.y + this.tie.h, bRadius, Math.PI / 2, Math.PI, false);
+    //   // replace ctx.arc → p.arc
+    //   tp.arc(this.tie.x + r + bRadius, cy, r, Math.PI, -Math.PI / 2, false);
+    //   tp.arc(this.tie.x + this.tie.w - r - bRadius, cy, r, -Math.PI / 2, 0, false);
+    //   tp.arc(this.tie.x + this.tie.w - bRadius, this.tie.y + this.tie.h, bRadius, -Math.PI + (Math.PI / 2), -Math.PI + (Math.PI / 2), false);
+    //   tp.arc(this.tie.x + colW - bRadius * 2, this.tie.y + this.tie.h, bRadius, 0, Math.PI - Math.PI / 2, false);
+    //   tp.arc(this.tie.x + bRadius + bRadius, this.tie.y + this.tie.h, bRadius, Math.PI / 2, Math.PI, false);
 
-      tp.closePath();
-      ctx.strokeStyle = colors.STROKEGREEN;
-      ctx.lineWidth = betStrokeWidth;
-      const tieTarget = (this.hovered === "tie" || this.active === "tie") ? 1 : 0;
-      this._tieT += (tieTarget - this._tieT) * 0.12;
+    //   tp.closePath();
+    //   ctx.strokeStyle = colors.STROKEGREEN;
+    //   ctx.lineWidth = betStrokeWidth;
+    //   const tieTarget = (this.hovered === "tie" || this.active === "tie") ? 1 : 0;
+    //   this._tieT += (tieTarget - this._tieT) * 0.12;
 
-      // const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
-      // tieGradBase.addColorStop(greenGradient[0].stop, greenGradient[0].color);
-      // tieGradBase.addColorStop(greenGradient[1].stop, greenGradient[1].color);
-      // ctx.fillStyle = tieGradBase;
+    //   // const tieGradBase = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
+    //   // tieGradBase.addColorStop(greenGradient[0].stop, greenGradient[0].color);
+    //   // tieGradBase.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+    //   // ctx.fillStyle = tieGradBase;
 
-      // ctx.save();
-      // ctx.shadowColor = colors.STROKEGREEN;
-      // ctx.shadowBlur = 18;
-      // ctx.restore();
+    //   // ctx.save();
+    //   // ctx.shadowColor = colors.STROKEGREEN;
+    //   // ctx.shadowBlur = 18;
+    //   // ctx.restore();
 
-      ctx.fillStyle = colors.GREEN;
-      ctx.fill(tp);
+    //   ctx.fillStyle = colors.GREEN;
+    //   ctx.fill(tp);
 
-      if (this._tieT > 0.01) {
-        // const tieGradActive = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
-        // tieGradActive.addColorStop(greenGradient[0].stop, greenGradient[0].color);
-        // tieGradActive.addColorStop(greenGradient[1].stop, greenGradient[1].color);
-        // ctx.save();
-        // ctx.globalAlpha = this._tieT;
-        // ctx.fillStyle = tieGradActive;
-        // ctx.fill(tp);
-        // ctx.restore();
-      }
-      // ctx.stroke(tp);
-      ctx.fillStyle = "#fff"
-      const labelY = this.tie.y + this.tie.h * 0.90;
-      ctx.fillText('TIE', this.x + this.w / 2, labelY)
+    //   if (this._tieT > 0.01) {
+    //     // const tieGradActive = ctx.createLinearGradient(this.tie.x, this.tie.y, this.tie.x, this.tie.y + this.tie.h);
+    //     // tieGradActive.addColorStop(greenGradient[0].stop, greenGradient[0].color);
+    //     // tieGradActive.addColorStop(greenGradient[1].stop, greenGradient[1].color);
+    //     // ctx.save();
+    //     // ctx.globalAlpha = this._tieT;
+    //     // ctx.fillStyle = tieGradActive;
+    //     // ctx.fill(tp);
+    //     // ctx.restore();
+    //   }
+    //   // ctx.stroke(tp);
+    //   ctx.fillStyle = "#fff"
+    //   const labelY = this.tie.y + this.tie.h * 0.90;
+    //   ctx.fillText('TIE', this.x + this.w / 2, labelY)
 
-      ctx.fillStyle = colors.NEONGREEN
-      ctx.font = `900 ${getFontSize(this.tie.w*0.5,this.tie.h*0.5)}px Trebuchet MS`;
-      const payoutY = labelY - this.tie.h * 0.20;
-      ctx.fillText('8:1', this.x + this.w / 2, payoutY)
-    })();
+    //   ctx.fillStyle = colors.NEONGREEN
+    //   ctx.font = `900 ${getFontSize(this.tie.w*0.5,this.tie.h*0.5)}px Trebuchet MS`;
+    //   const payoutY = labelY - this.tie.h * 0.20;
+    //   ctx.fillText('8:1', this.x + this.w / 2, payoutY)
+    // })();
 
     // ============================================
     //  SIDEBETS
     // ============================================
-    (() => {
-      this.sideBets = [];
-      let sideOptions = [
-        { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
-        { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
-        { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
-        { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
-        { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED},
-        { row: 2, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED},
-      ];
+    // (() => {
+    //   this.sideBets = [];
+    //   let sideOptions = [
+    //     { row: 1, value: "PERFECT PAIR", payout: '25:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
+    //     { row: 1, value: "EITHER PAIR", payout: '5:1', payoutColor: colors.NEONGREEN, outline: colors.STROKEGREEN, bg: colors.GREEN },
+    //     { row: 2, value: "P PAIR", payout: '11:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
+    //     { row: 2, value: "P BONUS", payout: '30:1', payoutColor: colors.NEONBLUE, outline: colors.STROKEBLUE, bg: colors.BLUE },
+    //     { row: 2, value: "B BONUS", payout: '30:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED},
+    //     { row: 2, value: "B PAIR", payout: '11:1', payoutColor: colors.NEONRED, outline: colors.STROKERED, bg: colors.RED},
+    //   ];
 
-      const count = sideOptions.length;
-      const spacing = gap;
+    //   const count = sideOptions.length;
+    //   const spacing = gap;
 
-      const totalW = this.w - gap * 2;
-      const totalSpacing = spacing * (count - 1);
+    //   const totalW = this.w - gap * 2;
+    //   const totalSpacing = spacing * (count - 1);
 
-      let startX = this.x + gap;
+    //   let startX = this.x + gap;
 
-      sideOptions.forEach((sb, index) => {
-        const x = startX;
-        const y = sb.row === 1 ? sideBetY : sideBetY + sideBetH + gap;
-        let w = (totalW - totalSpacing / 1.6) / 4;
-        if(index <= 1) {
-          w = (totalW - totalSpacing / 4) / 2;
-        }
-        ctx.beginPath();
-        ctx.roundRect(x, y, w, sideBetH, bRadius);
-        const _sbAngle = 9 * Math.PI / 180;
-        const _sbCx = x + w / 2, _sbCy = y + sideBetH / 2;
-        const _sbHalf = (Math.abs(w * Math.sin(_sbAngle)) + Math.abs(sideBetH * Math.cos(_sbAngle))) / 2;
-        // const sbGrad = ctx.createLinearGradient(
-        //   _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
-        //   _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
-        // );
-        // sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
-        // sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
+    //   sideOptions.forEach((sb, index) => {
+    //     const x = startX;
+    //     const y = sb.row === 1 ? sideBetY : sideBetY + sideBetH + gap;
+    //     let w = (totalW - totalSpacing / 1.6) / 4;
+    //     if(index <= 1) {
+    //       w = (totalW - totalSpacing / 4) / 2;
+    //     }
+    //     // ctx.beginPath();
+    //     ctx.roundRect(x, y, w, sideBetH, bRadius);
+    //     const _sbAngle = 9 * Math.PI / 180;
+    //     const _sbCx = x + w / 2, _sbCy = y + sideBetH / 2;
+    //     const _sbHalf = (Math.abs(w * Math.sin(_sbAngle)) + Math.abs(sideBetH * Math.cos(_sbAngle))) / 2;
+    //     // const sbGrad = ctx.createLinearGradient(
+    //     //   _sbCx - Math.sin(_sbAngle) * _sbHalf, _sbCy + Math.cos(_sbAngle) * _sbHalf,
+    //     //   _sbCx + Math.sin(_sbAngle) * _sbHalf, _sbCy - Math.cos(_sbAngle) * _sbHalf
+    //     // );
+    //     // sbGrad.addColorStop(sb.bg[0].stop, sb.bg[0].color);
+    //     // sbGrad.addColorStop(sb.bg[1].stop, sb.bg[1].color);
 
-        const sbTarget = (this.hovered === sb.value || this.active === sb.value) ? 1 : 0;
-        if (this._sbT[sb.value] === undefined) this._sbT[sb.value] = 0;
-        this._sbT[sb.value] += (sbTarget - this._sbT[sb.value]) * 0.12;
+    //     const sbTarget = (this.hovered === sb.value || this.active === sb.value) ? 1 : 0;
+    //     if (this._sbT[sb.value] === undefined) this._sbT[sb.value] = 0;
+    //     this._sbT[sb.value] += (sbTarget - this._sbT[sb.value]) * 0.12;
 
-        // ctx.save();
-        // ctx.shadowColor = sb.outline;
-        // ctx.shadowBlur = 14;
-        // ctx.fillStyle = sbGrad;
-        // ctx.strokeStyle = sb.outline;
-        // ctx.lineWidth = betStrokeWidth;
-        ctx.fillStyle = sb.bg;
-        ctx.fill();
-        // ctx.restore();
+    //     // ctx.save();
+    //     // ctx.shadowColor = sb.outline;
+    //     // ctx.shadowBlur = 14;
+    //     // ctx.fillStyle = sbGrad;
+    //     // ctx.strokeStyle = sb.outline;
+    //     // ctx.lineWidth = betStrokeWidth;
+    //     ctx.fillStyle = sb.bg;
+    //     // ctx.fill();
+    //     // ctx.restore();
 
-        if (this._sbT[sb.value] > 0.01) {
-          // ctx.save();
-          // ctx.globalAlpha = this._sbT[sb.value];
-          // ctx.beginPath();
-          // ctx.roundRect(x, y, w, sideBetH, bRadius);
-          // ctx.fill();
-          // ctx.restore();
-        }
-        // ctx.stroke();
-        let isNarrow = w <= 90
-        let fs = Math.max(12, 14) * dpr;
-        let labelY = y + sideBetH * 0.7
-        let payoutY = labelY - sideBetH * 0.2
-        // narrow
-        if (w <= 80) {
-          fs = 11
-        }
+    //     if (this._sbT[sb.value] > 0.01) {
+    //       // ctx.save();
+    //       // ctx.globalAlpha = this._sbT[sb.value];
+    //       // ctx.beginPath();
+    //       // ctx.roundRect(x, y, w, sideBetH, bRadius);
+    //       // ctx.fill();
+    //       // ctx.restore();
+    //     }
+    //     // ctx.stroke();
+    //     let isNarrow = w <= 90
+    //     let fs = Math.max(12, 14) * dpr;
+    //     let labelY = y + sideBetH * 0.7
+    //     let payoutY = labelY - sideBetH * 0.2
+    //     // narrow
+    //     if (w <= 80) {
+    //       fs = 11
+    //     }
 
-        ctx.font = `900 ${fs}px Trebuchet MS`;
-        ctx.fillStyle = "#ffffffcc";
-        const words = sb.value.split(" ");
-        // if (words.length === 2 && isNarrow) {
-        if ([2,3].includes(index) && isNarrow) {
-          ctx.fillText(words[0], x + w / 2, labelY - fs * 0.5);
-          ctx.fillText(words[1], x + w / 2, labelY + fs * 0.5);
-        } else {
+    //     ctx.font = `900 ${fs}px Trebuchet MS`;
+    //     ctx.fillStyle = "#ffffffcc";
+    //     const words = sb.value.split(" ");
+    //     // if (words.length === 2 && isNarrow) {
+    //     if ([2,3].includes(index) && isNarrow) {
+    //       ctx.fillText(words[0], x + w / 2, labelY - fs * 0.5);
+    //       ctx.fillText(words[1], x + w / 2, labelY + fs * 0.5);
+    //     } else {
 
-          ctx.fillText(sb.value, x + w / 2, labelY);
-        }
-        // ctx.fillText(sb.value, x + w / 2, y + sideBetH * 0.4);
-        ctx.font = `900 ${fs * 0.9}px Trebuchet MS`;
-        ctx.fillStyle = sb.payoutColor;
-        ctx.fillText(sb.payout, x + w / 2, payoutY);
-        startX += w + spacing;
-        if(index == 1) {
-          startX = this.x + gap
-          startX = this.x + gap
-        }
-        this.sideBets.push({
-          x,
-          y,
-          w,
-          h: sideBetH,
-          value: sb.value
-        });
-      });
-    })();
+    //       ctx.fillText(sb.value, x + w / 2, labelY);
+    //     }
+    //     // ctx.fillText(sb.value, x + w / 2, y + sideBetH * 0.4);
+    //     ctx.font = `900 ${fs * 0.9}px Trebuchet MS`;
+    //     ctx.fillStyle = sb.payoutColor;
+    //     ctx.fillText(sb.payout, x + w / 2, payoutY);
+    //     startX += w + spacing;
+    //     if(index == 1) {
+    //       startX = this.x + gap
+    //       startX = this.x + gap
+    //     }
+    //     this.sideBets.push({
+    //       x,
+    //       y,
+    //       w,
+    //       h: sideBetH,
+    //       value: sb.value
+    //     });
+    //   });
+    // })();
     //
 
   }
