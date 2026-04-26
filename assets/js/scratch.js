@@ -18,6 +18,10 @@ const padding = 16;
 
 
 
+let hitRegions = {};
+let hoverRegion = null;
+let pressedRegion = null;
+
 let containerAvailableWidth = 0;
 let containerMaxWidth =580;
 let containerWidth = containerMaxWidth;
@@ -340,23 +344,24 @@ const drawbetOptions = (GEOMETRY) => {
   const playerCardsY = player.Y + (player.LH) * 0.40;
 
 
-  ctx.beginPath();
-  ctx.moveTo(playerArcX, player.Y);
-
-  // -- Inner Arc --
-  ctx.arc(player.CX, player.CY, player.R, playerStartAngle, Math.PI, true);
-
-  ctx.lineTo(player.X, player.Y + player.LH);
-
-  // -- Outer Arc --
-  ctx.arc(player.X + borderRadius, player.Y + borderRadius,  borderRadius, angle * 90, -angle * 45, false);
+  // -- Button --
+  const playerShape = new Path2D();
+  playerShape.moveTo(playerArcX, player.Y);
+  playerShape.arc(player.CX, player.CY, player.R, playerStartAngle, Math.PI, true);
+  playerShape.lineTo(player.X, player.Y + player.LH);
+  playerShape.arc(player.X + borderRadius, player.Y + borderRadius, borderRadius, angle * 90, -angle * 45, false);
+  playerShape.closePath();
+  hitRegions.player = playerShape;
 
   ctx.strokeStyle = COLORS.STROKEBLUE;
   ctx.lineWidth = borderWidth;
-  ctx.closePath();
-  ctx.stroke();
+  ctx.stroke(playerShape);
   ctx.fillStyle = COLORS.FILLBLUE;
-  ctx.fill();
+  ctx.fill(playerShape);
+  if (pressedRegion === 'player') {
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill(playerShape);
+  }
 
 
   // -- Name --
@@ -466,23 +471,23 @@ const drawbetOptions = (GEOMETRY) => {
   const bankerCardsX = bankerCardsOffset - GEOMETRY['betOptions'].W * 0.25 + totalCardWidth
   const bankerCardsY = banker.Y + (banker.RH) * 0.40;
 
-  ctx.beginPath();
-  ctx.moveTo(bankerArcX, banker.Y);
-
-  // -- Inner Arc --
-  ctx.arc(banker.CX, banker.CY, banker.R, bankerStartAngle, 0, false);
-
-  ctx.lineTo(banker.X + banker.TW, banker.Y + banker.RH);
-
-  // -- Outer Arc --
-  ctx.arc(banker.X + banker.TW - borderRadius, banker.Y + borderRadius, borderRadius, angle * 0, -angle * 45, true);
+  const bankerShape = new Path2D();
+  bankerShape.moveTo(bankerArcX, banker.Y);
+  bankerShape.arc(banker.CX, banker.CY, banker.R, bankerStartAngle, 0, false);
+  bankerShape.lineTo(banker.X + banker.TW, banker.Y + banker.RH);
+  bankerShape.arc(banker.X + banker.TW - borderRadius, banker.Y + borderRadius, borderRadius, angle * 0, -angle * 45, true);
+  bankerShape.closePath();
+  hitRegions.banker = bankerShape;
 
   ctx.strokeStyle = COLORS.STROKERED;
   ctx.lineWidth = borderWidth;
-  ctx.closePath();
-  ctx.stroke();
+  ctx.stroke(bankerShape);
   ctx.fillStyle = COLORS.FILLRED;
-  ctx.fill();
+  ctx.fill(bankerShape);
+  if (pressedRegion === 'banker') {
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill(bankerShape);
+  }
 
   // -- Name --
   ctx.textAlign = `center`
@@ -568,14 +573,20 @@ const drawbetOptions = (GEOMETRY) => {
     CY: GEOMETRY['betOptions'].Y + GEOMETRY['betOptions'].H * 0.65,
     R: arcRadius - betOptionsGap,
   }
-  ctx.beginPath();
-  ctx.arc(tie.CX, tie.CY, tie.R, angle * 90, angle * 0, false);
+  const tieShape = new Path2D();
+  tieShape.arc(tie.CX, tie.CY, tie.R, angle * 90, angle * 0, false);
+  tieShape.closePath();
+  hitRegions.tie = tieShape;
+
   ctx.strokeStyle = COLORS.STROKEGREEN;
   ctx.lineWidth = borderWidth;
-  ctx.closePath();
-  ctx.stroke();
+  ctx.stroke(tieShape);
   ctx.fillStyle = COLORS.FILLGREEN;
-  ctx.fill();
+  ctx.fill(tieShape);
+  if (pressedRegion === 'tie') {
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill(tieShape);
+  }
 
 
   // -- Name --
@@ -633,7 +644,7 @@ const drawbetOptions = (GEOMETRY) => {
   // SIDEBETS
   // ────────────────────────────────────────────────────────────────────────────────────────────────
   let sideX = GEOMETRY['betOptions'].X + betOptionsGap;
-  let sideBets = ['P BONUS', 'P PAIR', 'P BONUS', 'B PAIR']
+  let sideBets = ['P_BONUS', 'P_PAIR', 'B_BONUS', 'B_PAIR']
   sideBets.forEach((side, index) => {
     const sideBet = {
       X: sideX,
@@ -641,30 +652,37 @@ const drawbetOptions = (GEOMETRY) => {
       W: (GEOMETRY['betOptions'].W - betOptionsGap * (sideBets.length + 1)) / sideBets.length,
       H: (GEOMETRY['betOptions'].H * 0.25),
     }
+    const sideShape = new Path2D();
     ctx.strokeStyle = COLORS.STROKESIDE
     ctx.fillStyle = COLORS.FILLSIDE;
     ctx.lineWidth = borderWidth;
-    ctx.closePath();
     ctx.beginPath();
     if(index === 0) {
-      ctx.moveTo(sideBet.X, sideBet.Y);
-      ctx.lineTo(sideBet.X + sideBet.W, sideBet.Y);
-      ctx.lineTo(sideBet.X + sideBet.W, sideBet.Y + sideBet.H);
-      ctx.arc(sideBet.X + borderRadius, sideBet.Y + sideBet.H - borderRadius, borderRadius, angle * 45, angle * 90, false)
+      sideShape.moveTo(sideBet.X, sideBet.Y);
+      sideShape.lineTo(sideBet.X + sideBet.W, sideBet.Y);
+      sideShape.lineTo(sideBet.X + sideBet.W, sideBet.Y + sideBet.H);
+      sideShape.arc(sideBet.X + borderRadius, sideBet.Y + sideBet.H - borderRadius, borderRadius, angle * 45, angle * 90, false)
     } else if(index === sideBets.length - 1) {
-      ctx.moveTo(sideBet.X, sideBet.Y);
-      ctx.lineTo(sideBet.X + sideBet.W, sideBet.Y);
-      ctx.arc(sideBet.X + sideBet.W - borderRadius, sideBet.Y + sideBet.H - borderRadius, borderRadius, angle * 0, angle * 45, false)
-      ctx.lineTo(sideBet.X, sideBet.Y + sideBet.H);
+      sideShape.moveTo(sideBet.X, sideBet.Y);
+      sideShape.lineTo(sideBet.X + sideBet.W, sideBet.Y);
+      sideShape.arc(sideBet.X + sideBet.W - borderRadius, sideBet.Y + sideBet.H - borderRadius, borderRadius, angle * 0, angle * 45, false)
+      sideShape.lineTo(sideBet.X, sideBet.Y + sideBet.H);
     } else {
-      ctx.moveTo(sideBet.X, sideBet.Y);
-      ctx.lineTo(sideBet.X + sideBet.W, sideBet.Y);
-      ctx.lineTo(sideBet.X + sideBet.W, sideBet.Y + sideBet.H);
-      ctx.lineTo(sideBet.X, sideBet.Y + sideBet.H);
+      sideShape.moveTo(sideBet.X, sideBet.Y);
+      sideShape.lineTo(sideBet.X + sideBet.W, sideBet.Y);
+      sideShape.lineTo(sideBet.X + sideBet.W, sideBet.Y + sideBet.H);
+      sideShape.lineTo(sideBet.X, sideBet.Y + sideBet.H);
     }
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();
+    sideShape.closePath();
+    hitRegions[side] = sideShape;
+    ctx.fillStyle = COLORS.FILLSIDE;
+    ctx.stroke(sideShape);
+    ctx.fill(sideShape);
+    if (pressedRegion === side.toLowerCase()) {
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fill(sideShape);
+    }
+
 
     // -- Name --
     ctx.fillStyle = "#d6dbb7";
@@ -1155,8 +1173,8 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.closePath();
   ctx.strokeStyle = "#fff"
   ctx.stroke();
-  ctx.font = `30 ${clamp(10, chatButton.W * 0.5, 18)}px Arial`
-  ctx.fillStyle = "#ffffff5d"
+  ctx.font = `30 ${clamp(12, chatButton.W * 0.5, 20)}px Arial`
+  ctx.fillStyle = "#ffffffda"
   ctx.fillText("Chat", chatButton.X + chatButton.W * 0.5, chatButton.Y + chatButton.H + 28)
 
 
@@ -1319,13 +1337,22 @@ const drawMenuBar = (GEOMETRY) => {
   const chipR = chipButton.H * 0.38;
 
   // Outer body
-  ctx.beginPath();
-  ctx.arc(chipCX, chipCY, chipR, 0, Math.PI * 2);
-  ctx.fillStyle = "#9da010";
-  ctx.fill();
-  ctx.strokeStyle = "#e8c84a";
+  const chipShape = new Path2D();
   ctx.lineWidth = 1.5 * scale;
-  ctx.stroke();
+  chipShape.arc(chipCX, chipCY, chipR, 0, Math.PI * 2);
+  chipShape.closePath();
+
+  hitRegions.chip = chipShape;
+
+
+  ctx.strokeStyle = "#e8c84a";
+  ctx.stroke(chipShape);
+  ctx.fillStyle = "#9da010";
+  ctx.fill(chipShape);
+  if (pressedRegion === 'chip') {
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill(chipShape);
+  }
 
   // Edge segments
   const chipSegs = 8;
@@ -1421,7 +1448,7 @@ const drawMenuBar = (GEOMETRY) => {
   //   false
   // )
   // ctx.stroke();
-  const text = "435,324.34";
+  const text = "₱435,324.34";
   const x = wallet.X + wallet.W - tileSize;
   const y = wallet.Y + wallet.H * 0.225;
 
@@ -1509,6 +1536,69 @@ loop();
 // -- Event Listeners --
 window.addEventListener('resize', resize);
 
+
+canvas.addEventListener('pointermove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * scale;
+  const y = (e.clientY - rect.top) * scale;
+
+  const overPlayer = hitRegions.player && ctx.isPointInPath(hitRegions.player, x, y);
+  const overBanker = hitRegions.banker && ctx.isPointInPath(hitRegions.banker, x, y);
+  const overTie = hitRegions.tie && ctx.isPointInPath(hitRegions.tie, x, y);
+  const overChip = hitRegions.chip && ctx.isPointInPath(hitRegions.chip, x, y);
+  const overPPair = hitRegions.P_PAIR && ctx.isPointInPath(hitRegions.P_PAIR, x, y);
+  const overBPair = hitRegions.B_PAIR && ctx.isPointInPath(hitRegions.B_PAIR, x, y);
+  const overPBonus = hitRegions.P_BONUS && ctx.isPointInPath(hitRegions.P_BONUS, x, y);
+  const overBBonus = hitRegions.B_BONUS && ctx.isPointInPath(hitRegions.B_BONUS, x, y);
+  hoverRegion = overPlayer ? 'player' 
+  : overBanker ? 'banker' 
+  : overTie ? 'tie' 
+  : overChip ? 'chip' 
+  : overPBonus ? 'p_bonus' 
+  : overBBonus ? 'b_bonus' 
+  : overPPair ? 'p_pair' 
+  : overBPair ? 'b_pair' 
+  : null;
+  canvas.style.cursor = (
+    overPlayer 
+    || overBanker 
+    || overTie 
+    || overChip
+    || overPBonus
+    || overBBonus
+    || overPPair
+    || overBPair
+    ) ? 'pointer' : 'default';
+});
+
+canvas.addEventListener('pointerdown', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * scale;
+  const y = (e.clientY - rect.top) * scale;
+
+  if (hitRegions.player && ctx.isPointInPath(hitRegions.player, x, y)) {
+    pressedRegion = 'player';
+  } else if (hitRegions.banker && ctx.isPointInPath(hitRegions.banker, x, y)) {
+    pressedRegion = 'banker';
+  } else if (hitRegions.tie && ctx.isPointInPath(hitRegions.tie, x, y)) {
+    pressedRegion = 'tie';
+  } else if (hitRegions.P_BONUS && ctx.isPointInPath(hitRegions.P_BONUS, x, y)) {
+    pressedRegion = 'p_bonus';
+  } else if (hitRegions.P_PAIR && ctx.isPointInPath(hitRegions.P_PAIR, x, y)) {
+    pressedRegion = 'p_pair';
+  } else if (hitRegions.B_BONUS && ctx.isPointInPath(hitRegions.B_BONUS, x, y)) {
+    pressedRegion = 'b_bonus';
+  } else if (hitRegions.B_PAIR && ctx.isPointInPath(hitRegions.B_PAIR, x, y)) {
+    pressedRegion = 'b_pair';
+  } else if (hitRegions.chip && ctx.isPointInPath(hitRegions.chip, x, y)) {
+    pressedRegion = 'chip';
+  } else {
+    pressedRegion = null;
+  }
+});
+
+canvas.addEventListener('pointerup', () => { pressedRegion = null; });
+canvas.addEventListener('pointercancel', () => { pressedRegion = null; });
 
 canvas.addEventListener("touchstart", (e) => {
   isTouching = true;
