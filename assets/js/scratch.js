@@ -55,6 +55,10 @@ for (let i = 0; i < 15; i++) {
   results.push({ value: randomValue });
 }
 
+let chips = [100, 200, 500, 1000, 5000, 10000, 20000]
+let currentChipIndex = 0;
+
+
 const COLORS = {
   PRIMARYBLACK: "#000000",
   SECONDARYBLACK: "#010201",
@@ -1358,15 +1362,18 @@ const drawMenuBar = (GEOMETRY) => {
 
   hitRegions.chip = chipShape;
 
-
+  ctx.save();
+  ctx.shadowColor = "#fdfa3d";
+  ctx.shadowBlur = 10;
   ctx.strokeStyle = "#e8c84a";
   ctx.stroke(chipShape);
   ctx.fillStyle = "#9da010";
   ctx.fill(chipShape);
   if (pressedRegion === 'chip') {
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
     ctx.fill(chipShape);
+    ctx.shadowColor = "#f7f6d1";
   }
+  ctx.restore();
 
   // Edge segments
   const chipSegs = 8;
@@ -1388,16 +1395,20 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.lineWidth = 1 * scale;
   ctx.stroke();
 
+  
+
   // Label
   const chipFontSize = clamp(10, chipR * 0.58, 40);
   ctx.font = `700 ${chipFontSize}px Arial`;
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("5K", chipCX, chipCY);
+
+  const formatter = new Intl.NumberFormat('en', { notation: 'compact' });
+  let formattedValue = chips[currentChipIndex] > 900 ? formatter.format(chips[currentChipIndex]) : chips[currentChipIndex].toString();
+  ctx.fillText(formattedValue, chipCX, chipCY);
 
 
-  
 
   // --- Wallet ---
   const wallet = {
@@ -1674,6 +1685,12 @@ canvas.addEventListener('pointerdown', (e) => {
     pressedRegion = 'b_pair';
   } else if (hitRegions.chip && ctx.isPointInPath(hitRegions.chip, x, y)) {
     pressedRegion = 'chip';
+  
+    currentChipIndex++;
+    if(currentChipIndex >= chips.length) {
+      currentChipIndex = 0
+    }
+
   } else {
     pressedRegion = null;
   }
