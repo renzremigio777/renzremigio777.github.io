@@ -1677,6 +1677,7 @@ canvas.addEventListener('pointerdown', (e) => {
   } else {
     pressedRegion = null;
   }
+  hoverRegion = pressedRegion;
 });
 
 canvas.addEventListener('pointerup', () => {
