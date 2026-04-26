@@ -170,7 +170,8 @@ const drawGrid = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // --- Background ---
-  ctx.fillStyle = "rgb(54, 50, 50)";
+  // ctx.fillStyle = "rgb(54, 50, 50)";
+  ctx.fillStyle = "rgb(0, 0, 0)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // --- Grid ---
@@ -399,13 +400,13 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.closePath()
   ctx.closePath()
   ctx.fill();
-  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
   ctx.fillText('12', player.X + player.TW * 0.57 - player.R, (player.CY - player.R * 0.225));
 
   // Percentage
   ctx.textAlign = "end"
   ctx.fillStyle = "#d6dbb7";
-  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
   ctx.fillText('₱1,233,990', player.X + player.TW * 0.5, player.CY - player.R * 0.225);
   ctx.arc(player.X + player.TW * 0.5, player.CY - player.R * 0.28, tileSize * 0.15, Math.PI * 2, 0, false)
 
@@ -528,14 +529,14 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.closePath()
   ctx.fill();
   ctx.textAlign = `start`
-  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
   ctx.fillText('12', banker.X + banker.TW * 0.53, (banker.CY - banker.R * 0.225));
 
 
   // Percentage
   ctx.textAlign = "end"
   ctx.fillStyle = "#d6dbb7";
-  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
   ctx.fillText('₱1,233,990', banker.X + banker.TW * 0.5 + banker.R , banker.CY - banker.R * 0.225);
 
 
@@ -551,7 +552,7 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.save();
   ctx.shadowColor = COLORS.NEONRED;
   ctx.shadowBlur = 5;
-  ctx.roundRect(banker.X + banker.TW * 0.5 + banker.R - progressBarW * 0.5, banker.CY - banker.R * 0.15, progressBarW * 0.5, progressBarH, progressBarR);
+  ctx.roundRect(banker.X + banker.TW * 0.5 + banker.R - progressBarW, banker.CY - banker.R * 0.15, progressBarW * 0.5, progressBarH, progressBarR);
 
   ctx.fill();
 
@@ -598,10 +599,10 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.arc(tie.CX - progressBarW / 2,tie.CY - tie.R * 0.28,4,Math.PI *2,0,false)
   ctx.closePath()
   ctx.fill();
-  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
   ctx.fillText('12', tie.CX - progressBarW  /3, (tie.CY - tie.R * 0.225));
 
-  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
   ctx.textAlign = "end"
   ctx.fillText('₱220,330', tie.CX + progressBarW / 2, tie.CY - tie.R * 0.225);
 
