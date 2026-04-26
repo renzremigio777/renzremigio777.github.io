@@ -14,7 +14,6 @@ let isTouching = false;
 let screenX = 0;
 
 
-
 const values = ["P", "B", "T"];
 const results = []
 for (let i = 0; i < 15; i++) {
@@ -32,6 +31,10 @@ const COLORS = {
   PLAYERBLUE: "#7752ff",
   TIEGREEN: "#58b373",
   BANKERRED: "#f55858",
+  //-- NEON Colors --
+  NEONBLUE: "#8595f3",
+  NEONGREEN: "#84eea4",
+  NEONRED: "#e75d5d",
 
 
   //-- Hard Colors --
@@ -277,6 +280,9 @@ const drawbetOptions = (GEOMETRY) => {
   const mainBetfontSize = clamp(12, GEOMETRY['betOptions'].W * 0.033, 16) * scale;
   const sideBetfontSize = clamp(10, GEOMETRY['betOptions'].W * 0.025, 12) * scale;
 
+  const progressBarW = GEOMETRY['betOptions'].W * 0.2;
+  const progressBarH = 2 * scale;
+  const progressBarR = 10;
   ctx.setLineDash([])
 
   ctx.roundRect(
@@ -369,6 +375,33 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.closePath();
   ctx.stroke();
 
+  // Percentage
+  ctx.beginPath();
+  ctx.fillStyle = "#00000079"
+  ctx.roundRect(player.X + player.TW * 0.5 - player.R, player.CY - player.R * 0.15, progressBarW, progressBarH, progressBarR);
+  ctx.closePath();
+  ctx.fill()
+
+
+  ctx.beginPath();
+  ctx.fillStyle = COLORS.PLAYERBLUE
+  
+  ctx.save();
+  ctx.shadowColor = COLORS.NEONBLUE;
+  ctx.shadowBlur = 5;
+
+  ctx.roundRect(
+    player.X + player.TW * 0.5 - player.R,
+    player.CY - player.R * 0.15,
+    progressBarW * 0.5,
+    progressBarH,
+    progressBarR
+  );
+
+  ctx.fill();
+
+  ctx.restore(); 
+
 
   // ────────────────────────────────────────────────────────────────────────────────────────────────
   // BANKER
@@ -447,6 +480,27 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.roundRect(bankerCardsX - (bankerCardW + bankerCardsG) * 2, bankerCardsY, bankerCardW, bankerCardH, bankerCardR);
   ctx.closePath();
   ctx.stroke();
+  
+
+  // Percentage
+  ctx.beginPath();
+  ctx.fillStyle = "#00000079"
+  ctx.roundRect(banker.X + banker.TW * 0.5 + banker.R - progressBarW, banker.CY - banker.R * 0.15, progressBarW, progressBarH, progressBarR);
+  ctx.closePath();
+  ctx.fill()
+
+  ctx.beginPath();
+  ctx.fillStyle = COLORS.BANKERRED
+
+  ctx.save();
+  ctx.shadowColor = COLORS.NEONRED;
+  ctx.shadowBlur = 5;
+  ctx.roundRect(banker.X + banker.TW * 0.5 + banker.R - progressBarW * 0.5, banker.CY - banker.R * 0.15, progressBarW * 0.5, progressBarH, progressBarR);
+
+  ctx.fill();
+
+  ctx.restore(); 
+
 
 
   // ────────────────────────────────────────────────────────────────────────────────────────────────
@@ -470,14 +524,52 @@ const drawbetOptions = (GEOMETRY) => {
   // -- Name --
   ctx.fillStyle = "#d6dbb7";
   ctx.font = `600 ${mainBetfontSize}px Arial`
-  ctx.fillText('TIE', tie.CX, tie.CY - (tie.R * 0.2));
+  ctx.fillText('TIE', tie.CX, tie.CY - (tie.R * 0.55));
 
   // -- Odds --
   ctx.fillStyle = "#ffffff";
   ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
-  ctx.fillText('8:1', tie.CX, tie.CY - tie.R * 0.35);
+  ctx.fillText('8:1', tie.CX, tie.CY - tie.R * 0.75);
+  
+  // -- Total Bets --
+  ctx.fillStyle = "#d6dbb7";
+  ctx.beginPath();
+  ctx.arc( tie.CX - tie.R * 0.8, tie.CY - tie.R * 0.2, tileSize * 0.3, Math.PI * 45, 0, false)
+  ctx.fill();
+  ctx.closePath()
+  ctx.beginPath()
+  ctx.arc(tie.CX - tie.R * 0.8,tie.CY - tie.R * 0.3,tileSize * 0.15,Math.PI *2,0,false)
+  ctx.closePath()
+  ctx.fill();
+  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.fillText('12', tie.CX - tie.R * 0.6, (tie.CY - tie.R * 0.25));
+
+  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.textAlign = "end"
+  ctx.fillText('₱220,330', tie.CX + tie.R * 0.8, tie.CY - tie.R * 0.25);
+
+  // Percentage
+  ctx.beginPath();
+  ctx.fillStyle = "#00000079"
+  ctx.roundRect(tie.CX - progressBarW * 0.5, tie.CY - tie.R * 0.15, progressBarW, progressBarH, progressBarR);
+  ctx.roundRect(tie.CX - progressBarW * 0.5, tie.CY - tie.R * 0.15, progressBarW, progressBarH, progressBarR);
+  ctx.closePath();
+  ctx.fill()
+
+  ctx.beginPath();
+  ctx.fillStyle =  COLORS.TIEGREEN
 
 
+  ctx.save();
+  ctx.shadowColor = COLORS.NEONGREEN;
+  ctx.shadowBlur = 5;
+  ctx.roundRect(tie.CX - progressBarW * 0.5, tie.CY - tie.R * 0.15, progressBarW*0.15, progressBarH, progressBarR);
+  ctx.fill();
+
+  ctx.restore();
+
+
+  ctx.textAlign = "center"
 
   // ────────────────────────────────────────────────────────────────────────────────────────────────
   // SIDEBETS
@@ -525,6 +617,8 @@ const drawbetOptions = (GEOMETRY) => {
     ctx.fillStyle = "#ffffff";
     ctx.font = `300 ${sideBetfontSize*0.85}px Arial`
     ctx.fillText('04:20', sideBet.X + sideBet.W *0.5, sideBet.Y + sideBet.H * 0.70);
+    
+ 
 
     sideX += sideBet.W + betOptionsGap
   });
