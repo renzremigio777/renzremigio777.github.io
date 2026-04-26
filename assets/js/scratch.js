@@ -336,7 +336,7 @@ const drawbetOptions = (GEOMETRY) => {
   const totalCardWidth = ((playerCardW + playerCardsG) * 3)
 
   const playerCardsX = GEOMETRY['betOptions'].X + GEOMETRY['betOptions'].W * 0.25 - totalCardWidth;
-  const playerCardsY = player.Y + (player.LH) * 0.45;
+  const playerCardsY = player.Y + (player.LH) * 0.40;
 
 
   ctx.beginPath();
@@ -389,7 +389,27 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.closePath();
   ctx.stroke();
 
+  // -- Total Bets --
+  ctx.fillStyle = "#d6dbb7";
+  ctx.beginPath();
+  ctx.arc(player.X + player.TW * 0.5 - player.R, player.CY - player.R * 0.19, 7, Math.PI * 45, 0, false)
+  ctx.fill();
+  ctx.beginPath()
+  ctx.arc(player.X + player.TW * 0.5 - player.R, player.CY - player.R * 0.28, 4, Math.PI * 2, 0, false)
+  ctx.closePath()
+  ctx.closePath()
+  ctx.fill();
+  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.fillText('12', player.X + player.TW * 0.57 - player.R, (player.CY - player.R * 0.225));
+
   // Percentage
+  ctx.textAlign = "end"
+  ctx.fillStyle = "#d6dbb7";
+  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.fillText('₱1,233,990', player.X + player.TW * 0.5, player.CY - player.R * 0.225);
+  ctx.arc(player.X + player.TW * 0.5, player.CY - player.R * 0.28, tileSize * 0.15, Math.PI * 2, 0, false)
+
+
   ctx.beginPath();
   ctx.fillStyle = "#00000079"
   ctx.roundRect(player.X + player.TW * 0.5 - player.R, player.CY - player.R * 0.15, progressBarW, progressBarH, progressBarR);
@@ -443,7 +463,7 @@ const drawbetOptions = (GEOMETRY) => {
   // ******** MIRRORS: const playerCardsX = GEOMETRY['betOptions'].X + GEOMETRY['betOptions'].W * 0.25 - totalCardWidth;
   const bankerCardsOffset = GEOMETRY['betOptions'].X + GEOMETRY['betOptions'].W - (bankerCardW)
   const bankerCardsX = bankerCardsOffset - GEOMETRY['betOptions'].W * 0.25 + totalCardWidth
-  const bankerCardsY = banker.Y + (banker.RH) * 0.45;
+  const bankerCardsY = banker.Y + (banker.RH) * 0.40;
 
   ctx.beginPath();
   ctx.moveTo(bankerArcX, banker.Y);
@@ -464,6 +484,7 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.fill();
 
   // -- Name --
+  ctx.textAlign = `center`
   ctx.font = `600 ${mainBetfontSize}px Arial`
   ctx.fillStyle = "#d6dbb7";
   ctx.fillText('BANKER', banker.X + banker.TW / 2 + banker.R / 2, banker.Y + banker.RH * 0.2);
@@ -495,8 +516,29 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.closePath();
   ctx.stroke();
   
+  
+ // -- Total Bets --
+  ctx.fillStyle = "#d6dbb7";
+  ctx.beginPath();
+  ctx.arc(banker.X + banker.TW * 0.5 , banker.CY - banker.R * 0.19, 7, Math.PI * 45, 0, false)
+  ctx.fill();
+  ctx.closePath()
+  ctx.beginPath()
+  ctx.arc(banker.X + banker.TW * 0.5 ,banker.CY - banker.R * 0.28,4,Math.PI *2,0,false)
+  ctx.closePath()
+  ctx.fill();
+  ctx.textAlign = `start`
+  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.fillText('12', banker.X + banker.TW * 0.53, (banker.CY - banker.R * 0.225));
+
 
   // Percentage
+  ctx.textAlign = "end"
+  ctx.fillStyle = "#d6dbb7";
+  ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
+  ctx.fillText('₱1,233,990', banker.X + banker.TW * 0.5 + banker.R , banker.CY - banker.R * 0.225);
+
+
   ctx.beginPath();
   ctx.fillStyle = "#00000079"
   ctx.roundRect(banker.X + banker.TW * 0.5 + banker.R - progressBarW, banker.CY - banker.R * 0.15, progressBarW, progressBarH, progressBarR);
@@ -536,6 +578,7 @@ const drawbetOptions = (GEOMETRY) => {
 
 
   // -- Name --
+  ctx.textAlign = `center`
   ctx.fillStyle = "#d6dbb7";
   ctx.font = `600 ${mainBetfontSize}px Arial`
   ctx.fillText('TIE', tie.CX, tie.CY - (tie.R * 0.55));
@@ -548,19 +591,19 @@ const drawbetOptions = (GEOMETRY) => {
   // -- Total Bets --
   ctx.fillStyle = "#d6dbb7";
   ctx.beginPath();
-  ctx.arc( tie.CX - tie.R * 0.8, tie.CY - tie.R * 0.2, tileSize * 0.3, Math.PI * 45, 0, false)
+  ctx.arc(tie.CX - progressBarW  /2, tie.CY - tie.R * 0.19, 7, Math.PI * 45, 0, false)
   ctx.fill();
   ctx.closePath()
   ctx.beginPath()
-  ctx.arc(tie.CX - tie.R * 0.8,tie.CY - tie.R * 0.3,tileSize * 0.15,Math.PI *2,0,false)
+  ctx.arc(tie.CX - progressBarW / 2,tie.CY - tie.R * 0.28,4,Math.PI *2,0,false)
   ctx.closePath()
   ctx.fill();
   ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
-  ctx.fillText('12', tie.CX - tie.R * 0.6, (tie.CY - tie.R * 0.25));
+  ctx.fillText('12', tie.CX - progressBarW  /3, (tie.CY - tie.R * 0.225));
 
   ctx.font = `300 ${mainBetfontSize * 0.65}px Arial`
   ctx.textAlign = "end"
-  ctx.fillText('₱220,330', tie.CX + tie.R * 0.8, tie.CY - tie.R * 0.25);
+  ctx.fillText('₱220,330', tie.CX + progressBarW / 2, tie.CY - tie.R * 0.225);
 
   // Percentage
   ctx.beginPath();
@@ -1304,7 +1347,7 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.stroke();
 
   // Label
-  const chipFontSize = clamp(10, chipR * 0.58, 20);
+  const chipFontSize = clamp(10, chipR * 0.58, 40);
   ctx.font = `700 ${chipFontSize}px Arial`;
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
