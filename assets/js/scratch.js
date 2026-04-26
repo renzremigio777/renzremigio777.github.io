@@ -21,6 +21,20 @@ const padding = 16;
 let hitRegions = {};
 let hoverRegion = null;
 let pressedRegion = null;
+let activePopup = null;
+let popupCardRect = null;
+let popupCloseHit = null;
+
+const REGION_INFO = {
+  player:  { label: 'PLAYER',  odds: '0.95 : 1', desc: 'Bet on the Player hand to win.',         color: '#7752ff' },
+  banker:  { label: 'BANKER',  odds: '0.95 : 1', desc: 'Bet on the Banker hand to win.',         color: '#f55858' },
+  tie:     { label: 'TIE',     odds: '8 : 1',    desc: 'Bet that both hands end in a tie.',      color: '#58b373' },
+  p_bonus: { label: 'P BONUS', odds: '4 : 1',    desc: 'Player wins by a natural or large margin.', color: '#7752ff' },
+  p_pair:  { label: 'P PAIR',  odds: '11 : 1',   desc: "Player's first two cards are a pair.",   color: '#7752ff' },
+  b_bonus: { label: 'B BONUS', odds: '4 : 1',    desc: 'Banker wins by a natural or large margin.', color: '#f55858' },
+  b_pair:  { label: 'B PAIR',  odds: '11 : 1',   desc: "Banker's first two cards are a pair.",   color: '#f55858' },
+  chip:    { label: 'CHIP',    odds: '—',         desc: 'Select your bet denomination.',          color: '#e8c84a' },
+};
 
 let containerAvailableWidth = 0;
 let containerMaxWidth =580;
@@ -1519,12 +1533,71 @@ const resize = (e) => {
 }
 
 
+const drawPopup = () => {
+  if (!activePopup) { popupCardRect = null; popupCloseHit = null; return; }
+  const info = REGION_INFO[activePopup];
+  if (!info) return;
+
+  // Backdrop
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Card
+  const cardW = clamp(260 * scale, canvas.width * 0.72, 400 * scale);
+  const cardH = cardW * 0.68;
+  const cardX = (canvas.width - cardW) / 2;
+  const cardY = (canvas.height - cardH) / 2;
+  const cardR = 14 * scale;
+  popupCardRect = { X: cardX, Y: cardY, W: cardW, H: cardH };
+
+  ctx.beginPath();
+  ctx.roundRect(cardX, cardY, cardW, cardH, cardR);
+  ctx.fillStyle = '#111827';
+  ctx.fill();
+  ctx.strokeStyle = '#374151';
+  ctx.lineWidth = 1 * scale;
+  ctx.stroke();
+
+  // Close button
+  const closeR = 11 * scale;
+  const closeX = cardX + cardW - closeR * 2 - 10 * scale;
+  const closeY = cardY + closeR + 10 * scale;
+  popupCloseHit = { X: closeX - closeR, Y: closeY - closeR, W: closeR * 2, H: closeR * 2 };
+  ctx.beginPath();
+  ctx.arc(closeX, closeY, closeR, 0, Math.PI * 2);
+  ctx.fillStyle = '#374151';
+  ctx.fill();
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = `${13 * scale}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✕', closeX, closeY);
+
+  // Label
+  ctx.fillStyle = info.color;
+  ctx.font = `700 ${20 * scale}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(info.label, cardX + cardW / 2, cardY + cardH * 0.28);
+
+  // Odds
+  ctx.fillStyle = '#facc15';
+  ctx.font = `300 ${32 * scale}px Arial`;
+  ctx.fillText(info.odds, cardX + cardW / 2, cardY + cardH * 0.55);
+
+  // Description
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = `${12 * scale}px Arial`;
+  ctx.fillText(info.desc, cardX + cardW / 2, cardY + cardH * 0.80);
+};
+
 const loop = () => {
   // --- Clear ---
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawGrid();
   drawLayout();
   drawUI();
+  drawPopup();
   requestAnimationFrame(loop)
 };
 
@@ -1576,6 +1649,15 @@ canvas.addEventListener('pointerdown', (e) => {
   const x = (e.clientX - rect.left) * scale;
   const y = (e.clientY - rect.top) * scale;
 
+  if (activePopup) {
+    const c = popupCloseHit;
+    const p = popupCardRect;
+    const onClose = c && x >= c.X && x <= c.X + c.W && y >= c.Y && y <= c.Y + c.H;
+    const onCard  = p && x >= p.X && x <= p.X + p.W && y >= p.Y && y <= p.Y + p.H;
+    if (onClose || !onCard) activePopup = null;
+    return;
+  }
+
   if (hitRegions.player && ctx.isPointInPath(hitRegions.player, x, y)) {
     pressedRegion = 'player';
   } else if (hitRegions.banker && ctx.isPointInPath(hitRegions.banker, x, y)) {
@@ -1597,72 +1679,8 @@ canvas.addEventListener('pointerdown', (e) => {
   }
 });
 
-// --- Popup ---
-const REGION_INFO = {
-  player:  { label: 'PLAYER',  odds: '0.95 : 1', desc: 'Bet on the Player hand to win.' },
-  banker:  { label: 'BANKER',  odds: '0.95 : 1', desc: 'Bet on the Banker hand to win.' },
-  tie:     { label: 'TIE',     odds: '8 : 1',    desc: 'Bet that both hands tie.' },
-  p_bonus: { label: 'P BONUS', odds: '4 : 1',    desc: 'Player wins by a natural or large margin.' },
-  p_pair:  { label: 'P PAIR',  odds: '11 : 1',   desc: 'Player\'s first two cards are a pair.' },
-  b_bonus: { label: 'B BONUS', odds: '4 : 1',    desc: 'Banker wins by a natural or large margin.' },
-  b_pair:  { label: 'B PAIR',  odds: '11 : 1',   desc: 'Banker\'s first two cards are a pair.' },
-  chip:    { label: 'CHIP',    odds: '—',         desc: 'Select your bet denomination.' },
-};
-
-const popup = document.createElement('div');
-popup.id = 'bet-popup';
-popup.innerHTML = `
-  <div id="bet-popup-inner">
-    <button id="bet-popup-close">✕</button>
-    <div id="bet-popup-label"></div>
-    <div id="bet-popup-odds"></div>
-    <div id="bet-popup-desc"></div>
-  </div>
-`;
-Object.assign(popup.style, {
-  display: 'none', position: 'fixed', inset: '0',
-  background: 'rgba(0,0,0,0.55)', zIndex: '999',
-  alignItems: 'center', justifyContent: 'center',
-});
-const inner = popup.querySelector('#bet-popup-inner');
-Object.assign(inner.style, {
-  background: '#111827', border: '1px solid #374151',
-  borderRadius: '12px', padding: '24px 28px', minWidth: '220px',
-  textAlign: 'center', fontFamily: 'Arial, sans-serif', color: '#fff',
-  position: 'relative',
-});
-const closeBtn = popup.querySelector('#bet-popup-close');
-Object.assign(closeBtn.style, {
-  position: 'absolute', top: '10px', right: '14px',
-  background: 'none', border: 'none', color: '#9ca3af',
-  fontSize: '16px', cursor: 'pointer',
-});
-Object.assign(popup.querySelector('#bet-popup-label').style, {
-  fontSize: '20px', fontWeight: '700', marginBottom: '6px', letterSpacing: '1px',
-});
-Object.assign(popup.querySelector('#bet-popup-odds').style, {
-  fontSize: '28px', fontWeight: '300', color: '#facc15', marginBottom: '10px',
-});
-Object.assign(popup.querySelector('#bet-popup-desc').style, {
-  fontSize: '13px', color: '#9ca3af', lineHeight: '1.5',
-});
-document.body.appendChild(popup);
-
-const showPopup = (region) => {
-  const info = REGION_INFO[region];
-  if (!info) return;
-  popup.querySelector('#bet-popup-label').textContent = info.label;
-  popup.querySelector('#bet-popup-odds').textContent = info.odds;
-  popup.querySelector('#bet-popup-desc').textContent = info.desc;
-  popup.style.display = 'flex';
-};
-const hidePopup = () => { popup.style.display = 'none'; };
-
-closeBtn.addEventListener('click', hidePopup);
-popup.addEventListener('pointerdown', (e) => { if (e.target === popup) hidePopup(); });
-
-canvas.addEventListener('pointerup', (e) => {
-  if (pressedRegion && pressedRegion === hoverRegion) showPopup(pressedRegion);
+canvas.addEventListener('pointerup', () => {
+  if (pressedRegion && pressedRegion === hoverRegion) activePopup = pressedRegion;
   pressedRegion = null;
 });
 canvas.addEventListener('pointercancel', () => { pressedRegion = null; });
