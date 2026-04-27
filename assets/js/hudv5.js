@@ -1,7 +1,12 @@
+
 // --- Canvas Setup ---
 const canvas = document.createElement('canvas');
 document.body.prepend(canvas);
 const ctx = canvas.getContext('2d');
+
+const font = new FontFace("Interroman", "url(/assets/fonts/Interroman.woff2)");
+font.load();
+document.fonts.add(font);
 
 // --- Dimensions & DPI Scaling ---
 let width = window.innerWidth;
@@ -157,14 +162,14 @@ const drawCard = (x, y, w, h, r, card) => {
     ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 0.5 * scale; ctx.stroke();
     ctx.fillStyle = color;
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.font = `700 ${cf}px Arial`; ctx.fillText(rank, w * 0.1, h * 0.05);
-    ctx.font = `${cf}px Arial`; ctx.fillText(suit, w * 0.1, h * 0.05 + cf * 1.1);
+    ctx.font = `700 ${cf}px Interroman, Arial`; ctx.fillText(rank, w * 0.1, h * 0.05);
+    ctx.font = `${cf}px Interroman, Arial`; ctx.fillText(suit, w * 0.1, h * 0.05 + cf * 1.1);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = `${center}px Arial`; ctx.fillText(suit, w * 0.5, h * 0.5);
+    ctx.font = `${center}px Interroman, Arial`; ctx.fillText(suit, w * 0.5, h * 0.5);
     ctx.save(); ctx.translate(w * 0.9, h * 0.9); ctx.rotate(Math.PI);
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.font = `700 ${cf}px Arial`; ctx.fillText(rank, 0, 0);
-    ctx.font = `${cf}px Arial`; ctx.fillText(suit, 0, cf * 1.1);
+    ctx.font = `700 ${cf}px Interroman, Arial`; ctx.fillText(rank, 0, 0);
+    ctx.font = `${cf}px Interroman, Arial`; ctx.fillText(suit, 0, cf * 1.1);
     ctx.restore();
   } else {
     ctx.beginPath(); ctx.roundRect(0, 0, w, h, r);
@@ -500,7 +505,7 @@ const drawLayout = () => {
     ctx.stroke();
 
     ctx.fillStyle = "#cfc5c518";
-    ctx.font = "600 32px Arial";
+    ctx.font = "600 32px Interroman, Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(
@@ -523,7 +528,7 @@ const drawUI = () => {
 
 }
 
-const drawbetOptions = (GEOMETRY) => {
+const drawbetOptions = async (GEOMETRY) => {
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -617,12 +622,12 @@ const drawbetOptions = (GEOMETRY) => {
 
   // -- Name --
   ctx.fillStyle = "#d6dbb7";
-  ctx.font = `600 ${mainBetfontSize}px Arial`
+  ctx.font = `600 ${mainBetfontSize}px Interroman, Arial`
   ctx.fillText('PLAYER', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.2);
 
   // -- Odds --
   ctx.fillStyle = "#fff";
-  ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
+  ctx.font = `300 ${mainBetfontSize * 0.75}px Interroman, Arial`
   ctx.fillText('0.95:1', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.325);
 
   // -- Cards --
@@ -653,13 +658,14 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.closePath()
   ctx.closePath()
   ctx.fill();
-  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Interroman, Arial`
   ctx.fillText('12', player.X + player.TW * 0.57 - player.R, (player.CY - player.R * 0.225));
 
   // Percentage
   ctx.textAlign = "end"
   ctx.fillStyle = "#d6dbb7";
-  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
+
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Interroman, Arial`
   ctx.fillText('₱1,233,990', player.X + player.TW * 0.5, player.CY - player.R * 0.225);
   betChipPositions.player = { x: player.X + player.TW * 0.35, y: player.Y + player.LH * 0.55, r: arcRadius * 0.32 };
   if (gamePhase !== 'result') drawBetChip(player.X + player.TW * 0.35, player.Y + player.LH * 0.55, arcRadius * 0.32, bets.player);
@@ -746,13 +752,13 @@ const drawbetOptions = (GEOMETRY) => {
 
   // -- Name --
   ctx.textAlign = `center`
-  ctx.font = `600 ${mainBetfontSize}px Arial`
+  ctx.font = `600 ${mainBetfontSize}px Interroman, Arial`
   ctx.fillStyle = "#d6dbb7";
   ctx.fillText('BANKER', banker.X + banker.TW / 2 + banker.R / 2, banker.Y + banker.RH * 0.2);
 
   // -- Odds --
   ctx.fillStyle = "#ffffff";
-  ctx.font = `300 ${mainBetfontSize * 0.7}px Arial`
+  ctx.font = `300 ${mainBetfontSize * 0.7}px Interroman, Arial`
   ctx.fillText('0.95:1', banker.X + banker.TW / 2 + banker.R / 2, banker.Y + banker.RH * 0.325);
 
 
@@ -786,14 +792,14 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.closePath()
   ctx.fill();
   ctx.textAlign = `start`
-  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Interroman, Arial`
   ctx.fillText('12', banker.X + banker.TW * 0.53, (banker.CY - banker.R * 0.225));
 
 
   // Percentage
   ctx.textAlign = "end"
   ctx.fillStyle = "#d6dbb7";
-  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Interroman, Arial`
   ctx.fillText('₱1,233,990', banker.X + banker.TW * 0.5 + banker.R, banker.CY - banker.R * 0.225);
   betChipPositions.banker = { x: banker.X + banker.TW * 0.65, y: banker.Y + banker.RH * 0.55, r: arcRadius * 0.32 };
   if (gamePhase !== 'result') drawBetChip(banker.X + banker.TW * 0.65, banker.Y + banker.RH * 0.55, arcRadius * 0.32, bets.banker);
@@ -854,12 +860,12 @@ const drawbetOptions = (GEOMETRY) => {
   // -- Name --
   ctx.textAlign = `center`
   ctx.fillStyle = "#d6dbb7";
-  ctx.font = `600 ${mainBetfontSize}px Arial`
+  ctx.font = `600 ${mainBetfontSize}px Interroman, Arial`
   ctx.fillText('TIE', tie.CX, tie.CY - (tie.R * 0.55));
 
   // -- Odds --
   ctx.fillStyle = "#ffffff";
-  ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
+  ctx.font = `300 ${mainBetfontSize * 0.75}px Interroman, Arial`
   ctx.fillText('8:1', tie.CX, tie.CY - tie.R * 0.75);
 
   // -- Total Bets --
@@ -872,10 +878,10 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.arc(tie.CX - progressBarW / 2, tie.CY - tie.R * 0.28, 4, Math.PI * 2, 0, false)
   ctx.closePath()
   ctx.fill();
-  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Interroman, Arial`
   ctx.fillText('12', tie.CX - progressBarW / 3, (tie.CY - tie.R * 0.225));
 
-  ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
+  ctx.font = `600 ${mainBetfontSize * 0.5}px Interroman, Arial`
   ctx.textAlign = "end"
   ctx.fillText('₱220,330', tie.CX + progressBarW / 2, tie.CY - tie.R * 0.225);
   betChipPositions.tie = { x: tie.CX, y: tie.CY - tie.R * 0.35, r: tie.R * 0.38 };
@@ -958,12 +964,12 @@ const drawbetOptions = (GEOMETRY) => {
 
     // -- Name --
     ctx.fillStyle = "#d6dbb7";
-    ctx.font = `600 ${sideBetfontSize}px Arial`
+    ctx.font = `600 ${sideBetfontSize}px Interroman, Arial`
     ctx.fillText(side.replace(/_/g, ' '), sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.40);
 
     // -- Odds --
     ctx.fillStyle = "#ffffff";
-    ctx.font = `300 ${sideBetfontSize * 0.85}px Arial`
+    ctx.font = `300 ${sideBetfontSize * 0.85}px Interroman, Arial`
     ctx.fillText('04:20', sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.70);
     betChipPositions[side.toLowerCase()] = { x: sideBet.X + sideBet.W * 0.5, y: sideBet.Y + sideBet.H * 0.5, r: sideBet.H * 0.28 };
     if (gamePhase !== 'result') drawBetChip(sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.5, sideBet.H * 0.28, bets[side.toLowerCase()]);
@@ -1020,7 +1026,7 @@ const drawStatistics = (GEOMETRY) => {
   const radius = summary.H * 0.2;
   for (const [key, obj] of Object.entries(stats)) {
     let spaceToNext = radius * 4.5
-    ctx.font = `300 ${getFontSize(summary.W * 0.5, summary.H * 0.25)}px Arial`
+    ctx.font = `300 ${getFontSize(summary.W * 0.5, summary.H * 0.25)}px Interroman, Arial`
     ctx.fillStyle = "#fff"
     ctx.textAlign = "center";
     // ctx.fillText('#42', startX, summary.Y + summary.H * 0.5)
@@ -1034,7 +1040,7 @@ const drawStatistics = (GEOMETRY) => {
       ctx.closePath();
       ctx.fillStyle = stats[key].bg
       ctx.fill();
-      ctx.font = `600 ${clamp(summary.W / cols * 0.75, 15, radius * 1.5)}px Arial`;
+      ctx.font = `600 ${clamp(summary.W / cols * 0.75, 15, radius * 1.5)}px Interroman, Arial`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#fff";
@@ -1055,7 +1061,7 @@ const drawStatistics = (GEOMETRY) => {
 
     // -- Game Number --
     else if (['gameNo'].includes(key)) {
-      ctx.font = `600 ${clamp(summary.W / cols * 0.75, 15, radius * 1.5)}px Arial`;
+      ctx.font = `600 ${clamp(summary.W / cols * 0.75, 15, radius * 1.5)}px Interroman, Arial`;
       ctx.fillText(`#${obj.value}`, startX + radius * 2, summary.Y + summary.H * 0.5)
       spaceToNext = radius * 2 + 35
     }
@@ -1074,7 +1080,7 @@ const drawStatistics = (GEOMETRY) => {
       ctx.stroke();
       spaceToNext = predictionWidth + radius;
       ctx.fillStyle = "#fff";
-      ctx.font = `600 ${getFontSize(summary.W / cols * 0.75, summary.H)}px Arial`;
+      ctx.font = `600 ${getFontSize(summary.W / cols * 0.75, summary.H)}px Interroman, Arial`;
       ctx.fillText(`${key.toUpperCase()[0]}`, startX + predictionWidth * 0.15, summary.Y + summary.H * 0.52);
 
       ctx.beginPath();
@@ -1154,7 +1160,7 @@ const drawStatistics = (GEOMETRY) => {
       ctx.fillStyle = "#fff"
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
-      ctx.font = `600 ${clamp(12, cellW / 2, radius * 2)}px Arial`
+      ctx.font = `600 ${clamp(12, cellW / 2, radius * 2)}px Interroman, Arial`
       ctx.fillText(result.value, cellCX, cellCY)
 
 
@@ -1197,7 +1203,7 @@ const drawStatistics = (GEOMETRY) => {
       // ctx.fillStyle = "#fff";
       // ctx.textAlign = "center";
       // ctx.textBaseline = "middle";
-      // ctx.font = `600 ${clamp(12, cellW / 2, cellR)}px Arial`;
+      // ctx.font = `600 ${clamp(12, cellW / 2, cellR)}px Interroman, Arial`;
       // ctx.fillText(result.value, cellCX, cellCY);
 
       prevValue = result.value;
@@ -1449,7 +1455,7 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.closePath();
   ctx.strokeStyle = "#fff"
   ctx.stroke();
-  ctx.font = `30 ${clamp(12, chatButton.W * 0.5, 20)}px Arial`
+  ctx.font = `30 ${clamp(12, chatButton.W * 0.5, 20)}px Interroman, Arial`
   ctx.fillStyle = "#ffffffda"
   ctx.fillText("Chat", chatButton.X + chatButton.W * 0.5, chatButton.Y + chatButton.H + 28)
 
@@ -1520,7 +1526,7 @@ const drawMenuBar = (GEOMETRY) => {
 
   ctx.restore();
 
-  ctx.font = `30 ${clamp(10, lobbyButton.W * 0.5, 18)}px Arial`
+  ctx.font = `30 ${clamp(10, lobbyButton.W * 0.5, 18)}px Interroman, Arial`
   ctx.fillStyle = "#ffffff5d"
   ctx.fillText("Lobby", lobbyButton.X + lobbyButton.W * 0.5, lobbyButton.Y + lobbyButton.H + 28)
 
@@ -1666,7 +1672,7 @@ const drawMenuBar = (GEOMETRY) => {
 
   // Label
   const chipFontSize = clamp(10, chipR * 0.58, 40);
-  ctx.font = `700 ${chipFontSize}px Arial`;
+  ctx.font = `700 ${chipFontSize}px Interroman, Arial`;
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -1691,7 +1697,7 @@ const drawMenuBar = (GEOMETRY) => {
 
   ctx.fillStyle = "#818181";
   ctx.textAlign = "start";
-  ctx.font = `100 ${clamp(10, wallet.H * 0.15, tileSize)}px Arial`
+  ctx.font = `100 ${clamp(10, wallet.H * 0.15, tileSize)}px Interroman, Arial`
   ctx.fillText("Speed Bacarrat ₱50-10,000", wallet.X + tileSize, wallet.Y);
 
   const timeText = "04:20:34";
@@ -1726,7 +1732,7 @@ const drawMenuBar = (GEOMETRY) => {
 
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "start";
-  ctx.font = `100 ${clamp(10, wallet.H * 0.225, tileSize)}px Arial`
+  ctx.font = `100 ${clamp(10, wallet.H * 0.225, tileSize)}px Interroman, Arial`
   ctx.fillText(fmtCurrency(balance), wallet.X + tileSize * 2.5, wallet.Y + wallet.H * 0.225);
 
 
@@ -1746,7 +1752,7 @@ const drawMenuBar = (GEOMETRY) => {
 
   ctx.textAlign = "right";
   ctx.fillStyle = "#ffffff";
-  ctx.font = `${clamp(10, wallet.H * 0.225, tileSize)}px Arial`;
+  ctx.font = `${clamp(10, wallet.H * 0.225, tileSize)}px Interroman, Arial`;
 
   // measure text
   const textWidth = ctx.measureText(text).width;
@@ -1846,26 +1852,26 @@ const drawPopup = () => {
   ctx.fillStyle = '#374151';
   ctx.fill();
   ctx.fillStyle = '#9ca3af';
-  ctx.font = `${13 * scale}px Arial`;
+  ctx.font = `${13 * scale}px Interroman, Arial`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('✕', closeX, closeY);
 
   // Label
   ctx.fillStyle = info.color;
-  ctx.font = `700 ${20 * scale}px Arial`;
+  ctx.font = `700 ${20 * scale}px Interroman, Arial`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
   ctx.fillText(info.label, cardX + cardW / 2, cardY + cardH * 0.28);
 
   // Odds
   ctx.fillStyle = '#facc15';
-  ctx.font = `300 ${32 * scale}px Arial`;
+  ctx.font = `300 ${32 * scale}px Interroman, Arial`;
   ctx.fillText(info.odds, cardX + cardW / 2, cardY + cardH * 0.55);
 
   // Description
   ctx.fillStyle = '#9ca3af';
-  ctx.font = `${12 * scale}px Arial`;
+  ctx.font = `${12 * scale}px Interroman, Arial`;
   ctx.fillText(info.desc, cardX + cardW / 2, cardY + cardH * 0.80);
 };
 
