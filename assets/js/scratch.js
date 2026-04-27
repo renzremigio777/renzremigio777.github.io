@@ -11,6 +11,7 @@ let tileSize = Math.min(width, height) / 32;
 let scrollX = 0;
 let isTouching = false;
 let screenX = 0;
+let scoreBoardBounds = null;
 
 
 const maxWidth = 800; // your max container width
@@ -714,7 +715,7 @@ const drawbetOptions = (GEOMETRY) => {
     // -- Name --
     ctx.fillStyle = "#d6dbb7";
     ctx.font = `600 ${sideBetfontSize}px Arial`
-    ctx.fillText(side, sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.40);
+    ctx.fillText(side.replace(/_/g, ' '), sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.40);
 
     // -- Odds --
     ctx.fillStyle = "#ffffff";
@@ -865,6 +866,7 @@ const drawStatistics = (GEOMETRY) => {
     W: GEOMETRY['statistics'].W,
     H: GEOMETRY['statistics'].H * scoreBoardRatio,
   }
+  scoreBoardBounds = scoreBoard;
 
 
 
@@ -1715,6 +1717,12 @@ canvas.addEventListener('pointerup', () => {
 canvas.addEventListener('pointercancel', () => { pressedRegion = null; });
 
 canvas.addEventListener("touchstart", (e) => {
+  if (!scoreBoardBounds) return;
+  const rect = canvas.getBoundingClientRect();
+  const tx = (e.touches[0].clientX - rect.left) * scale;
+  const ty = (e.touches[0].clientY - rect.top) * scale;
+  const sb = scoreBoardBounds;
+  if (tx < sb.X || tx > sb.X + sb.W || ty < sb.Y || ty > sb.Y + sb.H) return;
   isTouching = true;
   screenX = e.touches[0].clientX;
 });
