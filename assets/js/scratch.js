@@ -1493,7 +1493,7 @@ const drawMenuBar = (GEOMETRY) => {
   const iconY = y - iconSize / 2;
   let stackY = iconY
   ctx.beginPath();
-  ctx.arc(iconX + iconSize / 2, stackY + tileSize *0.75, iconSize / 2, -Math.PI * 0.8, -Math.PI * 0.2, false);
+  ctx.arc(iconX + iconSize / 2, stackY +15, iconSize / 2, -Math.PI * 0.8, -Math.PI * 0.2, false);
   ctx.lineWidth = 1 * scale
   ctx.stroke();
   for(let y=0; y<3;y++) {
