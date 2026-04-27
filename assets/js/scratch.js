@@ -1698,7 +1698,7 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointerup', () => {
-  if (pressedRegion && pressedRegion === hoverRegion) activePopup = pressedRegion;
+  // if (pressedRegion && pressedRegion === hoverRegion) activePopup = pressedRegion;
   pressedRegion = null;
 });
 canvas.addEventListener('pointercancel', () => { pressedRegion = null; });
