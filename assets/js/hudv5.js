@@ -478,12 +478,12 @@ const drawLayout = () => {
   for (const [index, rect] of Object.entries(GEOMETRY)) {
     // // --- Draw RECT ---
     ctx.fillStyle = "#000000a2";
-    ctx.fillRect(
-      rect.X,
-      rect.Y,
-      rect.W,
-      rect.H
-    );
+    // ctx.fillRect(
+    //   rect.X,
+    //   rect.Y,
+    //   rect.W,
+    //   rect.H
+    // );
     ctx.strokeStyle = "#fcfbfba2";
     ctx.lineWidth = 0.1 * scale;
     ctx.strokeRect(
