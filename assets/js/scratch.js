@@ -11,6 +11,7 @@ let tileSize = Math.min(width, height) / 32;
 let scrollX = 0;
 let isTouching = false;
 let screenX = 0;
+let scoreBoardBounds = null;
 
 
 const maxWidth = 800; // your max container width
@@ -389,7 +390,7 @@ const drawbetOptions = (GEOMETRY) => {
 
   // -- Odds --
   ctx.fillStyle = "#fff";
-  ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
+  ctx.font = `300 ${mainBetfontSize * 0.7}px Arial`
   ctx.fillText('0.95:1', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.325 );
 
   // -- Cards --
@@ -515,7 +516,7 @@ const drawbetOptions = (GEOMETRY) => {
 
   // -- Odds --
   ctx.fillStyle = "#ffffff";
-  ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
+  ctx.font = `300 ${mainBetfontSize * 0.7}px Arial`
   ctx.fillText('0.95:1', banker.X + banker.TW / 2 + banker.R / 2, banker.Y + banker.RH * 0.325);
 
 
@@ -615,7 +616,7 @@ const drawbetOptions = (GEOMETRY) => {
 
   // -- Odds --
   ctx.fillStyle = "#ffffff";
-  ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
+  ctx.font = `300 ${mainBetfontSize * 0.7}px Arial`
   ctx.fillText('8:1', tie.CX, tie.CY - tie.R * 0.75);
   
   // -- Total Bets --
@@ -856,6 +857,7 @@ const drawStatistics = (GEOMETRY) => {
     W: GEOMETRY['statistics'].W,
     H: GEOMETRY['statistics'].H * scoreBoardRatio,
   }
+  scoreBoardBounds = scoreBoard;
 
 
 
@@ -1704,6 +1706,12 @@ canvas.addEventListener('pointerup', () => {
 canvas.addEventListener('pointercancel', () => { pressedRegion = null; });
 
 canvas.addEventListener("touchstart", (e) => {
+  if (!scoreBoardBounds) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.touches[0].clientX - rect.left) * scale;
+  const y = (e.touches[0].clientY - rect.top) * scale;
+  const sb = scoreBoardBounds;
+  if (x < sb.X || x > sb.X + sb.W || y < sb.Y || y > sb.Y + sb.H) return;
   isTouching = true;
   screenX = e.touches[0].clientX;
 });
@@ -1717,7 +1725,6 @@ canvas.addEventListener("touchmove", (e) => {
   scrollX += dx;
   scrollX = Math.max(0, Math.min(scrollX, maxScrollX));
   screenX = currentX;
-
 
 });
 
