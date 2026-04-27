@@ -12,23 +12,6 @@ let scrollX = 0;
 let isTouching = false;
 let screenX = 0;
 let scoreBoardBounds = null;
-let undoBounds = null;
-let cancelBounds = null;
-let balance = 510000;
-let bets = { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
-let betHistory = [];
-let lastBets = {};
-let playerCards = [null, null, null];
-let bankerCards = [null, null, null];
-let gamePhase = 'betting'; // 'betting' | 'dealing' | 'result'
-let bettingCountdownStart = performance.now();
-const BETTING_DURATION = 12000;
-let winners = [];
-let phaseScheduled = false;
-const fmtCurrency = (() => {
-  const fmt = new Intl.NumberFormat('en', { notation: 'compact' });
-  return (n) => `₱${n >= 1000 ? fmt.format(n) : n}`;
-})();
 
 
 const maxWidth = 800; // your max container width
@@ -39,26 +22,23 @@ const padding = 16;
 let hitRegions = {};
 let hoverRegion = null;
 let pressedRegion = null;
-let chipButtonCenter = { x: 0, y: 0, r: 0 };
-let betChipPositions = {};
-let flyingChips = [];
 let activePopup = null;
 let popupCardRect = null;
 let popupCloseHit = null;
 
 const REGION_INFO = {
-  player: { label: 'PLAYER', odds: '0.95 : 1', desc: 'Bet on the Player hand to win.', color: '#7752ff' },
-  banker: { label: 'BANKER', odds: '0.95 : 1', desc: 'Bet on the Banker hand to win.', color: '#f55858' },
-  tie: { label: 'TIE', odds: '8 : 1', desc: 'Bet that both hands end in a tie.', color: '#58b373' },
-  p_bonus: { label: 'P BONUS', odds: '4 : 1', desc: 'Player wins by a natural or large margin.', color: '#7752ff' },
-  p_pair: { label: 'P PAIR', odds: '11 : 1', desc: "Player's first two cards are a pair.", color: '#7752ff' },
-  b_bonus: { label: 'B BONUS', odds: '4 : 1', desc: 'Banker wins by a natural or large margin.', color: '#f55858' },
-  b_pair: { label: 'B PAIR', odds: '11 : 1', desc: "Banker's first two cards are a pair.", color: '#f55858' },
+  player:  { label: 'PLAYER',  odds: '0.95 : 1', desc: 'Bet on the Player hand to win.',         color: '#7752ff' },
+  banker:  { label: 'BANKER',  odds: '0.95 : 1', desc: 'Bet on the Banker hand to win.',         color: '#f55858' },
+  tie:     { label: 'TIE',     odds: '8 : 1',    desc: 'Bet that both hands end in a tie.',      color: '#58b373' },
+  p_bonus: { label: 'P BONUS', odds: '4 : 1',    desc: 'Player wins by a natural or large margin.', color: '#7752ff' },
+  p_pair:  { label: 'P PAIR',  odds: '11 : 1',   desc: "Player's first two cards are a pair.",   color: '#7752ff' },
+  b_bonus: { label: 'B BONUS', odds: '4 : 1',    desc: 'Banker wins by a natural or large margin.', color: '#f55858' },
+  b_pair:  { label: 'B PAIR',  odds: '11 : 1',   desc: "Banker's first two cards are a pair.",   color: '#f55858' },
   // chip:    { label: 'CHIP',    odds: '—',         desc: 'Select your bet denomination.',          color: '#e8c84a' },
 };
 
 let containerAvailableWidth = 0;
-let containerMaxWidth = 580;
+let containerMaxWidth =580;
 let containerWidth = containerMaxWidth;
 let maxScrollX = containerMaxWidth; // depends on your content width
 let leftGutter = 0;
@@ -88,98 +68,6 @@ const CHIP_COLORS = [
   { fill: '#9da010', stroke: '#e8c84a', shadow: '#fdfa3d' }, // 20000 - gold
 ];
 
-const chipColorIndex = (amount) =>
-  amount < 200 ? 0 : amount < 500 ? 1 : amount < 1000 ? 2 :
-  amount < 5000 ? 3 : amount < 10000 ? 4 : amount < 20000 ? 5 : 6;
-
-const drawBetChip = (cx, cy, r, amount) => {
-  if (amount <= 0) return;
-  const color = CHIP_COLORS[chipColorIndex(amount)];
-  const fmt = new Intl.NumberFormat('en', { notation: 'compact' });
-  ctx.save();
-  ctx.shadowColor = color.shadow;
-  ctx.shadowBlur = 8 * scale;
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = color.fill;
-  ctx.fill();
-  ctx.strokeStyle = color.stroke;
-  ctx.lineWidth = 1.5 * scale;
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-  for (let s = 0; s < 8; s++) {
-    const a0 = (Math.PI * 2 / 8) * s;
-    const a1 = a0 + (Math.PI * 2 / 8) * 0.55;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.9, a0, a1);
-    ctx.arc(cx, cy, r * 0.74, a1, a0, true);
-    ctx.closePath();
-    ctx.fillStyle = s % 2 === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
-    ctx.fill();
-  }
-  ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.62, 0, Math.PI * 2);
-  ctx.strokeStyle = color.stroke;
-  ctx.lineWidth = 1 * scale;
-  ctx.stroke();
-  ctx.font = `700 ${clamp(8, r * 0.52, 32)}px Interroman, Arial`;
-  ctx.fillStyle = '#fff';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(amount >= 1000 ? fmt.format(amount) : String(amount), cx, cy);
-  ctx.restore();
-};
-
-
-const drawCard = (x, y, w, h, r, card) => {
-  const { rank, suit, dealStart, flipStart } = card;
-  const now = performance.now();
-  const slideT = dealStart ? Math.min((now - dealStart) / 320, 1) : 1;
-  const slideEase = 1 - Math.pow(1 - slideT, 3);
-  const slideOffY = (1 - slideEase) * h * 1.8;
-  const flipElapsed = flipStart ? now - flipStart : Infinity;
-  const flipT = Math.min(Math.max(flipElapsed / 280, 0), 1);
-  const faceUp = flipT >= 0.5;
-  const scaleX = Math.max(flipT < 0.5 ? 1 - flipT * 2 : (flipT - 0.5) * 2, 0.001);
-  const actualY = y - slideOffY;
-  ctx.save();
-  ctx.globalAlpha = slideEase;
-  ctx.translate(x + w / 2, actualY + h / 2);
-  ctx.scale(scaleX, 1);
-  ctx.translate(-w / 2, -h / 2);
-  if (faceUp) {
-    const isRed = suit === '♥' || suit === '♦';
-    const color = isRed ? '#d42020' : '#111111';
-    const cf = clamp(10, w * 0.38, 20);
-    const center = clamp(16, w * 0.68, 38);
-    ctx.beginPath(); ctx.roundRect(0, 0, w, h, r);
-    ctx.fillStyle = '#f8f6f0'; ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 0.5 * scale; ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.font = `700 ${cf}px Arial`; ctx.fillText(rank, w * 0.1, h * 0.05);
-    ctx.font = `${cf}px Arial`; ctx.fillText(suit, w * 0.1, h * 0.05 + cf * 1.1);
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = `${center}px Arial`; ctx.fillText(suit, w * 0.5, h * 0.5);
-    ctx.save(); ctx.translate(w * 0.9, h * 0.9); ctx.rotate(Math.PI);
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.font = `700 ${cf}px Arial`; ctx.fillText(rank, 0, 0);
-    ctx.font = `${cf}px Arial`; ctx.fillText(suit, 0, cf * 1.1);
-    ctx.restore();
-  } else {
-    ctx.beginPath(); ctx.roundRect(0, 0, w, h, r);
-    ctx.fillStyle = '#1a1a1a'; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 0.5 * scale; ctx.stroke();
-    ctx.beginPath(); ctx.roundRect(w * 0.1, h * 0.08, w * 0.8, h * 0.84, r * 0.6);
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 0.5 * scale;
-    for (let i = 1; i < 5; i++) {
-      ctx.beginPath(); ctx.moveTo(w * i / 5, 0); ctx.lineTo(0, h * i / 5); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w, h * i / 5); ctx.lineTo(w * i / 5, h); ctx.stroke();
-    }
-  }
-  ctx.restore();
-};
 
 const COLORS = {
   PRIMARYBLACK: "#000000",
@@ -244,7 +132,7 @@ const computeGeometry = () => {
   );
 
   const betOptions = {
-    X: leftGutter,
+    X: leftGutter ,
     Y: canvas.height * 0.4,
     W: containerWidth,
     H: canvas.height * 0.23
@@ -253,7 +141,7 @@ const computeGeometry = () => {
   // --- Statistics ---
   const statistics = {
     X: leftGutter,
-    Y: canvas.height * 0.62,
+    Y: canvas.height * 0.62 ,
     W: containerWidth,
     H: canvas.height * 0.18
   }
@@ -275,7 +163,7 @@ const computeGeometry = () => {
   }
 }
 
-const constructGrid = (rows, cols, posX, posY, gridHeight, cellSize = 1, divX, divY) => {
+const constructGrid = (rows, cols, posX, posY, gridHeight, cellSize = 1, divX,divY) => {
 
   const cellH = Math.max(1, gridHeight / rows);
   const cellW = cellH;  // Math.floor(scoreBoard.W / cellW);
@@ -305,124 +193,18 @@ const constructGrid = (rows, cols, posX, posY, gridHeight, cellSize = 1, divX, d
   }
   ctx.stroke();
   return {
-    rows, cols, posX, posY, gridHeight, cellW, cellH, totalWidth,
+    rows, cols, posX, posY, gridHeight, cellW,cellH, totalWidth,
   }
 }
-
-// ─── Game Logic ──────────────────────────────────────────────────────────────
-const CARD_RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-const CARD_SUITS = ['♠','♥','♦','♣'];
-const randomCard = () => ({
-  rank: CARD_RANKS[Math.floor(Math.random() * CARD_RANKS.length)],
-  suit: CARD_SUITS[Math.floor(Math.random() * CARD_SUITS.length)],
-});
-const cardValue = (rank) => rank === 'A' ? 1 : ['10','J','Q','K'].includes(rank) ? 0 : parseInt(rank);
-const handTotal = (cards) => cards.filter(Boolean).reduce((s, c) => (s + cardValue(c.rank)) % 10, 0);
-
-const dealBaccaratHands = () => {
-  const p = [randomCard(), randomCard(), null];
-  const b = [randomCard(), randomCard(), null];
-  const pTotal = handTotal(p);
-  const bTotal = handTotal(b);
-  if (pTotal >= 8 || bTotal >= 8) return { p, b };
-  if (pTotal <= 5) p[2] = randomCard();
-  if (p[2] === null) {
-    if (bTotal <= 5) b[2] = randomCard();
-  } else {
-    const pv = cardValue(p[2].rank);
-    if (bTotal <= 2) b[2] = randomCard();
-    else if (bTotal === 3 && pv !== 8) b[2] = randomCard();
-    else if (bTotal === 4 && [2,3,4,5,6,7].includes(pv)) b[2] = randomCard();
-    else if (bTotal === 5 && [4,5,6,7].includes(pv)) b[2] = randomCard();
-    else if (bTotal === 6 && [6,7].includes(pv)) b[2] = randomCard();
-  }
-  return { p, b };
-};
-
-const calcWinners = (p, b) => {
-  const pt = handTotal(p), bt = handTotal(b);
-  const result = [];
-  if (pt > bt)      { result.push('player'); result.push('p_bonus'); }
-  else if (bt > pt) { result.push('banker'); result.push('b_bonus'); }
-  else              { result.push('tie'); }
-  if (p[0] && p[1] && p[0].rank === p[1].rank) result.push('p_pair');
-  if (b[0] && b[1] && b[0].rank === b[1].rank) result.push('b_pair');
-  return result;
-};
-
-const PAYOUTS = { player: 1, banker: 0.95, tie: 8, p_bonus: 4, p_pair: 11, b_bonus: 4, b_pair: 11 };
-
-const applyPayouts = (winnerList) => {
-  Object.keys(bets).forEach(region => {
-    if (bets[region] > 0 && winnerList.includes(region)) {
-      balance += bets[region] * (1 + PAYOUTS[region]);
-    }
-  });
-};
-
-const startNewRound = () => {
-  gamePhase = 'betting';
-  bettingCountdownStart = performance.now();
-  phaseScheduled = false;
-  playerCards = [null, null, null];
-  bankerCards = [null, null, null];
-  winners = [];
-  bets = { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
-  betHistory = [];
-};
-
-const runDeal = () => {
-  gamePhase = 'dealing';
-  const { p, b } = dealBaccaratHands();
-  const sequence = [
-    ['player', 0, p[0]], ['banker', 0, b[0]],
-    ['player', 1, p[1]], ['banker', 1, b[1]],
-  ];
-  if (p[2]) sequence.push(['player', 2, p[2]]);
-  if (b[2]) sequence.push(['banker', 2, b[2]]);
-  let delay = 300;
-  sequence.forEach(([side, idx, card]) => {
-    setTimeout(() => {
-      const target = side === 'player' ? playerCards : bankerCards;
-      target[idx] = { ...card, dealStart: performance.now(), flipStart: performance.now() + 280 };
-    }, delay);
-    delay += 620;
-  });
-  setTimeout(() => {
-    winners = calcWinners(p, b);
-    applyPayouts(winners);
-    gamePhase = 'result';
-    setTimeout(startNewRound, 4500);
-  }, delay + 400);
-};
-
-const updateGameState = () => {
-  if (gamePhase === 'betting' && !phaseScheduled) {
-    const elapsed = performance.now() - bettingCountdownStart;
-    if (elapsed >= BETTING_DURATION) {
-      phaseScheduled = true;
-      runDeal();
-    }
-  }
-};
-// ─────────────────────────────────────────────────────────────────────────────
 
 const drawGrid = () => {
   // --- Clear ---
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // --- Background ---
+  // ctx.fillStyle = "rgb(54, 50, 50)";
   ctx.fillStyle = "rgb(0, 0, 0)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  if (gamePhase === 'result' && winners.length > 0) {
-    const w = winners[0];
-    const blink = Math.sin(performance.now() * 0.006) > 0;
-    const tint = w === 'player' ? `rgba(119,82,255,${blink ? 0.07 : 0.03})`
-               : w === 'banker' ? `rgba(245,88,88,${blink ? 0.07 : 0.03})`
-               :                  `rgba(88,179,115,${blink ? 0.07 : 0.03})`;
-    ctx.fillStyle = tint;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
 
   // --- Grid ---
   const x = 0;
@@ -475,7 +257,7 @@ const drawGrid = () => {
 const drawLayout = () => {
 
   const GEOMETRY = computeGeometry();
-  for (const [index, rect] of Object.entries(GEOMETRY)) {
+  for (const [index, rect] of  Object.entries(GEOMETRY)) {
     // // --- Draw RECT ---
     ctx.fillStyle = "#000000a2";
     ctx.fillRect(
@@ -509,7 +291,7 @@ const drawLayout = () => {
       rect.Y + rect.H / 2,
     );
 
-
+    
   }
 }
 
@@ -530,9 +312,9 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.fillStyle = COLORS.PRIMARYBLACK
   ctx.fillRect(
     0,
-    canvas.height / 2,
+    canvas.height/2,
     canvas.width,
-    canvas.height / 2
+    canvas.height/2
   );
 
   const arcRadius = Math.min(GEOMETRY['betOptions'].W * 0.2, GEOMETRY['betOptions'].H * 0.5)
@@ -557,7 +339,7 @@ const drawbetOptions = (GEOMETRY) => {
     GEOMETRY['betOptions'].H,
     borderRadius * 1.1
   );
-  ctx.strokeStyle = "#00000059";
+  ctx.strokeStyle ="#00000059";
   ctx.lineWidth = 2 * scale;
   ctx.stroke();
 
@@ -570,13 +352,13 @@ const drawbetOptions = (GEOMETRY) => {
     TW: GEOMETRY['betOptions'].W * 0.5 - betOptionsGap * 2,
     RH: (GEOMETRY['betOptions'].H * 0.65) * 0.35 - tileSize,
     LH: (GEOMETRY['betOptions'].H * 0.65) - betOptionsGap,
-    CX: GEOMETRY['betOptions'].X + GEOMETRY['betOptions'].W * 0.5,
+    CX: GEOMETRY['betOptions'].X + GEOMETRY['betOptions'].W * 0.5 ,
     CY: GEOMETRY['betOptions'].Y + GEOMETRY['betOptions'].H * 0.65,
-    R: arcRadius,
+    R: arcRadius ,
   }
 
 
-  const playerStartAngle = Math.atan2(player.Y - player.CY, (player.X + player.TW) - player.CX + betOptionsGap * 0.25);
+  const playerStartAngle = Math.atan2(player.Y - player.CY, (player.X + player.TW) - player.CX + betOptionsGap *0.25);
   const playerArcX = player.CX + player.R * Math.cos(playerStartAngle);
 
   const playerCardsG = 5 * scale
@@ -599,49 +381,47 @@ const drawbetOptions = (GEOMETRY) => {
   playerShape.closePath();
   hitRegions.player = playerShape;
 
-  ctx.save();
-  const playerWin = gamePhase === 'result' && winners.includes('player');
-  const playerBlink = playerWin && Math.sin(performance.now() * 0.006) > 0;
-  ctx.shadowColor = COLORS.STROKEBLUE;
-  ctx.shadowBlur = playerWin ? (playerBlink ? 50 * scale : 6 * scale) : bets.player > 0 ? 18 * scale : 0;
-  ctx.strokeStyle = playerBlink ? '#ffffff' : COLORS.STROKEBLUE;
-  ctx.lineWidth = bets.player > 0 || playerWin ? borderWidth * 1.8 : borderWidth;
+  ctx.strokeStyle = COLORS.STROKEBLUE;
+  ctx.lineWidth = borderWidth;
   ctx.stroke(playerShape);
-  ctx.shadowBlur = 0;
   ctx.fillStyle = COLORS.FILLBLUE;
   ctx.fill(playerShape);
-  if (playerBlink) { ctx.fillStyle = 'rgba(119,82,255,0.38)'; ctx.fill(playerShape); }
-  if (pressedRegion === 'player') { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(playerShape); }
-  ctx.restore();
+  if (pressedRegion === 'player') {
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill(playerShape);
+  }
 
 
   // -- Name --
   ctx.fillStyle = "#d6dbb7";
   ctx.font = `600 ${mainBetfontSize}px Arial`
-  ctx.fillText('PLAYER', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.2);
+  ctx.fillText('PLAYER', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.2 );
 
   // -- Odds --
   ctx.fillStyle = "#fff";
   ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
-  ctx.fillText('0.95:1', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.325);
+  ctx.fillText('0.95:1', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.325 );
 
   // -- Cards --
-  playerCards.forEach((card, i) => {
-    const cx = playerCardsX + i * (playerCardW + playerCardsG);
-    if (card) {
-      drawCard(cx, playerCardsY, playerCardW, playerCardH, playerCardR, card);
-    } else {
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(cx, playerCardsY, playerCardW, playerCardH, playerCardR);
-      ctx.fillStyle = 'rgba(117,110,110,0.18)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.lineWidth = 1 * scale;
-      ctx.stroke();
-      ctx.restore();
-    }
-  });
+
+  ctx.fillStyle = "rgba(117, 110, 110, 0.27)";
+  ctx.lineWidth = 1 * scale;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.76)";
+
+  ctx.beginPath();
+  ctx.roundRect(playerCardsX, playerCardsY, playerCardW, playerCardH, playerCardR);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.roundRect(playerCardsX + playerCardW + playerCardsG, playerCardsY, playerCardW, playerCardH, playerCardR);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.roundRect(playerCardsX + (playerCardW + playerCardsG) * 2 , playerCardsY, playerCardW, playerCardH, playerCardR);
+  ctx.closePath();
+  ctx.stroke();
 
   // -- Total Bets --
   ctx.fillStyle = "#d6dbb7";
@@ -661,8 +441,6 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.fillStyle = "#d6dbb7";
   ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
   ctx.fillText('₱1,233,990', player.X + player.TW * 0.5, player.CY - player.R * 0.225);
-  betChipPositions.player = { x: player.X + player.TW * 0.35, y: player.Y + player.LH * 0.55, r: arcRadius * 0.32 };
-  if (gamePhase !== 'result') drawBetChip(player.X + player.TW * 0.35, player.Y + player.LH * 0.55, arcRadius * 0.32, bets.player);
   ctx.arc(player.X + player.TW * 0.5, player.CY - player.R * 0.28, tileSize * 0.15, Math.PI * 2, 0, false)
 
 
@@ -675,7 +453,7 @@ const drawbetOptions = (GEOMETRY) => {
 
   ctx.beginPath();
   ctx.fillStyle = COLORS.PLAYERBLUE
-
+  
   ctx.save();
   ctx.shadowColor = COLORS.NEONBLUE;
   ctx.shadowBlur = 5;
@@ -690,7 +468,7 @@ const drawbetOptions = (GEOMETRY) => {
 
   ctx.fill();
 
-  ctx.restore();
+  ctx.restore(); 
 
 
   // ────────────────────────────────────────────────────────────────────────────────────────────────
@@ -729,20 +507,15 @@ const drawbetOptions = (GEOMETRY) => {
   bankerShape.closePath();
   hitRegions.banker = bankerShape;
 
-  ctx.save();
-  const bankerWin = gamePhase === 'result' && winners.includes('banker');
-  const bankerBlink = bankerWin && Math.sin(performance.now() * 0.006) > 0;
-  ctx.shadowColor = COLORS.STROKERED;
-  ctx.shadowBlur = bankerWin ? (bankerBlink ? 50 * scale : 6 * scale) : bets.banker > 0 ? 18 * scale : 0;
-  ctx.strokeStyle = bankerBlink ? '#ffffff' : COLORS.STROKERED;
-  ctx.lineWidth = bets.banker > 0 || bankerWin ? borderWidth * 1.8 : borderWidth;
+  ctx.strokeStyle = COLORS.STROKERED;
+  ctx.lineWidth = borderWidth;
   ctx.stroke(bankerShape);
-  ctx.shadowBlur = 0;
   ctx.fillStyle = COLORS.FILLRED;
   ctx.fill(bankerShape);
-  if (bankerBlink) { ctx.fillStyle = 'rgba(245,88,88,0.38)'; ctx.fill(bankerShape); }
-  if (pressedRegion === 'banker') { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(bankerShape); }
-  ctx.restore();
+  if (pressedRegion === 'banker') {
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill(bankerShape);
+  }
 
   // -- Name --
   ctx.textAlign = `center`
@@ -757,32 +530,35 @@ const drawbetOptions = (GEOMETRY) => {
 
 
   // -- Cards --
-  bankerCards.forEach((card, i) => {
-    const cx = bankerCardsX - i * (bankerCardW + bankerCardsG);
-    if (card) {
-      drawCard(cx, bankerCardsY, bankerCardW, bankerCardH, bankerCardR, card);
-    } else {
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(cx, bankerCardsY, bankerCardW, bankerCardH, bankerCardR);
-      ctx.fillStyle = 'rgba(117,110,110,0.18)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.lineWidth = 1 * scale;
-      ctx.stroke();
-      ctx.restore();
-    }
-  });
 
+  ctx.fillStyle = "rgba(117, 110, 110, 0.27)";
+  ctx.lineWidth = 1 * scale;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.76)";
 
-  // -- Total Bets --
+  ctx.beginPath();
+  ctx.roundRect(bankerCardsX, bankerCardsY, bankerCardW, bankerCardH, bankerCardR);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.roundRect(bankerCardsX - bankerCardW - bankerCardsG, bankerCardsY, bankerCardW, bankerCardH, bankerCardR);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.roundRect(bankerCardsX - (bankerCardW + bankerCardsG) * 2, bankerCardsY, bankerCardW, bankerCardH, bankerCardR);
+  ctx.closePath();
+  ctx.stroke();
+  
+  
+ // -- Total Bets --
   ctx.fillStyle = "#d6dbb7";
   ctx.beginPath();
-  ctx.arc(banker.X + banker.TW * 0.5, banker.CY - banker.R * 0.19, 7, Math.PI * 45, 0, false)
+  ctx.arc(banker.X + banker.TW * 0.5 , banker.CY - banker.R * 0.19, 7, Math.PI * 45, 0, false)
   ctx.fill();
   ctx.closePath()
   ctx.beginPath()
-  ctx.arc(banker.X + banker.TW * 0.5, banker.CY - banker.R * 0.28, 4, Math.PI * 2, 0, false)
+  ctx.arc(banker.X + banker.TW * 0.5 ,banker.CY - banker.R * 0.28,4,Math.PI *2,0,false)
   ctx.closePath()
   ctx.fill();
   ctx.textAlign = `start`
@@ -794,9 +570,7 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.textAlign = "end"
   ctx.fillStyle = "#d6dbb7";
   ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
-  ctx.fillText('₱1,233,990', banker.X + banker.TW * 0.5 + banker.R, banker.CY - banker.R * 0.225);
-  betChipPositions.banker = { x: banker.X + banker.TW * 0.65, y: banker.Y + banker.RH * 0.55, r: arcRadius * 0.32 };
-  if (gamePhase !== 'result') drawBetChip(banker.X + banker.TW * 0.65, banker.Y + banker.RH * 0.55, arcRadius * 0.32, bets.banker);
+  ctx.fillText('₱1,233,990', banker.X + banker.TW * 0.5 + banker.R , banker.CY - banker.R * 0.225);
 
 
   ctx.beginPath();
@@ -815,7 +589,7 @@ const drawbetOptions = (GEOMETRY) => {
 
   ctx.fill();
 
-  ctx.restore();
+  ctx.restore(); 
 
 
 
@@ -832,23 +606,15 @@ const drawbetOptions = (GEOMETRY) => {
   tieShape.closePath();
   hitRegions.tie = tieShape;
 
-  ctx.save();
-  const tieWin = gamePhase === 'result' && winners.includes('tie');
-  const tieBlink = tieWin && Math.sin(performance.now() * 0.006) > 0;
-  ctx.shadowColor = COLORS.STROKEGREEN;
-  ctx.shadowBlur = tieWin ? (tieBlink ? 50 * scale : 6 * scale) : bets.tie > 0 ? 18 * scale : 0;
-  ctx.strokeStyle = tieBlink ? '#ffffff' : COLORS.STROKEGREEN;
-  ctx.lineWidth = bets.tie > 0 || tieWin ? borderWidth * 1.8 : borderWidth;
+  ctx.strokeStyle = COLORS.STROKEGREEN;
+  ctx.lineWidth = borderWidth;
   ctx.stroke(tieShape);
-  ctx.shadowBlur = 0;
   ctx.fillStyle = COLORS.FILLGREEN;
   ctx.fill(tieShape);
-  if (tieBlink) { ctx.fillStyle = 'rgba(88,179,115,0.38)'; ctx.fill(tieShape); }
   if (pressedRegion === 'tie') {
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
     ctx.fill(tieShape);
   }
-  ctx.restore();
 
 
   // -- Name --
@@ -861,25 +627,23 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.fillStyle = "#ffffff";
   ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
   ctx.fillText('8:1', tie.CX, tie.CY - tie.R * 0.75);
-
+  
   // -- Total Bets --
   ctx.fillStyle = "#d6dbb7";
   ctx.beginPath();
-  ctx.arc(tie.CX - progressBarW / 2, tie.CY - tie.R * 0.19, 7, Math.PI * 45, 0, false)
+  ctx.arc(tie.CX - progressBarW  /2, tie.CY - tie.R * 0.19, 7, Math.PI * 45, 0, false)
   ctx.fill();
   ctx.closePath()
   ctx.beginPath()
-  ctx.arc(tie.CX - progressBarW / 2, tie.CY - tie.R * 0.28, 4, Math.PI * 2, 0, false)
+  ctx.arc(tie.CX - progressBarW / 2,tie.CY - tie.R * 0.28,4,Math.PI *2,0,false)
   ctx.closePath()
   ctx.fill();
   ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
-  ctx.fillText('12', tie.CX - progressBarW / 3, (tie.CY - tie.R * 0.225));
+  ctx.fillText('12', tie.CX - progressBarW  /3, (tie.CY - tie.R * 0.225));
 
   ctx.font = `600 ${mainBetfontSize * 0.5}px Arial`
   ctx.textAlign = "end"
   ctx.fillText('₱220,330', tie.CX + progressBarW / 2, tie.CY - tie.R * 0.225);
-  betChipPositions.tie = { x: tie.CX, y: tie.CY - tie.R * 0.35, r: tie.R * 0.38 };
-  if (gamePhase !== 'result') drawBetChip(tie.CX, tie.CY - tie.R * 0.35, tie.R * 0.38, bets.tie);
 
   // Percentage
   ctx.beginPath();
@@ -890,13 +654,13 @@ const drawbetOptions = (GEOMETRY) => {
   ctx.fill()
 
   ctx.beginPath();
-  ctx.fillStyle = COLORS.TIEGREEN
+  ctx.fillStyle =  COLORS.TIEGREEN
 
 
   ctx.save();
   ctx.shadowColor = COLORS.NEONGREEN;
   ctx.shadowBlur = 5;
-  ctx.roundRect(tie.CX - progressBarW * 0.5, tie.CY - tie.R * 0.15, progressBarW * 0.15, progressBarH, progressBarR);
+  ctx.roundRect(tie.CX - progressBarW * 0.5, tie.CY - tie.R * 0.15, progressBarW*0.15, progressBarH, progressBarR);
   ctx.fill();
 
   ctx.restore();
@@ -921,12 +685,12 @@ const drawbetOptions = (GEOMETRY) => {
     ctx.fillStyle = COLORS.FILLSIDE;
     ctx.lineWidth = borderWidth;
     ctx.beginPath();
-    if (index === 0) {
+    if(index === 0) {
       sideShape.moveTo(sideBet.X, sideBet.Y);
       sideShape.lineTo(sideBet.X + sideBet.W, sideBet.Y);
       sideShape.lineTo(sideBet.X + sideBet.W, sideBet.Y + sideBet.H);
       sideShape.arc(sideBet.X + borderRadius, sideBet.Y + sideBet.H - borderRadius, borderRadius, angle * 45, angle * 90, false)
-    } else if (index === sideBets.length - 1) {
+    } else if(index === sideBets.length - 1) {
       sideShape.moveTo(sideBet.X, sideBet.Y);
       sideShape.lineTo(sideBet.X + sideBet.W, sideBet.Y);
       sideShape.arc(sideBet.X + sideBet.W - borderRadius, sideBet.Y + sideBet.H - borderRadius, borderRadius, angle * 0, angle * 45, false)
@@ -939,22 +703,14 @@ const drawbetOptions = (GEOMETRY) => {
     }
     sideShape.closePath();
     hitRegions[side] = sideShape;
-    const sideBetKey = side.toLowerCase();
-    ctx.save();
-    const sideWin = gamePhase === 'result' && winners.includes(sideBetKey);
-    const sideBlink = sideWin && Math.sin(performance.now() * 0.006) > 0;
-    ctx.shadowColor = COLORS.STROKESIDE;
-    ctx.shadowBlur = sideWin ? (sideBlink ? 44 * scale : 5 * scale) : bets[sideBetKey] > 0 ? 14 * scale : 0;
-    ctx.strokeStyle = sideBlink ? '#ffffff' : bets[sideBetKey] > 0 || sideWin ? '#ffffff88' : COLORS.STROKESIDE;
-    ctx.lineWidth = bets[sideBetKey] > 0 || sideWin ? borderWidth * 1.5 : borderWidth;
-    ctx.stroke(sideShape);
-    ctx.shadowBlur = 0;
     ctx.fillStyle = COLORS.FILLSIDE;
+    ctx.stroke(sideShape);
     ctx.fill(sideShape);
-    if (sideBlink) { ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fill(sideShape); }
-    if (pressedRegion === sideBetKey) { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(sideShape); }
-    ctx.restore();
-
+    if (pressedRegion === side.toLowerCase()) {
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fill(sideShape);
+    }
+    
 
     // -- Name --
     ctx.fillStyle = "#d6dbb7";
@@ -963,12 +719,10 @@ const drawbetOptions = (GEOMETRY) => {
 
     // -- Odds --
     ctx.fillStyle = "#ffffff";
-    ctx.font = `300 ${sideBetfontSize * 0.85}px Arial`
-    ctx.fillText('04:20', sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.70);
-    betChipPositions[side.toLowerCase()] = { x: sideBet.X + sideBet.W * 0.5, y: sideBet.Y + sideBet.H * 0.5, r: sideBet.H * 0.28 };
-    if (gamePhase !== 'result') drawBetChip(sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.5, sideBet.H * 0.28, bets[side.toLowerCase()]);
-
-
+    ctx.font = `300 ${sideBetfontSize*0.85}px Arial`
+    ctx.fillText('04:20', sideBet.X + sideBet.W *0.5, sideBet.Y + sideBet.H * 0.70);
+    
+ 
 
     sideX += sideBet.W + betOptionsGap
   });
@@ -1004,25 +758,25 @@ const drawStatistics = (GEOMETRY) => {
 
 
   const stats = {
-    gameNo: { bg: null, hasIcon: false, value: 42 },
-    playerTotal: { bg: COLORS.PLAYERBLUE, hasIcon: true, value: 22 },
-    bankerTotal: { bg: COLORS.BANKERRED, hasIcon: true, value: 16 },
-    tieTotal: { bg: COLORS.TIEGREEN, hasIcon: true, value: 4 },
-    playerPairTotal: { bg: COLORS.PLAYERBLUE, hasIcon: true, value: 3 },
-    bankerPairTotal: { bg: COLORS.BANKERRED, hasIcon: true, value: 3 },
-    playerPrediction: { bg: COLORS.PLAYERBLUE, hasIcon: true, value: 3 },
-    bankerPrediction: { bg: COLORS.BANKERRED, hasIcon: true, value: 3 },
+    gameNo: {bg: null, hasIcon: false, value: 42},
+    playerTotal: {bg: COLORS.PLAYERBLUE, hasIcon: true, value: 22},
+    bankerTotal: {bg: COLORS.BANKERRED, hasIcon: true, value: 16},
+    tieTotal: { bg: COLORS.TIEGREEN, hasIcon: true, value:4},
+    playerPairTotal: {bg: COLORS.PLAYERBLUE, hasIcon: true, value:3},
+    bankerPairTotal: { bg: COLORS.BANKERRED, hasIcon: true, value:3},
+    playerPrediction: {bg: COLORS.PLAYERBLUE, hasIcon: true, value:3},
+    bankerPrediction: { bg: COLORS.BANKERRED, hasIcon: true, value:3},
   }
   const cols = Object.keys(stats).length;
 
 
   let startX = summary.X + tileSize;
   const radius = summary.H * 0.2;
-  for (const [key, obj] of Object.entries(stats)) {
+  for(const [key,obj] of Object.entries(stats)) {
     let spaceToNext = radius * 4.5
     ctx.font = `300 ${getFontSize(summary.W * 0.5, summary.H * 0.25)}px Arial`
     ctx.fillStyle = "#fff"
-    ctx.textAlign = "center";
+    ctx.textAlign ="center";
     // ctx.fillText('#42', startX, summary.Y + summary.H * 0.5)
 
     if ([
@@ -1040,29 +794,29 @@ const drawStatistics = (GEOMETRY) => {
       ctx.fillStyle = "#fff";
 
 
-      if (['playerTotal', 'bankerTotal', 'tieTotal'].includes(key)) {
+      if (['playerTotal' ,'bankerTotal', 'tieTotal'].includes(key)) {
         ctx.fillText(key.toUpperCase()[0], startX, summary.Y + summary.H * 0.525)
-        ctx.fillText(obj.value, startX + radius * 2, summary.Y + summary.H * 0.525)
+        ctx.fillText(obj.value,startX + radius * 2, summary.Y + summary.H * 0.525)
       }
 
-      else if (['playerPairTotal', 'bankerPairTotal',].includes(key)) {
-        ctx.fillText(obj.value, startX + radius * 2, summary.Y + summary.H * 0.525)
+      else if (['playerPairTotal','bankerPairTotal',].includes(key)) {
+        ctx.fillText(obj.value,startX + radius * 2, summary.Y + summary.H * 0.525)
       }
 
-
+     
     }
 
 
     // -- Game Number --
     else if (['gameNo'].includes(key)) {
-      ctx.font = `600 ${clamp(summary.W / cols * 0.75, 15, radius * 1.5)}px Arial`;
+      ctx.font = `600 ${clamp(summary.W / cols * 0.75, 15, radius * 1.5) }px Arial`;
       ctx.fillText(`#${obj.value}`, startX + radius * 2, summary.Y + summary.H * 0.5)
       spaceToNext = radius * 2 + 35
     }
     // -- Prediction --
-    else if (['playerPrediction', 'bankerPrediction'].includes(key)) {
+    else if (['playerPrediction','bankerPrediction'].includes(key)) {
       const predictionWidth = clamp(100, summary.W * 0.1, 120);
-      const predictionRadius = clamp(12, predictionWidth / 4, radius * 0.65);
+      const predictionRadius = clamp(12, predictionWidth/4, radius * 0.65); 
       ctx.beginPath();
       ctx.roundRect(startX, summary.Y + summary.H * 0.2, predictionWidth, summary.H * 0.6, 5);
       // ctx.fillStyle = key === 'playerPrediction' ? COLORS.PLAYERBLUE: COLORS.BANKERRED
@@ -1075,11 +829,11 @@ const drawStatistics = (GEOMETRY) => {
       spaceToNext = predictionWidth + radius;
       ctx.fillStyle = "#fff";
       ctx.font = `600 ${getFontSize(summary.W / cols * 0.75, summary.H)}px Arial`;
-      ctx.fillText(`${key.toUpperCase()[0]}`, startX + predictionWidth * 0.15, summary.Y + summary.H * 0.52);
+      ctx.fillText(`${key.toUpperCase()[0]}`, startX + predictionWidth *0.15, summary.Y + summary.H * 0.52);
 
       ctx.beginPath();
       ctx.arc(startX + predictionWidth * 0.35, summary.Y + summary.H * 0.5, predictionRadius, 0, Math.PI * 90, false)
-      ctx.strokeStyle = key === 'playerPrediction' ? COLORS.STROKEBLUE : COLORS.STROKERED;
+      ctx.strokeStyle = key === 'playerPrediction' ? COLORS.STROKEBLUE: COLORS.STROKERED;
       ctx.stroke();
 
       ctx.beginPath();
@@ -1121,8 +875,8 @@ const drawStatistics = (GEOMETRY) => {
   const populateBeadRoad = (grid) => {
     const { rows, cols, posX, posY, gridHeight, cellW, cellH, totalWidth } = grid
 
-
-    results.forEach((result, index) => {
+    
+    results.forEach((result,index)=> {
       const col = Math.floor(index / rows); // vertical fill
       const row = index % rows;
 
@@ -1134,9 +888,9 @@ const drawStatistics = (GEOMETRY) => {
       const cellR = cellW * 0.45;
 
 
-      const bg = result.value === "P" ? COLORS.PLAYERBLUE
-        : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN
+      const bg = result.value === "P"? COLORS.PLAYERBLUE
+      :result.value === "B"? COLORS.BANKERRED
+      :COLORS.TIEGREEN
 
       ctx.fillStyle = bg;
       ctx.beginPath();
@@ -1161,8 +915,7 @@ const drawStatistics = (GEOMETRY) => {
     })
 
   }
-  const populateBigRoad = (grid) => {
-    0.5
+  const populateBigRoad = (grid) => {0.5
     const { rows, cols, posX, posY, cellW, cellH } = grid;
 
     let col = 0;
@@ -1185,7 +938,7 @@ const drawStatistics = (GEOMETRY) => {
 
       const bg = result.value === "P" ? COLORS.PLAYERBLUE
         : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN;
+        : COLORS.TIEGREEN;
 
       ctx.strokeStyle = bg;
       ctx.beginPath();
@@ -1213,7 +966,7 @@ const drawStatistics = (GEOMETRY) => {
 
     results.forEach((result) => {
       if (prevValue !== null && result.value !== prevValue) {
-        col += 0.5;
+        col+=0.5;
         row = 6;
       }
 
@@ -1221,13 +974,13 @@ const drawStatistics = (GEOMETRY) => {
 
       const x = posX + col * cellW;
       const y = posY + row * cellH;
-      const cellCX = x + cellW * 0.25;
-      const cellCY = y + cellH * 0.25;
+      const cellCX = x + cellW *0.25;
+      const cellCY = y + cellH *0.25;
       const cellR = cellW * 0.18;
 
       const bg = result.value === "P" ? COLORS.PLAYERBLUE
         : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN;
+        : COLORS.TIEGREEN;
 
       ctx.strokeStyle = bg;
       ctx.beginPath();
@@ -1236,10 +989,10 @@ const drawStatistics = (GEOMETRY) => {
       ctx.lineWidth = 0.5 * scale
       ctx.stroke();
 
-
+   
 
       prevValue = result.value;
-      row += 0.5;
+      row+=0.5;
     });
   }
   const populateSmallEye = (grid) => {
@@ -1251,7 +1004,7 @@ const drawStatistics = (GEOMETRY) => {
 
     results.forEach((result) => {
       if (prevValue !== null && result.value !== prevValue) {
-        col += 0.5;
+        col+=0.5;
         row = 6;
       }
 
@@ -1259,13 +1012,13 @@ const drawStatistics = (GEOMETRY) => {
 
       const x = posX + col * cellW;
       const y = posY + row * cellH;
-      const cellCX = x + cellW * 0.25;
-      const cellCY = y + cellH * 0.25;
+      const cellCX = x + cellW *0.25;
+      const cellCY = y + cellH *0.25;
       const cellR = cellW * 0.18;
 
       const bg = result.value === "P" ? COLORS.PLAYERBLUE
         : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN;
+        : COLORS.TIEGREEN;
 
       ctx.fillStyle = bg;
       ctx.beginPath();
@@ -1274,10 +1027,10 @@ const drawStatistics = (GEOMETRY) => {
       ctx.lineWidth = 1 * scale
       ctx.fill();
 
-
+   
 
       prevValue = result.value;
-      row += 0.5;
+      row+=0.5;
     });
   }
   const populateCockroach = (grid) => {
@@ -1289,7 +1042,7 @@ const drawStatistics = (GEOMETRY) => {
 
     results.forEach((result) => {
       if (prevValue !== null && result.value !== prevValue) {
-        col += 0.5;
+        col+=0.5;
         row = 6;
       }
 
@@ -1303,7 +1056,7 @@ const drawStatistics = (GEOMETRY) => {
 
       const bg = result.value === "P" ? COLORS.PLAYERBLUE
         : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN;
+        : COLORS.TIEGREEN;
 
       ctx.strokeStyle = bg;
 
@@ -1318,15 +1071,15 @@ const drawStatistics = (GEOMETRY) => {
       // draw relative to new origin (0,0)
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.lineTo(cellW * 0.5, 0);
+      ctx.lineTo(cellW*0.5, 0);
       ctx.stroke();
 
       ctx.restore(); // restore original state
 
-
+   
 
       prevValue = result.value;
-      row += 0.5;
+      row+=0.5;
     });
   }
   ctx.save();
@@ -1336,25 +1089,25 @@ const drawStatistics = (GEOMETRY) => {
   ctx.translate(-scrollX, 0);
 
 
-  const gridA = constructGrid(9, 21, scoreBoard.X, scoreBoard.Y, scoreBoard.H, 1, 3, 6);
+  const gridA = constructGrid(9, 21, scoreBoard.X, scoreBoard.Y, scoreBoard.H ,1,3,6);
   const gridE = constructGrid(6, 54, scoreBoard.X + gridA.totalWidth, scoreBoard.Y, scoreBoard.H);
-
+ 
 
   populateBigRoad(gridA)
   populateBigEye(gridA)
   populateSmallEye(gridA)
   populateCockroach(gridA)
   populateBeadRoad(gridE)
+  
 
-
-  maxScrollX = (gridA.totalWidth + gridE.totalWidth) / 5;
+  maxScrollX = (gridA.totalWidth + gridE.totalWidth)/5;
 
 
   ctx.restore();
   // --- SCROLLABLE END ********************************************************************************
 
 
-
+  
 }
 
 const drawMenuBar = (GEOMETRY) => {
@@ -1365,7 +1118,7 @@ const drawMenuBar = (GEOMETRY) => {
   const main = {
     X: GEOMETRY['menuBar'].X,
     Y: GEOMETRY['menuBar'].Y,
-    W: GEOMETRY['menuBar'].W,
+    W: GEOMETRY['menuBar'].W ,
     H: GEOMETRY['menuBar'].H * 0.5,
   }
 
@@ -1385,22 +1138,22 @@ const drawMenuBar = (GEOMETRY) => {
 
   ctx.beginPath();
   ctx.moveTo(main.X, main.Y + 10)
-  const angle = Math.PI / 90;
+  const angle = Math.PI /90;
   const radius = main.H * 0.40;
   const diameter = radius * 2;
 
-  ctx.arc(main.X + main.W * 0.10, main.Y + radius + 10, radius, -angle * 45, angle * 0, false)
+  ctx.arc(main.X + main.W * 0.10 , main.Y + radius + 10, radius, -angle * 45, angle * 0, false)
   ctx.arc(main.X + main.W * 0.10 + diameter, main.Y + radius, radius, angle * 87, angle * 45, true)
   ctx.arc(main.X + main.W * 0.90 - diameter, main.Y + radius, radius, angle * 45, angle * 3, true)
   ctx.arc(main.X + main.W * 0.90, main.Y + radius + 10, radius, -angle * 90, -angle * 45, false)
   ctx.lineTo(main.X + main.W, main.Y + 10)
-  ctx.lineTo(main.X + main.W, main.Y + main.H)
+  ctx.lineTo(main.X + main.W, main.Y +main.H)
 
   ctx.strokeStyle = "#1f1f1f"
   ctx.lineWidth = 1.75 * scale;
   ctx.stroke();
 
-  ctx.lineTo(main.X, main.Y + main.H)
+  ctx.lineTo(main.X, main.Y +main.H)
   ctx.fillStyle = COLORS.SECONDARYBLACK;
 
   ctx.fill();
@@ -1535,7 +1288,7 @@ const drawMenuBar = (GEOMETRY) => {
   const undoButton = {
     X: chipsController.X,
     Y: chipsController.Y,
-    W: chipsController.W / 3,
+    W: chipsController.W /3,
     H: chipsController.H,
     CX: chipsController.H * 0.125,
     CY: chipsController.H * 0.25,
@@ -1545,15 +1298,15 @@ const drawMenuBar = (GEOMETRY) => {
 
   ctx.beginPath();
   ctx.moveTo(undoButton.X + undoButton.W * 0.5 - undoButton.R, undoButton.Y + undoButton.H * 0.5 - undoButton.R)
-  ctx.arc(
+   ctx.arc(
     undoButton.X + undoButton.W * 0.5,
     undoButton.Y + undoButton.H * 0.5,
     undoButton.R,
     Math.PI * 1.5, // start (top)
-    Math.PI / 2,            // end (right)
+    Math.PI /2,            // end (right)
     false         // clockwise
   );
-  ctx.lineTo(undoButton.X + undoButton.W * 0.5 - undoButton.R, undoButton.Y + undoButton.H * 0.50 + undoButton.R);
+  ctx.lineTo(undoButton.X + undoButton.W * 0.5 - undoButton.R, undoButton.Y + undoButton.H * 0.50+ undoButton.R );
 
   ctx.moveTo(undoButton.X + undoButton.W * 0.5 - undoButton.R + 5, undoButton.Y + undoButton.H * 0.30)
   ctx.lineTo(undoButton.X + undoButton.W * 0.5 - undoButton.R - 2, undoButton.Y + undoButton.H * 0.38)
@@ -1561,65 +1314,60 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.lineTo(undoButton.X + undoButton.W * 0.5 - undoButton.R + 5, undoButton.Y + undoButton.H * 0.45)
   // ctx.lineTo(undoButton.X + 5, undoButton.Y + undoButton.H * 0.25 -7)
 
-  ctx.strokeStyle = betHistory.length > 0 ? "#ffffffcc" : "#ffffff3a"
+  ctx.strokeStyle = "#ffffff6c"
   ctx.lineWidth = 2 * scale
   ctx.stroke();
-
-  undoBounds = { X: undoButton.X, Y: undoButton.Y, W: undoButton.W, H: undoButton.H };
-
+  
   const mainCX = main.X + main.W * 0.5
   const iconWidth = main.H * 0.25
 
-  // --- cancel Button
-  const cancelButton = {
-    X: chipsController.X + (chipsController.W / 3) * 2,
+  // --- Rebet Button
+  const rebetButton = {
+    X: chipsController.X + (chipsController.W /3) * 2,
     Y: chipsController.Y,
     W: chipsController.W / 3,
     H: chipsController.H,
-    CX: chipsController.X + chipsController / 2,
-    CY: chipsController.H / 2,
+    CX: chipsController.X + chipsController /2,
+    CY: chipsController.H /2,
     R: chipsController.H * 0.125
   }
 
-
+  
   ctx.beginPath();
 
 
-  ctx.arc(
-    cancelButton.X + cancelButton.W / 2,
-    cancelButton.Y + cancelButton.H * 0.5,
-    cancelButton.H * 0.15,
+   ctx.arc(
+    rebetButton.X + rebetButton.W / 2,
+    rebetButton.Y + rebetButton.H * 0.5,
+    rebetButton.H * 0.15,
     Math.PI * 0, // start (top)
-    Math.PI * 1.6,            // end (right)
+    Math.PI *1.6,            // end (right)
     false         // clockwise
   );
 
-  ctx.moveTo(cancelButton.X + cancelButton.W * 0.5, cancelButton.Y + cancelButton.H * 0.3)
-  ctx.lineTo(cancelButton.X + cancelButton.W * 0.5 + 5, cancelButton.Y + cancelButton.H * 0.35)
-  ctx.lineTo(cancelButton.X + cancelButton.W * 0.5, cancelButton.Y + cancelButton.H * 0.4)
+  ctx.moveTo(rebetButton.X + rebetButton.W * 0.5, rebetButton.Y + rebetButton.H * 0.3 )
+  ctx.lineTo(rebetButton.X + rebetButton.W * 0.5 + 5, rebetButton.Y + rebetButton.H * 0.35)
+  ctx.lineTo(rebetButton.X + rebetButton.W * 0.5, rebetButton.Y + rebetButton.H * 0.4 )
 
-  ctx.strokeStyle = "#ffffffcc"
+  ctx.strokeStyle = "#ffffff6c"
   ctx.lineWidth = 2 * scale
   ctx.stroke();
-
-  cancelBounds = { X: cancelButton.X, Y: cancelButton.Y, W: cancelButton.W, H: cancelButton.H };
 
 
   // --- Chip Button
   const chipButton = {
-    X: chipsController.X + (chipsController.W / 3),
+    X: chipsController.X + (chipsController.W /3),
     Y: chipsController.Y,
     W: chipsController.W / 3,
     H: chipsController.H,
-    CX: chipsController.X + chipsController / 2,
-    CY: chipsController.H / 2,
+    CX: chipsController.X + chipsController /2,
+    CY: chipsController.H /2,
     R: chipsController.H * 0.125
   }
 
   const chipCX = chipButton.X + chipButton.W / 2;
   const chipCY = chipButton.Y + chipButton.H * 0.5;
   const chipR = chipButton.H * 0.38;
-  chipButtonCenter = { x: chipCX, y: chipCY, r: chipR };
 
   // Outer body
   const chipShape = new Path2D();
@@ -1662,7 +1410,7 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.lineWidth = 1 * scale;
   ctx.stroke();
 
-
+  
 
   // Label
   const chipFontSize = clamp(10, chipR * 0.58, 40);
@@ -1689,45 +1437,45 @@ const drawMenuBar = (GEOMETRY) => {
   // ctx.fillRect(wallet.X, wallet.Y, wallet.W, wallet.H)
 
 
-  ctx.fillStyle = "#818181";
+  ctx.fillStyle="#818181";
   ctx.textAlign = "start";
   ctx.font = `100 ${clamp(10, wallet.H * 0.15, tileSize)}px Arial`
-  ctx.fillText("Speed Bacarrat ₱50-10,000", wallet.X + tileSize, wallet.Y);
+  ctx.fillText("Speed Bacarrat ₱50-10,000",wallet.X + tileSize, wallet.Y);
 
   const timeText = "04:20:34";
-  const timeTextW = ctx.measureText(timeText).width;
+  const timeTextW= ctx.measureText(timeText).width;
   ctx.textAlign = "end";
-  ctx.fillText(timeText, wallet.X + wallet.W - tileSize, wallet.Y);
+  ctx.fillText(timeText,wallet.X + wallet.W - tileSize, wallet.Y);
+  
 
-
-  ctx.strokeStyle = "#ffffff";
+  ctx.strokeStyle ="#ffffff";
   ctx.beginPath()
-  ctx.moveTo(wallet.X + tileSize, wallet.Y + wallet.H * 0.125);
-  ctx.lineTo(wallet.X + tileSize * 2, wallet.Y + wallet.H * 0.125);
+  ctx.moveTo(wallet.X + tileSize , wallet.Y + wallet.H * 0.125);
+  ctx.lineTo(wallet.X + tileSize * 2 , wallet.Y + wallet.H * 0.125);
   ctx.stroke();
 
   ctx.beginPath()
-  ctx.roundRect(wallet.X + tileSize, wallet.Y + wallet.H * 0.15, tileSize * 1.225, wallet.H * 0.17, 2);
+  ctx.roundRect(wallet.X + tileSize , wallet.Y + wallet.H * 0.15, tileSize*1.225, wallet.H * 0.17, 2);
   ctx.lineWidth = 1 * scale
   ctx.stroke();
 
   ctx.beginPath()
   ctx.arc(
-    wallet.X + tileSize * 1.7,
+    wallet.X + tileSize*1.7,
     wallet.Y + wallet.H * 0.225,
     2,
     0,
     Math.PI * 2,
     false
   )
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle ="#ffffff";
   ctx.fill();
+  
 
-
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle="#ffffff";
   ctx.textAlign = "start";
   ctx.font = `100 ${clamp(10, wallet.H * 0.225, tileSize)}px Arial`
-  ctx.fillText(fmtCurrency(balance), wallet.X + tileSize * 2.5, wallet.Y + wallet.H * 0.225);
+  ctx.fillText("₱510,000", wallet.X + tileSize * 2.5, wallet.Y + wallet.H * 0.225);
 
 
   // ctx.beginPath()
@@ -1740,7 +1488,7 @@ const drawMenuBar = (GEOMETRY) => {
   //   false
   // )
   // ctx.stroke();
-  const text = fmtCurrency(balance);
+  const text = "₱435,324.34";
   const x = wallet.X + wallet.W - tileSize;
   const y = wallet.Y + wallet.H * 0.225;
 
@@ -1760,15 +1508,15 @@ const drawMenuBar = (GEOMETRY) => {
   const iconY = y - iconSize / 2;
   let stackY = iconY
   ctx.beginPath();
-  ctx.arc(iconX + iconSize / 2, stackY + 15, iconSize / 2, -Math.PI * 0.8, -Math.PI * 0.2, false);
+  ctx.arc(iconX + iconSize / 2, stackY +15, iconSize / 2, -Math.PI * 0.8, -Math.PI * 0.2, false);
   ctx.lineWidth = 1 * scale
   ctx.stroke();
-  for (let y = 0; y < 3; y++) {
+  for(let y=0; y<3;y++) {
     // draw icon (example: circle avatar)
     ctx.beginPath();
     ctx.arc(iconX + iconSize / 2, stackY, iconSize / 2, Math.PI * 0.2, Math.PI * 0.8, false);
     ctx.stroke();
-    stackY += 5
+    stackY+=5
   }
 
   // draw text
@@ -1793,14 +1541,14 @@ const resize = (e) => {
   canvas.style.height = height + 'px';
 
 
-  tileSize = Math.min(canvas.width, canvas.height) / 32;
-
-  const isMobile = canvas.width <= 580;
+  tileSize = Math.min(canvas.width, canvas.height) / 32 ;
+  
+  const isMobile = canvas.width <=580;
   const spacing = 10;
   const buttonGap = spacing / 2;
 
   containerAvailableWidth = canvas.width;
-  containerMaxWidth = 580 * scale;
+  containerMaxWidth =580 * scale;
   containerWidth = isMobile ? containerAvailableWidth   // full width on phone
     : Math.min(containerAvailableWidth, containerMaxWidth);
   leftGutter = (canvas.width - containerWidth) / 2;
@@ -1869,100 +1617,13 @@ const drawPopup = () => {
   ctx.fillText(info.desc, cardX + cardW / 2, cardY + cardH * 0.80);
 };
 
-const drawFlyingChips = () => {
-  const now = performance.now();
-  flyingChips = flyingChips.filter(chip => {
-    const elapsed = now - chip.startTime;
-    const raw = Math.min(elapsed / chip.duration, 1);
-    const ease = 1 - Math.pow(1 - raw, 3);
-    const x = chip.x0 + (chip.x1 - chip.x0) * ease;
-    const y = chip.y0 + (chip.y1 - chip.y0) * ease - Math.sin(Math.PI * raw) * 80 * scale;
-    const r = chip.r0 + (chip.r1 - chip.r0) * ease;
-    const color = CHIP_COLORS[chip.colorIndex];
-    const fmt = new Intl.NumberFormat('en', { notation: 'compact' });
-    ctx.save();
-    ctx.globalAlpha = raw < 0.85 ? 1 : 1 - (raw - 0.85) / 0.15;
-    ctx.shadowColor = color.shadow;
-    ctx.shadowBlur = 12 * scale;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = color.fill;
-    ctx.fill();
-    ctx.strokeStyle = color.stroke;
-    ctx.lineWidth = 1.5 * scale;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    for (let s = 0; s < 8; s++) {
-      const a0 = (Math.PI * 2 / 8) * s;
-      const a1 = a0 + (Math.PI * 2 / 8) * 0.55;
-      ctx.beginPath();
-      ctx.arc(x, y, r * 0.9, a0, a1);
-      ctx.arc(x, y, r * 0.74, a1, a0, true);
-      ctx.closePath();
-      ctx.fillStyle = s % 2 === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
-      ctx.fill();
-    }
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.62, 0, Math.PI * 2);
-    ctx.strokeStyle = color.stroke;
-    ctx.lineWidth = 1 * scale;
-    ctx.stroke();
-    ctx.font = `700 ${clamp(8, r * 0.52, 32)}px Interroman, Arial`;
-    ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(chip.amount >= 1000 ? fmt.format(chip.amount) : String(chip.amount), x, y);
-    ctx.restore();
-    return raw < 1;
-  });
-};
-
-const drawPhaseBanner = () => {
-  const now = performance.now();
-  let label, color;
-  if (gamePhase === 'betting') {
-    const left = Math.max(0, BETTING_DURATION - (now - bettingCountdownStart));
-    const secs = Math.ceil(left / 1000);
-    label = `PLACE YOUR BETS  ${secs}`;
-    color = secs <= 3 ? '#f55858' : '#e8c84a';
-  } else if (gamePhase === 'dealing') {
-    label = 'NO MORE BETS';
-    color = '#ffffff66';
-  } else if (gamePhase === 'result') {
-    const pTotal = handTotal(playerCards);
-    const bTotal = handTotal(bankerCards);
-    const w = winners[0];
-    label = w === 'tie' ? `TIE  ${pTotal} - ${bTotal}` : w === 'player' ? `PLAYER WINS  ${pTotal} - ${bTotal}` : `BANKER WINS  ${bTotal} - ${pTotal}`;
-    color = w === 'player' ? COLORS.STROKEBLUE : w === 'banker' ? COLORS.STROKERED : COLORS.STROKEGREEN;
-  }
-  if (!label) return;
-  const bx = leftGutter + containerWidth * 0.5;
-  const by = canvas.height * 0.39;
-  const fontSize = clamp(10, containerWidth * 0.03, 18) * scale;
-  ctx.save();
-  ctx.font = `700 ${fontSize}px Interroman, Arial`;
-  const tw = ctx.measureText(label).width;
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.beginPath();
-  ctx.roundRect(bx - tw / 2 - 14 * scale, by - fontSize * 0.75, tw + 28 * scale, fontSize * 1.5, 4 * scale);
-  ctx.fill();
-  ctx.fillStyle = color;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, bx, by);
-  ctx.restore();
-};
-
 const loop = () => {
   // --- Clear ---
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  updateGameState();
   drawGrid();
   drawLayout();
   drawUI();
   drawPopup();
-  drawFlyingChips();
-  drawPhaseBanner();
   requestAnimationFrame(loop)
 };
 
@@ -1988,25 +1649,25 @@ canvas.addEventListener('pointermove', (e) => {
   const overBPair = hitRegions.B_PAIR && ctx.isPointInPath(hitRegions.B_PAIR, x, y);
   const overPBonus = hitRegions.P_BONUS && ctx.isPointInPath(hitRegions.P_BONUS, x, y);
   const overBBonus = hitRegions.B_BONUS && ctx.isPointInPath(hitRegions.B_BONUS, x, y);
-  hoverRegion = overPlayer ? 'player'
-    : overBanker ? 'banker'
-      : overTie ? 'tie'
-        : overChip ? 'chip'
-          : overPBonus ? 'p_bonus'
-            : overBBonus ? 'b_bonus'
-              : overPPair ? 'p_pair'
-                : overBPair ? 'b_pair'
-                  : null;
+  hoverRegion = overPlayer ? 'player' 
+  : overBanker ? 'banker' 
+  : overTie ? 'tie' 
+  : overChip ? 'chip' 
+  : overPBonus ? 'p_bonus' 
+  : overBBonus ? 'b_bonus' 
+  : overPPair ? 'p_pair' 
+  : overBPair ? 'b_pair' 
+  : null;
   canvas.style.cursor = (
-    overPlayer
-    || overBanker
-    || overTie
+    overPlayer 
+    || overBanker 
+    || overTie 
     || overChip
     || overPBonus
     || overBBonus
     || overPPair
     || overBPair
-  ) ? 'pointer' : 'default';
+    ) ? 'pointer' : 'default';
 });
 
 canvas.addEventListener('pointerdown', (e) => {
@@ -2018,7 +1679,7 @@ canvas.addEventListener('pointerdown', (e) => {
     const c = popupCloseHit;
     const p = popupCardRect;
     const onClose = c && x >= c.X && x <= c.X + c.W && y >= c.Y && y <= c.Y + c.H;
-    const onCard = p && x >= p.X && x <= p.X + p.W && y >= p.Y && y <= p.Y + p.H;
+    const onCard  = p && x >= p.X && x <= p.X + p.W && y >= p.Y && y <= p.Y + p.H;
     if (onClose || !onCard) activePopup = null;
     return;
   }
@@ -2041,16 +1702,12 @@ canvas.addEventListener('pointerdown', (e) => {
     pressedRegion = 'chip';
 
     currentChipIndex++;
-    if (currentChipIndex >= chips.length) {
+    if(currentChipIndex >= chips.length) {
       currentChipIndex = 0
     }
 
   } else if (hitRegions.lobby && ctx.isPointInPath(hitRegions.lobby, x, y)) {
     pressedRegion = 'lobby';
-  } else if (undoBounds && x >= undoBounds.X && x <= undoBounds.X + undoBounds.W && y >= undoBounds.Y && y <= undoBounds.Y + undoBounds.H) {
-    pressedRegion = 'undo';
-  } else if (cancelBounds && x >= cancelBounds.X && x <= cancelBounds.X + cancelBounds.W && y >= cancelBounds.Y && y <= cancelBounds.Y + cancelBounds.H) {
-    pressedRegion = 'cancel';
   } else {
     pressedRegion = null;
   }
@@ -2058,60 +1715,8 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointerup', () => {
-  if (pressedRegion === 'lobby') { window.location.href = 'index.html'; return; }
-
-  if (pressedRegion === 'undo') {
-    if (gamePhase === 'betting' && betHistory.length > 0) {
-      const last = betHistory.pop();
-      bets[last.region] -= last.amount;
-      balance += last.amount;
-      const src = betChipPositions[last.region];
-      if (src && chipButtonCenter.r > 0) {
-        flyingChips.push({
-          x0: src.x, y0: src.y, r0: src.r,
-          x1: chipButtonCenter.x, y1: chipButtonCenter.y, r1: chipButtonCenter.r,
-          amount: last.amount, colorIndex: chipColorIndex(last.amount),
-          startTime: performance.now(), duration: 320,
-        });
-      }
-    }
-    pressedRegion = null;
-    return;
-  }
-
-  if (pressedRegion === 'cancel') {
-    if (gamePhase !== 'betting') { pressedRegion = null; return; }
-    const totalBet = Object.values(bets).reduce((s, v) => s + v, 0);
-    if (totalBet > 0) {
-      lastBets = { ...bets };
-      balance += totalBet;
-      bets = { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
-      betHistory = [];
-    }
-    pressedRegion = null;
-    return;
-  }
-
-  if (pressedRegion && pressedRegion in REGION_INFO) {
-    const amount = chips[currentChipIndex];
-    if (gamePhase === 'betting' && balance >= amount) {
-      bets[pressedRegion] += amount;
-      balance -= amount;
-      betHistory.push({ region: pressedRegion, amount });
-      const dest = betChipPositions[pressedRegion];
-      if (dest && chipButtonCenter.r > 0) {
-        flyingChips.push({
-          x0: chipButtonCenter.x, y0: chipButtonCenter.y, r0: chipButtonCenter.r,
-          x1: dest.x, y1: dest.y, r1: dest.r,
-          amount, colorIndex: currentChipIndex,
-          startTime: performance.now(), duration: 380,
-        });
-      }
-    }
-    pressedRegion = null;
-    return;
-  }
-
+  if (pressedRegion === 'lobby') { window.location.href = '/'; return; }
+  if (pressedRegion && pressedRegion === hoverRegion && pressedRegion in REGION_INFO) activePopup = pressedRegion;
   pressedRegion = null;
 });
 canvas.addEventListener('pointercancel', () => { pressedRegion = null; });

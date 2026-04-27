@@ -90,7 +90,7 @@ const CHIP_COLORS = [
 
 const chipColorIndex = (amount) =>
   amount < 200 ? 0 : amount < 500 ? 1 : amount < 1000 ? 2 :
-  amount < 5000 ? 3 : amount < 10000 ? 4 : amount < 20000 ? 5 : 6;
+    amount < 5000 ? 3 : amount < 10000 ? 4 : amount < 20000 ? 5 : 6;
 
 const drawBetChip = (cx, cy, r, amount) => {
   if (amount <= 0) return;
@@ -310,13 +310,13 @@ const constructGrid = (rows, cols, posX, posY, gridHeight, cellSize = 1, divX, d
 }
 
 // ─── Game Logic ──────────────────────────────────────────────────────────────
-const CARD_RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-const CARD_SUITS = ['♠','♥','♦','♣'];
+const CARD_RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const CARD_SUITS = ['♠', '♥', '♦', '♣'];
 const randomCard = () => ({
   rank: CARD_RANKS[Math.floor(Math.random() * CARD_RANKS.length)],
   suit: CARD_SUITS[Math.floor(Math.random() * CARD_SUITS.length)],
 });
-const cardValue = (rank) => rank === 'A' ? 1 : ['10','J','Q','K'].includes(rank) ? 0 : parseInt(rank);
+const cardValue = (rank) => rank === 'A' ? 1 : ['10', 'J', 'Q', 'K'].includes(rank) ? 0 : parseInt(rank);
 const handTotal = (cards) => cards.filter(Boolean).reduce((s, c) => (s + cardValue(c.rank)) % 10, 0);
 
 const dealBaccaratHands = () => {
@@ -332,9 +332,9 @@ const dealBaccaratHands = () => {
     const pv = cardValue(p[2].rank);
     if (bTotal <= 2) b[2] = randomCard();
     else if (bTotal === 3 && pv !== 8) b[2] = randomCard();
-    else if (bTotal === 4 && [2,3,4,5,6,7].includes(pv)) b[2] = randomCard();
-    else if (bTotal === 5 && [4,5,6,7].includes(pv)) b[2] = randomCard();
-    else if (bTotal === 6 && [6,7].includes(pv)) b[2] = randomCard();
+    else if (bTotal === 4 && [2, 3, 4, 5, 6, 7].includes(pv)) b[2] = randomCard();
+    else if (bTotal === 5 && [4, 5, 6, 7].includes(pv)) b[2] = randomCard();
+    else if (bTotal === 6 && [6, 7].includes(pv)) b[2] = randomCard();
   }
   return { p, b };
 };
@@ -342,9 +342,9 @@ const dealBaccaratHands = () => {
 const calcWinners = (p, b) => {
   const pt = handTotal(p), bt = handTotal(b);
   const result = [];
-  if (pt > bt)      { result.push('player'); result.push('p_bonus'); }
+  if (pt > bt) { result.push('player'); result.push('p_bonus'); }
   else if (bt > pt) { result.push('banker'); result.push('b_bonus'); }
-  else              { result.push('tie'); }
+  else { result.push('tie'); }
   if (p[0] && p[1] && p[0].rank === p[1].rank) result.push('p_pair');
   if (b[0] && b[1] && b[0].rank === b[1].rank) result.push('b_pair');
   return result;
@@ -418,8 +418,8 @@ const drawGrid = () => {
     const w = winners[0];
     const blink = Math.sin(performance.now() * 0.006) > 0;
     const tint = w === 'player' ? `rgba(119,82,255,${blink ? 0.07 : 0.03})`
-               : w === 'banker' ? `rgba(245,88,88,${blink ? 0.07 : 0.03})`
-               :                  `rgba(88,179,115,${blink ? 0.07 : 0.03})`;
+      : w === 'banker' ? `rgba(245,88,88,${blink ? 0.07 : 0.03})`
+        : `rgba(88,179,115,${blink ? 0.07 : 0.03})`;
     ctx.fillStyle = tint;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
