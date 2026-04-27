@@ -11,7 +11,6 @@ let tileSize = Math.min(width, height) / 32;
 let scrollX = 0;
 let isTouching = false;
 let screenX = 0;
-let scoreBoardBounds = null;
 
 
 const maxWidth = 800; // your max container width
@@ -58,6 +57,15 @@ for (let i = 0; i < 15; i++) {
 
 let chips = [100, 200, 500, 1000, 5000, 10000, 20000]
 let currentChipIndex = 0;
+const CHIP_COLORS = [
+  { fill: '#4b5563', stroke: '#9ca3af', shadow: '#d1d5db' }, // 100   - gray
+  { fill: '#991b1b', stroke: '#f05454', shadow: '#fca5a5' }, // 200   - red
+  { fill: '#1f7553', stroke: '#14ffa1', shadow: '#6ee7b7' }, // 500   - green
+  { fill: '#0b3561', stroke: '#247cda', shadow: '#93c5fd' }, // 1000  - blue
+  { fill: '#4c1d95', stroke: '#8b5cf6', shadow: '#c4b5fd' }, // 5000  - purple
+  { fill: '#92400e', stroke: '#f59e0b', shadow: '#fcd34d' }, // 10000 - orange
+  { fill: '#9da010', stroke: '#e8c84a', shadow: '#fdfa3d' }, // 20000 - gold
+];
 
 
 const COLORS = {
@@ -390,7 +398,7 @@ const drawbetOptions = (GEOMETRY) => {
 
   // -- Odds --
   ctx.fillStyle = "#fff";
-  ctx.font = `300 ${mainBetfontSize * 0.7}px Arial`
+  ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
   ctx.fillText('0.95:1', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.325 );
 
   // -- Cards --
@@ -616,7 +624,7 @@ const drawbetOptions = (GEOMETRY) => {
 
   // -- Odds --
   ctx.fillStyle = "#ffffff";
-  ctx.font = `300 ${mainBetfontSize * 0.7}px Arial`
+  ctx.font = `300 ${mainBetfontSize * 0.75}px Arial`
   ctx.fillText('8:1', tie.CX, tie.CY - tie.R * 0.75);
   
   // -- Total Bets --
@@ -701,7 +709,7 @@ const drawbetOptions = (GEOMETRY) => {
       ctx.fillStyle = 'rgba(255,255,255,0.12)';
       ctx.fill(sideShape);
     }
-
+    
 
     // -- Name --
     ctx.fillStyle = "#d6dbb7";
@@ -857,7 +865,6 @@ const drawStatistics = (GEOMETRY) => {
     W: GEOMETRY['statistics'].W,
     H: GEOMETRY['statistics'].H * scoreBoardRatio,
   }
-  scoreBoardBounds = scoreBoard;
 
 
 
@@ -1362,14 +1369,14 @@ const drawMenuBar = (GEOMETRY) => {
   chipShape.arc(chipCX, chipCY, chipR, 0, Math.PI * 2);
   chipShape.closePath();
 
+  const chipColor = CHIP_COLORS[currentChipIndex];
   hitRegions.chip = chipShape;
-
   ctx.save();
-  ctx.shadowColor = "#fdfa3d";
+  ctx.shadowColor = chipColor.shadow;
   ctx.shadowBlur = 10;
-  ctx.strokeStyle = "#e8c84a";
+  ctx.strokeStyle = chipColor.stroke;
   ctx.stroke(chipShape);
-  ctx.fillStyle = "#9da010";
+  ctx.fillStyle = chipColor.fill;
   ctx.fill(chipShape);
   if (pressedRegion === 'chip') {
     ctx.fill(chipShape);
@@ -1393,7 +1400,7 @@ const drawMenuBar = (GEOMETRY) => {
   // Inner ring
   ctx.beginPath();
   ctx.arc(chipCX, chipCY, chipR * 0.62, 0, Math.PI * 2);
-  ctx.strokeStyle = "#e8c84a";
+  ctx.strokeStyle = chipColor.stroke;
   ctx.lineWidth = 1 * scale;
   ctx.stroke();
 
@@ -1687,12 +1694,13 @@ canvas.addEventListener('pointerdown', (e) => {
     pressedRegion = 'b_pair';
   } else if (hitRegions.chip && ctx.isPointInPath(hitRegions.chip, x, y)) {
     pressedRegion = 'chip';
-  
+
     currentChipIndex++;
     if(currentChipIndex >= chips.length) {
       currentChipIndex = 0
     }
 
+    
   } else {
     pressedRegion = null;
   }
@@ -1700,18 +1708,13 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointerup', () => {
-  // if (pressedRegion && pressedRegion === hoverRegion) activePopup = pressedRegion;
+  console.log(pressedRegion)
+  if (pressedRegion && pressedRegion === hoverRegion && pressedRegion in REGION_INFO) activePopup = pressedRegion;
   pressedRegion = null;
 });
 canvas.addEventListener('pointercancel', () => { pressedRegion = null; });
 
 canvas.addEventListener("touchstart", (e) => {
-  if (!scoreBoardBounds) return;
-  const rect = canvas.getBoundingClientRect();
-  const x = (e.touches[0].clientX - rect.left) * scale;
-  const y = (e.touches[0].clientY - rect.top) * scale;
-  const sb = scoreBoardBounds;
-  if (x < sb.X || x > sb.X + sb.W || y < sb.Y || y > sb.Y + sb.H) return;
   isTouching = true;
   screenX = e.touches[0].clientX;
 });
@@ -1725,6 +1728,7 @@ canvas.addEventListener("touchmove", (e) => {
   scrollX += dx;
   scrollX = Math.max(0, Math.min(scrollX, maxScrollX));
   screenX = currentX;
+
 
 });
 
