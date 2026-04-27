@@ -532,6 +532,7 @@ const drawbetOptions = async (GEOMETRY) => {
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+
   ctx.fillStyle = COLORS.PRIMARYBLACK
   ctx.fillRect(
     0,
@@ -539,6 +540,19 @@ const drawbetOptions = async (GEOMETRY) => {
     canvas.width,
     canvas.height / 2
   );
+
+  if (gamePhase === 'result' && winners.length > 0) {
+    const w = winners[0];
+    const blink = Math.sin(performance.now() * 0.006) > 0;
+    const tint = w === 'player' ? `rgba(119,82,255,${blink ? 0.24 : 0.08})`
+      : w === 'banker' ? `rgba(245,88,88,${blink ? 0.24 : 0.08})`
+        : `rgba(88,179,115,${blink ? 0.24 : 0.08})`;
+    // const tint = w === 'player' ? COLORS.FILLBLUE
+    //   : w === 'banker' ? COLORS.FILLRED
+    //     : COLORS.FILLGREEN;
+    ctx.fillStyle = tint;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 
   const arcRadius = Math.min(GEOMETRY['betOptions'].W * 0.2, GEOMETRY['betOptions'].H * 0.5)
   const angle = Math.PI / 90
@@ -1963,8 +1977,8 @@ const loop = () => {
   // --- Clear ---
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   updateGameState();
-  drawGrid();
-  drawLayout();
+  // drawGrid();
+  // drawLayout();
   drawUI();
   drawPopup();
   drawFlyingChips();
@@ -2064,7 +2078,7 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointerup', () => {
-  if (pressedRegion === 'lobby') { window.location.href = 'index.html'; return; }
+  if (pressedRegion === 'lobby') { window.location.href = '/'; return; }
 
   if (pressedRegion === 'undo') {
     if (gamePhase === 'betting' && betHistory.length > 0) {
