@@ -6,14 +6,25 @@ const ctx = canvas.getContext('2d');
 
 // --- Background Video ---
 const videoEl = document.createElement('video');
-videoEl.src = '../assets/videos/bacarrat-stream.webm';
 videoEl.loop = true;
 videoEl.muted = true;
 videoEl.playsInline = true;
 videoEl.autoplay = true;
 videoEl.style.display = 'none';
+// MP4 first — required for iOS Safari (no WebM support); WebM for Chrome/Firefox
+const srcMp4 = document.createElement('source');
+srcMp4.src = '../assets/videos/bacarrat-stream.mp4';
+srcMp4.type = 'video/mp4';
+const srcWebm = document.createElement('source');
+srcWebm.src = '../assets/videos/bacarrat-stream.webm';
+srcWebm.type = 'video/webm';
+videoEl.appendChild(srcMp4);
+videoEl.appendChild(srcWebm);
 document.body.appendChild(videoEl);
 videoEl.play().catch(() => { });
+// iOS requires play() inside a user gesture — retry on first touch
+const iosVideoUnlock = () => { videoEl.play().catch(() => { }); document.removeEventListener('touchstart', iosVideoUnlock); };
+document.addEventListener('touchstart', iosVideoUnlock, { once: true });
 
 const drawVideo = (GEOMETRY) => {
   if (videoEl.readyState < 2) return;
