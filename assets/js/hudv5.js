@@ -81,7 +81,7 @@ const containerHeight = canvas.height;
 
 const values = ["P", "B", "T"];
 const results = [];
-for (let i = 0; i < 15; i++) {
+for (let i = 0; i < 60; i++) {
   const randomValue = values[Math.floor(Math.random() * values.length)];
   results.push({ value: randomValue });
 }
@@ -1165,224 +1165,139 @@ const drawStatistics = (GEOMETRY) => {
 
 
   // --- SCROLLABLE START -********************************************************************************
+
+  // Build Big Road logical columns: same outcome stacks down; different outcome → new column;
+  // dragon tail (column full at 6 rows) → new column same value; ties noted on current entry.
+  const bigRoadCols = [];
+  {
+    let lastNonTie = null;
+    for (const r of results) {
+      if (r.value === 'T') {
+        if (bigRoadCols.length > 0) {
+          const c = bigRoadCols[bigRoadCols.length - 1];
+          c[c.length - 1].ties = (c[c.length - 1].ties || 0) + 1;
+        }
+        continue;
+      }
+      const newCol = !lastNonTie
+        || r.value !== lastNonTie
+        || bigRoadCols[bigRoadCols.length - 1].length >= 6;
+      if (newCol) bigRoadCols.push([{ value: r.value, ties: 0 }]);
+      else bigRoadCols[bigRoadCols.length - 1].push({ value: r.value, ties: 0 });
+      lastNonTie = r.value;
+    }
+  }
+
+  // Derived road helper — offset: 1=BigEye, 2=SmallRoad, 3=Cockroach
+  // startCol: full-col offset in grid for this section (0, cols/3, cols*2/3)
+  const renderDerivedRoad = (grid, offset, startCol, drawEntry) => {
+    const { posX, posY, cellW, cellH, cols, rows } = grid;
+    const maxHalfCols = Math.floor(cols / 3) * 2;
+    const maxHalfRows = (rows - 6) * 2;
+    let hc = 0;
+
+    for (let c = offset; c < bigRoadCols.length; c++) {
+      if (hc >= maxHalfCols) break;
+      const col = bigRoadCols[c];
+
+      for (let r = 0; r < col.length; r++) {
+        if (r >= maxHalfRows) break;
+        let isRed;
+        if (r === 0) {
+          const prevLen = bigRoadCols[c - 1]?.length ?? 0;
+          const refLen = bigRoadCols[c - offset - 1]?.length ?? -1;
+          isRed = refLen >= 0 && prevLen === refLen;
+        } else {
+          const refCol = bigRoadCols[c - offset];
+          isRed = refCol ? refCol.length > r : false;
+        }
+        const x = posX + (startCol + hc * 0.5) * cellW;
+        const y = posY + (6 + r * 0.5) * cellH;
+        const cx = x + cellW * 0.25;
+        const cy = y + cellH * 0.25;
+        drawEntry(cx, cy, cellW * 0.18, isRed);
+      }
+      hc++;
+    }
+  };
+
   const populateBeadRoad = (grid) => {
-    const { rows, cols, posX, posY, gridHeight, cellW, cellH, totalWidth } = grid
-
-
+    const { rows, cols, posX, posY, cellW, cellH } = grid;
     results.forEach((result, index) => {
-      const col = Math.floor(index / rows); // vertical fill
+      const col = Math.floor(index / rows);
       const row = index % rows;
-
-      const x = posX + col * cellW;
-      const y = posY + row * cellH;
-
-      const cellCX = x + cellW / 2;
-      const cellCY = y + cellH / 2;
-      const cellR = cellW * 0.45;
-
-
-      const bg = result.value === "P" ? COLORS.PLAYERBLUE
-        : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN
-
+      const cx = posX + col * cellW + cellW / 2;
+      const cy = posY + row * cellH + cellH / 2;
+      const r = cellW * 0.45;
+      const bg = result.value === 'P' ? COLORS.PLAYERBLUE
+        : result.value === 'B' ? COLORS.BANKERRED : COLORS.TIEGREEN;
       ctx.fillStyle = bg;
-      ctx.beginPath();
-      ctx.arc(
-        cellCX,
-        cellCY,
-        cellR,
-        0, Math.PI * 2,
-        false
-      );
-      ctx.closePath();
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2, false); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `600 ${clamp(12, cellW / 2, radius * 2)}px Interroman, Arial`;
+      ctx.fillText(result.value, cx, cy);
+    });
+  };
 
-
-      ctx.fillStyle = "#fff"
-      ctx.textAlign = "center"
-      ctx.textBaseline = "middle"
-      ctx.font = `600 ${clamp(12, cellW / 2, radius * 2)}px Interroman, Arial`
-      ctx.fillText(result.value, cellCX, cellCY)
-
-
-    })
-
-  }
   const populateBigRoad = (grid) => {
-    0.5
-    const { rows, cols, posX, posY, cellW, cellH } = grid;
-
-    let col = 0;
-    let row = 0;
-    let prevValue = null;
-
-    results.forEach((result) => {
-      if (prevValue !== null && result.value !== prevValue) {
-        col++;
-        row = 0;
-      }
-
-      if (col >= cols || row >= rows) return;
-
-      const x = posX + col * cellW;
-      const y = posY + row * cellH;
-      const cellCX = x + cellW / 2;
-      const cellCY = y + cellH / 2;
-      const cellR = cellW * 0.4;
-
-      const bg = result.value === "P" ? COLORS.PLAYERBLUE
-        : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN;
-
-      ctx.strokeStyle = bg;
-      ctx.beginPath();
-      ctx.arc(cellCX, cellCY, cellR, 0, Math.PI * 2, false);
-      ctx.closePath();
-      ctx.lineWidth = 1.6 * scale
-      ctx.stroke();
-
-      // ctx.fillStyle = "#fff";
-      // ctx.textAlign = "center";
-      // ctx.textBaseline = "middle";
-      // ctx.font = `600 ${clamp(12, cellW / 2, cellR)}px Interroman, Arial`;
-      // ctx.fillText(result.value, cellCX, cellCY);
-
-      prevValue = result.value;
-      row++;
+    const { posX, posY, cellW, cellH, cols } = grid;
+    bigRoadCols.forEach((col, ci) => {
+      if (ci >= cols) return;
+      col.forEach((entry, ri) => {
+        const cx = posX + ci * cellW + cellW * 0.5;
+        const cy = posY + ri * cellH + cellH * 0.5;
+        const r = cellW * 0.4;
+        const color = entry.value === 'P' ? COLORS.PLAYERBLUE : COLORS.BANKERRED;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2, false); ctx.closePath();
+        ctx.strokeStyle = color; ctx.lineWidth = 1.6 * scale; ctx.stroke();
+        // Ties: green diagonal slash through circle
+        if (entry.ties > 0) {
+          ctx.save();
+          ctx.strokeStyle = COLORS.TIEGREEN; ctx.lineWidth = 1.2 * scale;
+          ctx.beginPath();
+          ctx.moveTo(cx - r * 0.65, cy + r * 0.65);
+          ctx.lineTo(cx + r * 0.65, cy - r * 0.65);
+          ctx.stroke();
+          ctx.restore();
+        }
+      });
     });
-  }
+  };
+
   const populateBigEye = (grid) => {
-    const { rows, cols, posX, posY, cellW, cellH } = grid;
-
-    let col = 0;
-    let row = 6;
-    let prevValue = null;
-
-    results.forEach((result) => {
-      if (prevValue !== null && result.value !== prevValue) {
-        col += 0.5;
-        row = 6;
-      }
-
-      if (col >= cols || row >= rows) return;
-
-      const x = posX + col * cellW;
-      const y = posY + row * cellH;
-      const cellCX = x + cellW * 0.25;
-      const cellCY = y + cellH * 0.25;
-      const cellR = cellW * 0.18;
-
-      const bg = result.value === "P" ? COLORS.PLAYERBLUE
-        : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN;
-
-      ctx.strokeStyle = bg;
-      ctx.beginPath();
-      ctx.arc(cellCX, cellCY, cellR, 0, Math.PI * 2, false);
-      ctx.closePath();
-      ctx.lineWidth = 0.5 * scale
-      ctx.stroke();
-
-
-
-      prevValue = result.value;
-      row += 0.5;
+    renderDerivedRoad(grid, 1, 0, (cx, cy, r, isRed) => {
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = isRed ? 'rgba(220,50,50,0.90)' : 'rgba(60,120,220,0.90)';
+      ctx.lineWidth = 0.6 * scale; ctx.stroke();
     });
-  }
+  };
+
   const populateSmallEye = (grid) => {
-    const { rows, cols, posX, posY, cellW, cellH } = grid;
-
-    let col = 7;
-    let row = 6;
-    let prevValue = null;
-
-    results.forEach((result) => {
-      if (prevValue !== null && result.value !== prevValue) {
-        col += 0.5;
-        row = 6;
-      }
-
-      if (col >= cols || row >= rows) return;
-
-      const x = posX + col * cellW;
-      const y = posY + row * cellH;
-      const cellCX = x + cellW * 0.25;
-      const cellCY = y + cellH * 0.25;
-      const cellR = cellW * 0.18;
-
-      const bg = result.value === "P" ? COLORS.PLAYERBLUE
-        : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN;
-
-      ctx.fillStyle = bg;
-      ctx.beginPath();
-      ctx.arc(cellCX, cellCY, cellR, 0, Math.PI * 2, false);
-      ctx.closePath();
-      ctx.lineWidth = 1 * scale
+    renderDerivedRoad(grid, 2, Math.floor(grid.cols / 3), (cx, cy, r, isRed) => {
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = isRed ? 'rgba(220,50,50,0.85)' : 'rgba(60,120,220,0.85)';
       ctx.fill();
-
-
-
-      prevValue = result.value;
-      row += 0.5;
     });
-  }
+  };
+
   const populateCockroach = (grid) => {
-    const { rows, cols, posX, posY, cellW, cellH } = grid;
-
-    let col = 14;
-    let row = 6;
-    let prevValue = null;
-
-    results.forEach((result) => {
-      if (prevValue !== null && result.value !== prevValue) {
-        col += 0.5;
-        row = 6;
-      }
-
-      if (col >= cols || row >= rows) return;
-
-      const x = posX + col * cellW;
-      const y = posY + row * cellH;
-      const cellCX = x + cellW * 0.25;
-      const cellCY = y + cellH * 0.25;
-      const cellR = cellW * 0.2;
-
-      const bg = result.value === "P" ? COLORS.PLAYERBLUE
-        : result.value === "B" ? COLORS.BANKERRED
-          : COLORS.TIEGREEN;
-
-      ctx.strokeStyle = bg;
-
-      ctx.save(); // save current state
-
-      // move origin to rotation point (pivot)
-      ctx.translate(x + 2, cellCY + 4);
-
-      // rotate (in radians)
-      ctx.rotate(-Math.PI / 4); // example: 45 degrees
-
-      // draw relative to new origin (0,0)
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(cellW * 0.5, 0);
-      ctx.stroke();
-
-      ctx.restore(); // restore original state
-
-
-
-      prevValue = result.value;
-      row += 0.5;
+    renderDerivedRoad(grid, 3, Math.floor(grid.cols * 2 / 3), (cx, cy, r, isRed) => {
+      ctx.save();
+      ctx.strokeStyle = isRed ? 'rgba(220,50,50,0.90)' : 'rgba(60,120,220,0.90)';
+      ctx.lineWidth = 0.7 * scale;
+      ctx.translate(cx, cy); ctx.rotate(-Math.PI / 4);
+      ctx.beginPath(); ctx.moveTo(-r, 0); ctx.lineTo(r, 0); ctx.stroke();
+      ctx.restore();
     });
-  }
+  };
   // --- gridA (Big Road) ---
   ctx.save();
   ctx.beginPath();
   ctx.rect(scoreBoardA.X, scoreBoardA.Y, scoreBoardA.W, scoreBoardA.H);
   ctx.clip();
   ctx.translate(-scrollXA, 0);
-  const gridA = constructGrid(9, 54, scoreBoardA.X, scoreBoardA.Y, scoreBoardA.H, 1, 3, 6);
+  const gridA = constructGrid(9, 27, scoreBoardA.X, scoreBoardA.Y, scoreBoardA.H, 1, 3, 6);
   populateBigRoad(gridA);
   populateBigEye(gridA);
   populateSmallEye(gridA);
@@ -1396,7 +1311,7 @@ const drawStatistics = (GEOMETRY) => {
   ctx.rect(scoreBoardE.X, scoreBoardE.Y, scoreBoardE.W, scoreBoardE.H);
   ctx.clip();
   ctx.translate(-scrollXE, 0);
-  const gridE = constructGrid(6, 54, scoreBoardE.X, scoreBoardE.Y, scoreBoardE.H);
+  const gridE = constructGrid(6, 54, scoreBoardE.X, scoreBoardE.Y, scoreBoardE.H, 1);
   populateBeadRoad(gridE);
   ctx.restore();
   maxScrollXE = Math.max(0, gridE.totalWidth - scoreBoardE.W);
