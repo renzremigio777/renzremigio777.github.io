@@ -142,7 +142,7 @@ for (let i = 0; i < 30; i++) {
 }
 
 let chips = [100, 200, 500, 1000, 5000, 10000, 20000]
-let currentChipIndex = 0;
+let currentChipIndex = 3;
 const CHIP_COLORS = [
   { fill: '#4b5563', stroke: '#9ca3af', shadow: '#d1d5db' }, // 100   - gray
   { fill: '#991b1b', stroke: '#f05454', shadow: '#fca5a5' }, // 200   - red
@@ -309,6 +309,7 @@ const computeGeometry = () => {
       statisticsGridE: { X: leftGutter, Y: uiY + betH, W: containerWidth * 0.5, H: statH },
       statisticsGridA: { X: leftGutter + containerWidth * 0.5, Y: uiY + betH, W: containerWidth * 0.5, H: statH },
       menuBar: { X: leftGutter, Y: uiY + betH + statH, W: containerWidth, H: menuH },
+      uiY, uiH,
     };
   }
 
@@ -323,6 +324,7 @@ const computeGeometry = () => {
       statisticsGridA: { X: leftGutter + containerWidth * 0.5, Y: uiY, W: containerWidth * 0.5, H: statH },
       betOptions: { X: leftGutter, Y: uiY + statH, W: containerWidth, H: betH },
       menuBar: { X: leftGutter, Y: uiY + statH + betH, W: containerWidth, H: menuH },
+      uiY, uiH,
     };
   }
 
@@ -341,6 +343,7 @@ const computeGeometry = () => {
     betOptions: { X: leftGutter + sideW, Y: uiY + walletH, W: centerW, H: betH },
     menuBar: { X: leftGutter + sideW, Y: uiY + walletH + betH, W: centerW, H: menuH },
     walletBar: { X: leftGutter + sideW, Y: uiY, W: centerW, H: walletH },
+    uiY, uiH,
   };
 }
 
@@ -584,6 +587,7 @@ const drawLayout = () => {
   }
 }
 
+
 const drawGlassPanel = (x, y, w, h, r = 0) => {
   ctx.save();
 
@@ -626,7 +630,7 @@ const drawGlassPanels = (GEOMETRY) => {
   drawGlassPanel(gA.X, gA.Y, gA.W, gA.H, r);
   drawGlassPanel(bo.X, bo.Y, bo.W, bo.H, r);
   drawGlassPanel(mb.X, mb.Y, mb.W, mb.H, r);
-  // if (wb) drawGlassPanel(wb.X, wb.Y, wb.W, wb.H, r);
+  if (wb) drawGlassPanel(wb.X, wb.Y, wb.W, wb.H, r);
 };
 
 const drawUI = () => {
@@ -635,7 +639,14 @@ const drawUI = () => {
   lastGEOMETRY = GEOMETRY;
 
   drawVideo(GEOMETRY);
-  drawGlassPanels(GEOMETRY);
+  const uiShadow = ctx.createLinearGradient(0, GEOMETRY.uiY, 0, GEOMETRY.uiY + GEOMETRY.uiH);
+  uiShadow.addColorStop(0, 'rgba(10, 8, 28, 0)');
+  uiShadow.addColorStop(0.5, 'rgba(10, 8, 28, 0.85)');
+  uiShadow.addColorStop(1, 'rgba(10, 8, 28, 0.44)');
+  ctx.fillStyle = uiShadow;
+  ctx.fillRect(0, GEOMETRY.uiY, canvas.width, GEOMETRY.uiH);
+
+  // drawGlassPanels(GEOMETRY);
   drawbetOptions(GEOMETRY);
   drawStatistics(GEOMETRY);
   drawMenuBar(GEOMETRY);
@@ -648,12 +659,7 @@ const drawbetOptions = async (GEOMETRY) => {
   ctx.textBaseline = "middle";
 
   ctx.fillStyle = COLORS.PRIMARYBLACK
-  // ctx.fillRect(
-  //   0,
-  //   canvas.height / 2,
-  //   canvas.width,
-  //   canvas.height / 2
-  // );
+
 
   if (gamePhase === 'result' && winners.length > 0) {
     const w = winners[0];
@@ -685,6 +691,26 @@ const drawbetOptions = async (GEOMETRY) => {
   const progressBarR = 10;
   const betChipR = GEOMETRY['betOptions'].H * 0.07;
   ctx.setLineDash([])
+
+  // ── Betting status container effect ──
+  const bO = GEOMETRY['betOptions'];
+  const bettingOpen = gamePhase === 'betting';
+  const pulse = (Math.sin(performance.now() * 0.0022) + 1) * 0.5;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(bO.X, bO.Y, bO.W, bO.H, borderRadius * 1.1);
+  if (bettingOpen) {
+    ctx.strokeStyle = `rgba(232,200,74,${0.22 + pulse * 0.30})`;
+    ctx.shadowColor = '#e8c84a';
+    ctx.shadowBlur = (5 + pulse * 10) * scale;
+  } else {
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.shadowBlur = 0;
+  }
+  ctx.lineWidth = 1.5 * scale;
+  // ctx.stroke();
+  ctx.restore();
 
   ctx.roundRect(
     GEOMETRY['betOptions'].X,
@@ -1079,7 +1105,7 @@ const drawbetOptions = async (GEOMETRY) => {
       X: sideX,
       Y: GEOMETRY['betOptions'].Y + GEOMETRY['betOptions'].H * 0.65 + betOptionsGap,
       W: (GEOMETRY['betOptions'].W - betOptionsGap * (sideBets.length + 1)) / sideBets.length,
-      H: (GEOMETRY['betOptions'].H * 0.3),
+      H: (GEOMETRY['betOptions'].H * 0.28),
     }
     const sideShape = new Path2D();
     ctx.strokeStyle = COLORS.STROKESIDE
@@ -1137,6 +1163,66 @@ const drawbetOptions = async (GEOMETRY) => {
 
     sideX += sideBet.W + betOptionsGap
   });
+
+  // ── Disabled overlay: dealing phase only, before first card appears ──
+  const noCardsYet = playerCards.every(c => !c) && bankerCards.every(c => !c);
+  if (gamePhase === 'dealing' && noCardsYet) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(bO.X, bO.Y, bO.W, bO.H, borderRadius * 1.1);
+    ctx.fillStyle = 'rgba(10,10,20,0.58)';
+    ctx.fill();
+    // Desaturating gray tint on top
+    ctx.beginPath();
+    ctx.roundRect(bO.X, bO.Y, bO.W, bO.H, borderRadius * 1.1);
+    ctx.fillStyle = 'rgba(80,80,100,0.18)';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Betting status badge ──
+  {
+    const statusFs = clamp(8, hRef * 0.055, 10) * scale;
+    ctx.font = `700 ${statusFs}px Interroman, Arial`;
+    const statusText = bettingOpen ? 'BETTING OPEN' : 'BETTING CLOSED';
+    const dotColor = bettingOpen ? '#4ade80' : '#f87171';
+    const bgColor = bettingOpen ? 'rgba(74,222,128,0.12)' : 'rgba(248,113,113,0.10)';
+    const bdColor = bettingOpen ? 'rgba(74,222,128,0.40)' : 'rgba(248,113,113,0.28)';
+    const txColor = bettingOpen ? '#bbf7d0' : '#fecaca';
+
+    const dotR = statusFs * 0.24;
+    const pad = 8 * scale;
+    const pillH = statusFs * 1.8;
+    const pillW = ctx.measureText(statusText).width + dotR * 2 + pad * 2.5 + 4 * scale;
+    const pillX = bO.X + bO.W * 0.5 - pillW * 0.5;
+    const pillY = bO.Y - pillH;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
+    ctx.fillStyle = bgColor;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
+    ctx.strokeStyle = bdColor;
+    ctx.lineWidth = 1 * scale;
+    ctx.stroke();
+
+    const dotX = pillX + pad + dotR;
+    const dotY = pillY + pillH * 0.5;
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+    ctx.fillStyle = dotColor;
+    if (bettingOpen) { ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 4 * scale; }
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = txColor;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(statusText, dotX + dotR + 4 * scale, dotY);
+    ctx.restore();
+  }
 }
 
 const drawStatistics = (GEOMETRY) => {
@@ -1548,7 +1634,9 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.font = btnFont; ctx.fillStyle = 'rgba(255,255,255,0.80)';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('Chat', chatIconCX, btnLabelY);
-
+  const chatShape = new Path2D();
+  chatShape.rect(chatX, btnY, btnW, btnH);
+  hitRegions.chat = chatShape;
 
   // -- Lobby Button (centered in right gap) --
   const lobbyX = rightGapCX - btnW * 0.5;
@@ -1725,8 +1813,11 @@ const drawMenuBar = (GEOMETRY) => {
     const rowR = Math.min(chipsController.H * 0.42, slotW * 0.44);
     const rowCY = chipsController.Y + chipsController.H * 0.5;
     chips.forEach((_, i) => {
+      const isActive = i === currentChipIndex;
       const cx = chipAreaX + slotW * i + slotW * 0.5;
-      drawSingleChip(cx, rowCY, rowR, i, i === currentChipIndex);
+      const r = isActive ? rowR * 1.32 : rowR;
+      const cy = isActive ? rowCY - rowR * 0.18 : rowCY;
+      drawSingleChip(cx, cy, r, i, isActive);
       chipRowBounds.push({ X: cx - rowR, Y: rowCY - rowR, W: rowR * 2, H: rowR * 2, index: i });
     });
     const selCX = chipAreaX + (chipAreaW / chips.length) * currentChipIndex + (chipAreaW / chips.length) * 0.5;
@@ -2124,16 +2215,13 @@ canvas.addEventListener('pointermove', (e) => {
               : overPPair ? 'p_pair'
                 : overBPair ? 'b_pair'
                   : null;
-  canvas.style.cursor = (
-    overPlayer
-    || overBanker
-    || overTie
-    || overChip
-    || overPBonus
-    || overBBonus
-    || overPPair
-    || overBPair
-  ) ? 'pointer' : 'default';
+  const overChat = hitRegions.chat && ctx.isPointInPath(hitRegions.chat, x, y);
+  const overLobby = hitRegions.lobby && ctx.isPointInPath(hitRegions.lobby, x, y);
+  const overUndo = undoBounds && x >= undoBounds.X && x <= undoBounds.X + undoBounds.W && y >= undoBounds.Y && y <= undoBounds.Y + undoBounds.H;
+  const overCancel = cancelBounds && x >= cancelBounds.X && x <= cancelBounds.X + cancelBounds.W && y >= cancelBounds.Y && y <= cancelBounds.Y + cancelBounds.H;
+  const overChipRow = chipRowBounds.some(b => x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H);
+  const overBetOption = overPlayer || overBanker || overTie || overPBonus || overBBonus || overPPair || overBPair;
+  canvas.style.cursor = (overChip || overChipRow || overBetOption || overChat || overLobby || overUndo || overCancel) ? 'pointer' : 'default';
 });
 
 canvas.addEventListener('pointerdown', (e) => {
