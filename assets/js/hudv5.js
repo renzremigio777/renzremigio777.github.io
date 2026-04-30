@@ -223,11 +223,11 @@ const getFontSize = (w, h, factor = 0.22) => {
 
 
 const getBreakpoint = (w) => {
-  if (w <= 480) return "mobile";
-  if (w <= 768) return "tablet";
-  if (w <= 1024) return "laptop";
-  if (w <= 1280) return "desktop";
-  return "wide";
+  if (w >= 1280) return "wide";
+  if (w >= 1024) return "desktop";
+  if (w >= 768) return "laptop";
+  if (w >= 480) return "tablet";
+  return "mobile"; // default
 };
 
 const computeGeometry = () => {
