@@ -4,6 +4,49 @@ const canvas = document.createElement('canvas');
 document.body.prepend(canvas);
 const ctx = canvas.getContext('2d');
 
+// --- Background Video ---
+const videoEl = document.createElement('video');
+videoEl.src = '../assets/videos/bacarrat-stream.webm';
+videoEl.loop = true;
+videoEl.muted = true;
+videoEl.playsInline = true;
+videoEl.autoplay = true;
+videoEl.style.display = 'none';
+document.body.appendChild(videoEl);
+videoEl.play().catch(() => { });
+
+const drawVideo = (GEOMETRY) => {
+  if (videoEl.readyState < 2) return;
+  const vw = videoEl.videoWidth, vh = videoEl.videoHeight;
+  if (!vw || !vh) return;
+
+  const bp = getBreakpoint(containerWidth / window.devicePixelRatio);
+  const isFullscreen = bp === 'wide' || bp === 'desktop';
+
+  let area;
+  if (isFullscreen) {
+    // Full canvas — contain-fit (preserve aspect ratio, no crop)
+    area = { X: 0, Y: 0, W: canvas.width, H: canvas.height };
+    const s = 1//th.min(area.W / vw, area.H / vh);
+    const dw = vw * s, dh = vh * s;
+    const dx = (area.W - dw) / 2, dy = (area.H - dh) / 2;
+    ctx.drawImage(videoEl, dx, dy, dw, dh);
+  } else {
+    // Top area — contain-fit within GEOMETRY.video
+    area = GEOMETRY['video'];
+    const s = Math.min(area.W / vw, area.H / vh);
+    const dw = vw * s, dh = vh * s;
+    const dx = area.X + (area.W - dw) / 2;
+    const dy = area.Y + (area.H - dh) / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(area.X, area.Y, area.W, area.H);
+    ctx.clip();
+    ctx.drawImage(videoEl, dx, dy, dw, dh);
+    ctx.restore();
+  }
+};
+
 const font = new FontFace("Interroman", "url(/assets/fonts/Interroman.woff2)");
 font.load();
 document.fonts.add(font);
@@ -33,6 +76,7 @@ let bankerCards = [null, null, null];
 let gamePhase = 'betting'; // 'betting' | 'dealing' | 'result'
 let bettingCountdownStart = performance.now();
 const BETTING_DURATION = 12000; // 12 seconds for demo purposes
+let lastGEOMETRY = null;
 let winners = [];
 let phaseScheduled = false;
 const fmtCurrency = (() => {
@@ -529,10 +573,58 @@ const drawLayout = () => {
   }
 }
 
+const drawGlassPanel = (x, y, w, h, r = 0) => {
+  ctx.save();
+
+  // semi-transparent dark fill
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  ctx.fillStyle = 'rgba(8, 8, 18, 0.62)';
+  ctx.fill();
+
+  // top-edge light gradient (shimmer)
+  const shimmer = ctx.createLinearGradient(x, y, x, y + h * 0.35);
+  shimmer.addColorStop(0, 'rgba(255,255,255,0.07)');
+  shimmer.addColorStop(1, 'rgba(255,255,255,0.00)');
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  ctx.fillStyle = shimmer;
+  ctx.fill();
+
+  // thin border
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.lineWidth = 1 * scale;
+  ctx.stroke();
+
+  ctx.restore();
+};
+
+const drawGlassPanels = (GEOMETRY) => {
+  const bp = getBreakpoint(containerWidth / window.devicePixelRatio);
+  const r = 6 * scale;
+
+  const gE = GEOMETRY['statisticsGridE'];
+  const gA = GEOMETRY['statisticsGridA'];
+  const bo = GEOMETRY['betOptions'];
+  const mb = GEOMETRY['menuBar'];
+  const wb = GEOMETRY['walletBar'];
+
+  drawGlassPanel(gE.X, gE.Y, gE.W, gE.H, r);
+  drawGlassPanel(gA.X, gA.Y, gA.W, gA.H, r);
+  drawGlassPanel(bo.X, bo.Y, bo.W, bo.H, r);
+  drawGlassPanel(mb.X, mb.Y, mb.W, mb.H, r);
+  // if (wb) drawGlassPanel(wb.X, wb.Y, wb.W, wb.H, r);
+};
+
 const drawUI = () => {
 
   const GEOMETRY = computeGeometry();
+  lastGEOMETRY = GEOMETRY;
 
+  drawVideo(GEOMETRY);
+  drawGlassPanels(GEOMETRY);
   drawbetOptions(GEOMETRY);
   drawStatistics(GEOMETRY);
   drawMenuBar(GEOMETRY);
@@ -633,18 +725,19 @@ const drawbetOptions = async (GEOMETRY) => {
   hitRegions.player = playerShape;
 
   ctx.save();
+  const betting = gamePhase === 'betting';
   const playerWin = gamePhase === 'result' && winners.includes('player');
   const playerBlink = playerWin && Math.sin(performance.now() * 0.006) > 0;
   ctx.shadowColor = COLORS.STROKEBLUE;
-  ctx.shadowBlur = playerWin ? (playerBlink ? 50 * scale : 6 * scale) : bets.player > 0 ? 18 * scale : 0;
+  ctx.shadowBlur = playerWin ? (playerBlink ? 50 * scale : 6 * scale) : betting && bets.player > 0 ? 18 * scale : 0;
   ctx.strokeStyle = playerBlink ? '#ffffff' : COLORS.STROKEBLUE;
-  ctx.lineWidth = bets.player > 0 || playerWin ? borderWidth * 1.8 : borderWidth;
+  ctx.lineWidth = (betting && bets.player > 0) || playerWin ? borderWidth * 1.8 : borderWidth;
   ctx.stroke(playerShape);
   ctx.shadowBlur = 0;
   ctx.fillStyle = COLORS.FILLBLUE;
   ctx.fill(playerShape);
   if (playerBlink) { ctx.fillStyle = 'rgba(119,82,255,0.38)'; ctx.fill(playerShape); }
-  if (pressedRegion === 'player') { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(playerShape); }
+  if (betting && pressedRegion === 'player') { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(playerShape); }
   ctx.restore();
 
 
@@ -768,15 +861,15 @@ const drawbetOptions = async (GEOMETRY) => {
   const bankerWin = gamePhase === 'result' && winners.includes('banker');
   const bankerBlink = bankerWin && Math.sin(performance.now() * 0.006) > 0;
   ctx.shadowColor = COLORS.STROKERED;
-  ctx.shadowBlur = bankerWin ? (bankerBlink ? 50 * scale : 6 * scale) : bets.banker > 0 ? 18 * scale : 0;
+  ctx.shadowBlur = bankerWin ? (bankerBlink ? 50 * scale : 6 * scale) : betting && bets.banker > 0 ? 18 * scale : 0;
   ctx.strokeStyle = bankerBlink ? '#ffffff' : COLORS.STROKERED;
-  ctx.lineWidth = bets.banker > 0 || bankerWin ? borderWidth * 1.8 : borderWidth;
+  ctx.lineWidth = (betting && bets.banker > 0) || bankerWin ? borderWidth * 1.8 : borderWidth;
   ctx.stroke(bankerShape);
   ctx.shadowBlur = 0;
   ctx.fillStyle = COLORS.FILLRED;
   ctx.fill(bankerShape);
   if (bankerBlink) { ctx.fillStyle = 'rgba(245,88,88,0.38)'; ctx.fill(bankerShape); }
-  if (pressedRegion === 'banker') { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(bankerShape); }
+  if (betting && pressedRegion === 'banker') { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(bankerShape); }
   ctx.restore();
 
   // -- Name --
@@ -872,15 +965,15 @@ const drawbetOptions = async (GEOMETRY) => {
   const tieWin = gamePhase === 'result' && winners.includes('tie');
   const tieBlink = tieWin && Math.sin(performance.now() * 0.006) > 0;
   ctx.shadowColor = COLORS.STROKEGREEN;
-  ctx.shadowBlur = tieWin ? (tieBlink ? 50 * scale : 6 * scale) : bets.tie > 0 ? 18 * scale : 0;
+  ctx.shadowBlur = tieWin ? (tieBlink ? 50 * scale : 6 * scale) : betting && bets.tie > 0 ? 18 * scale : 0;
   ctx.strokeStyle = tieBlink ? '#ffffff' : COLORS.STROKEGREEN;
-  ctx.lineWidth = bets.tie > 0 || tieWin ? borderWidth * 1.8 : borderWidth;
+  ctx.lineWidth = (betting && bets.tie > 0) || tieWin ? borderWidth * 1.8 : borderWidth;
   ctx.stroke(tieShape);
   ctx.shadowBlur = 0;
   ctx.fillStyle = COLORS.FILLGREEN;
   ctx.fill(tieShape);
   if (tieBlink) { ctx.fillStyle = 'rgba(88,179,115,0.38)'; ctx.fill(tieShape); }
-  if (pressedRegion === 'tie') {
+  if (betting && pressedRegion === 'tie') {
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
     ctx.fill(tieShape);
   }
@@ -940,6 +1033,31 @@ const drawbetOptions = async (GEOMETRY) => {
 
   ctx.textAlign = "center"
 
+  // Scores — drawn after TIE so they render on top of it
+  if (gamePhase === 'result') {
+    const pTotal = handTotal(playerCards);
+    const bTotal = handTotal(bankerCards);
+    const scoreFs = clamp(24, hRef * 0.40, 58) * scale;
+    const scorePad = betOptionsGap;
+    const glow = gamePhase === 'result' ? (Math.sin(performance.now() * 0.0032) + 1) * 0.5 : 0.5;
+
+    ctx.save();
+    ctx.font = `900 ${scoreFs}px Interroman, Arial`;
+    ctx.fillStyle = '#ffffff';
+    ctx.textBaseline = 'top';
+
+    ctx.shadowColor = COLORS.NEONBLUE;
+    ctx.shadowBlur = (10 + glow * 18) * scale;
+    ctx.textAlign = 'end';
+    ctx.fillText(String(pTotal), player.X + player.TW - scorePad, player.Y + scorePad * 0.5);
+
+    ctx.shadowColor = COLORS.NEONRED;
+    ctx.textAlign = 'start';
+    ctx.fillText(String(bTotal), banker.X + scorePad, banker.Y + scorePad * 0.5);
+
+    ctx.restore();
+  }
+
   // ────────────────────────────────────────────────────────────────────────────────────────────────
   // SIDEBETS
   // ────────────────────────────────────────────────────────────────────────────────────────────────
@@ -950,7 +1068,7 @@ const drawbetOptions = async (GEOMETRY) => {
       X: sideX,
       Y: GEOMETRY['betOptions'].Y + GEOMETRY['betOptions'].H * 0.65 + betOptionsGap,
       W: (GEOMETRY['betOptions'].W - betOptionsGap * (sideBets.length + 1)) / sideBets.length,
-      H: (GEOMETRY['betOptions'].H * 0.25),
+      H: (GEOMETRY['betOptions'].H * 0.3),
     }
     const sideShape = new Path2D();
     ctx.strokeStyle = COLORS.STROKESIDE
@@ -1620,8 +1738,9 @@ const drawMenuBar = (GEOMETRY) => {
 
   // --- Wallet ---
   const isWide = GEOMETRY['statisticsGridA'].X > GEOMETRY['statisticsGridE'].X + GEOMETRY['statisticsGridE'].W + 1;
-  const wallet = isWide && GEOMETRY['walletBar']
-    ? { ...GEOMETRY['walletBar'] }
+  const gA = GEOMETRY['statisticsGridA'];
+  const wallet = isWide
+    ? { X: gA.X, Y: gA.Y, W: gA.W, H: gA.H * 0.18 }
     : { X: GEOMETRY['menuBar'].X, Y: GEOMETRY['menuBar'].Y + main.H, W: GEOMETRY['menuBar'].W, H: GEOMETRY['menuBar'].H * 0.5 };
   const wRef = wallet.H / scale;
   const wPad = wallet.W * 0.03;
@@ -1835,37 +1954,118 @@ const drawFlyingChips = () => {
 };
 
 const drawPhaseBanner = () => {
+  if (!lastGEOMETRY) return;
   const now = performance.now();
-  let label, color;
+  const G = lastGEOMETRY;
+  const bp = getBreakpoint(containerWidth / window.devicePixelRatio);
+  const isLarge = bp === 'wide' || bp === 'desktop';
+  const wb = G['walletBar'];
+
+  // Phase data
+  let label, sublabel, accentColor, tintRgb, progress = 1;
   if (gamePhase === 'betting') {
     const left = Math.max(0, BETTING_DURATION - (now - bettingCountdownStart));
     const secs = Math.ceil(left / 1000);
-    label = `PLACE YOUR BETS  ${secs}`;
-    color = secs <= 3 ? '#f55858' : '#e8c84a';
-  } else if (gamePhase === 'dealing') {
-    label = 'NO MORE BETS';
-    color = '#ffffff66';
+    progress = left / BETTING_DURATION;
+    label = 'PLACE YOUR BETS';
+    sublabel = secs.toString();
+    accentColor = secs <= 3 ? '#f55858' : '#e8c84a';
+    tintRgb = secs <= 3 ? '245,88,88' : '232,200,74';
   } else if (gamePhase === 'result') {
     const pTotal = handTotal(playerCards);
     const bTotal = handTotal(bankerCards);
     const w = winners[0];
-    label = w === 'tie' ? `TIE  ${pTotal} - ${bTotal}` : w === 'player' ? `PLAYER WINS  ${pTotal} - ${bTotal}` : `BANKER WINS  ${bTotal} - ${pTotal}`;
-    color = w === 'player' ? COLORS.STROKEBLUE : w === 'banker' ? COLORS.STROKERED : COLORS.STROKEGREEN;
+    if (w === 'tie') {
+      label = 'TIE';
+      sublabel = `${pTotal} — ${bTotal}`;
+    } else if (w === 'player') {
+      label = 'PLAYER WINS';
+      sublabel = `${pTotal} — ${bTotal}`;
+    } else {
+      label = 'BANKER WINS';
+      sublabel = `${bTotal} — ${pTotal}`;
+    }
+    accentColor = w === 'player' ? COLORS.STROKEBLUE
+      : w === 'banker' ? COLORS.STROKERED : COLORS.STROKEGREEN;
+    tintRgb = w === 'player' ? '36,124,218' : w === 'banker' ? '240,84,84' : '20,255,161';
   }
   if (!label) return;
-  const bx = leftGutter + containerWidth * 0.5;
-  const by = canvas.height * 0.38; const fontSize = clamp(10, containerWidth * 0.03, 18) * scale;
+
   ctx.save();
-  ctx.font = `700 ${fontSize}px Interroman, Arial`;
-  const tw = ctx.measureText(label).width;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-  // ctx.beginPath();
-  // ctx.roundRect(bx - tw / 2 - 14 * scale, by - fontSize * 0.75, tw + 28 * scale, fontSize * 1.5, 4 * scale);
-  // ctx.fill();
-  ctx.fillStyle = color;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, bx, by);
+
+  if (isLarge && wb) {
+    // ── Enhanced banner in walletBar (center column top strip) ──
+    const { X, Y, W, H } = wb;
+
+    // Color-blended glow overlay
+    if (tintRgb) {
+      const glow = (Math.sin(now * 0.0032) + 1) * 0.5;
+      const tintAlpha = gamePhase === 'result' ? 0.05 + glow * 0.12 : 0.01 + glow * 0.03;
+      ctx.beginPath();
+      ctx.rect(X, Y, W, H);
+      ctx.fillStyle = `rgba(${tintRgb}, ${tintAlpha})`;
+      ctx.fill();
+    }
+
+    const pad = W * 0.04;
+    const cy = Y + H * 0.5;
+    const fRef = H / scale;
+    const labelFs = clamp(9, fRef * 0.32, 15) * scale;
+    const subFs = clamp(8, fRef * 0.28, 13) * scale;
+
+    // Accent left bar
+    ctx.fillStyle = accentColor;
+    ctx.beginPath();
+    ctx.roundRect(X + pad * 0.3, Y + H * 0.22, 3 * scale, H * 0.56, 2 * scale);
+    ctx.fill();
+
+    // Label
+    ctx.font = `700 ${labelFs}px Interroman, Arial`;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, X + pad * 1.4, sublabel ? cy - labelFs * 0.55 : cy);
+
+    // Sublabel / score
+    if (sublabel) {
+      ctx.font = `400 ${subFs}px Interroman, Arial`;
+      ctx.fillStyle = accentColor;
+      ctx.fillText(sublabel, X + pad * 1.4, cy + subFs * 0.65);
+    }
+
+    // Countdown arc (right side, betting phase only)
+    if (gamePhase === 'betting') {
+      const arcR = H * 0.34;
+      const arcCX = X + W - pad - arcR;
+      const arcCY = cy;
+      const start = -Math.PI / 2;
+      const end = start + Math.PI * 2 * progress;
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 2.5 * scale;
+      ctx.beginPath(); ctx.arc(arcCX, arcCY, arcR, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2.5 * scale;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.arc(arcCX, arcCY, arcR, start, end); ctx.stroke();
+      ctx.font = `700 ${subFs}px Interroman, Arial`;
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(sublabel, arcCX, arcCY);
+    }
+
+  } else {
+    // ── Floating banner (tablet / mobile) ──
+    const bx = leftGutter + containerWidth * 0.5;
+    const by = canvas.height * 0.38;
+    const fontSize = clamp(10, containerWidth * 0.03, 18) * scale;
+    ctx.font = `700 ${fontSize}px Interroman, Arial`;
+    ctx.fillStyle = accentColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const fullLabel = sublabel ? `${label}  ${sublabel}` : label;
+    ctx.fillText(fullLabel, bx, by);
+  }
+
   ctx.restore();
 };
 
