@@ -221,18 +221,18 @@ const getFontSize = (w, h, factor = 0.22) => {
   return Math.floor(Math.sqrt(w * h) * factor);
 }
 
-
 const getBreakpoint = (w) => {
-  if (w >= 1280) return "wide";
-  if (w >= 1024) return "desktop";
-  if (w >= 768) return "laptop";
-  if (w >= 480) return "tablet";
-  return "mobile"; // default
+  if (w >= 1920) return "wide";
+  if (w >= 1280) return "desktop";
+  if (w >= 768) return "tablet";
+  return "mobile";
 };
 
 const computeGeometry = () => {
 
   const bp = getBreakpoint(containerWidth);
+  console.log(bp, containerWidth)
+
   let uiY = canvas.height * 0.40;
   let uiH = canvas.height * 0.60;
 
@@ -271,7 +271,7 @@ const computeGeometry = () => {
   uiH = canvas.height * 0.35;
   const centerW = Math.round(containerWidth * 0.36);
   const sideW = Math.round((containerWidth - centerW) / 2);
-  const betH = uiH * 0.70;
+  const betH = uiH * 0.65;
   const menuH = uiH - betH;
   return {
     video,
@@ -1772,14 +1772,13 @@ const resize = (e) => {
 
   tileSize = Math.min(canvas.width, canvas.height) / 32;
 
-  const isMobile = canvas.width <= 580;
+  const isMobile = true;
   const spacing = 10;
   const buttonGap = spacing / 2;
 
   containerAvailableWidth = canvas.width;
   containerMaxWidth = containerAvailableWidth//580 * scale;
-  containerWidth = isMobile ? containerAvailableWidth   // full width on phone
-    : Math.min(containerAvailableWidth, containerMaxWidth);
+  containerWidth = Math.min(containerAvailableWidth, containerMaxWidth)
   leftGutter = (canvas.width - containerWidth) / 2;
 
 
