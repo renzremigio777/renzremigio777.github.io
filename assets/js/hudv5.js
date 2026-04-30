@@ -19,7 +19,7 @@ const srcWebm = document.createElement('source');
 srcWebm.src = '../assets/videos/bacarrat-stream.webm';
 srcWebm.type = 'video/webm';
 videoEl.appendChild(srcMp4);
-videoEl.appendChild(srcWebm);
+// videoEl.appendChild(srcWebm);
 document.body.appendChild(videoEl);
 videoEl.play().catch(() => { });
 // iOS requires play() inside a user gesture — retry on first touch
