@@ -81,7 +81,7 @@ const containerHeight = canvas.height;
 
 const values = ["P", "B", "T"];
 const results = [];
-for (let i = 0; i < 60; i++) {
+for (let i = 0; i < 30; i++) {
   const randomValue = values[Math.floor(Math.random() * values.length)];
   results.push({ value: randomValue });
 }
@@ -274,15 +274,15 @@ const computeGeometry = () => {
   // wide: gridE sidebar | WALLET+BET OPTIONS+MENU BAR center | gridA sidebar
   uiY = canvas.height * 0.65;
   uiH = canvas.height * 0.35;
-  const centerW = Math.round(containerWidth * 0.36);
+  const centerW = Math.round(containerWidth * 0.46);
   const sideW = Math.round((containerWidth - centerW) / 2);
   const walletH = uiH * 0.15;
   const betH = uiH * 0.65;
   const menuH = uiH - betH;
   return {
     video,
-    statisticsGridE: { X: leftGutter, Y: uiY + uiH * 0.25, W: sideW, H: betH },
-    statisticsGridA: { X: leftGutter + sideW + centerW, Y: uiY + uiH * 0.25, W: sideW, H: betH },
+    statisticsGridE: { X: leftGutter, Y: uiY + walletH, W: sideW, H: betH },
+    statisticsGridA: { X: leftGutter + sideW + centerW, Y: uiY + walletH, W: sideW, H: betH },
     betOptions: { X: leftGutter + sideW, Y: uiY + walletH, W: centerW, H: betH },
     menuBar: { X: leftGutter + sideW, Y: uiY + walletH + betH, W: centerW, H: menuH },
     walletBar: { X: leftGutter + sideW, Y: uiY, W: centerW, H: walletH },
@@ -431,10 +431,11 @@ const drawGrid = () => {
   // ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (gamePhase === 'result' && winners.length > 0) {
     const w = winners[0];
-    const blink = Math.sin(performance.now() * 0.006) > 0;
-    const tint = w === 'player' ? `rgba(119,82,255,${blink ? 0.07 : 0.03})`
-      : w === 'banker' ? `rgba(245,88,88,${blink ? 0.07 : 0.03})`
-        : `rgba(88,179,115,${blink ? 0.07 : 0.03})`;
+    const glow = (Math.sin(performance.now() * 0.0032) + 1) * 0.5; // 0..1 smooth
+    const alpha = 0.02 + glow * 0.06;
+    const tint = w === 'player' ? `rgba(119,82,255,${alpha})`
+      : w === 'banker' ? `rgba(245,88,88,${alpha})`
+        : `rgba(88,179,115,${alpha})`;
     ctx.fillStyle = tint;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
@@ -544,19 +545,20 @@ const drawbetOptions = async (GEOMETRY) => {
   ctx.textBaseline = "middle";
 
   ctx.fillStyle = COLORS.PRIMARYBLACK
-  ctx.fillRect(
-    0,
-    canvas.height / 2,
-    canvas.width,
-    canvas.height / 2
-  );
+  // ctx.fillRect(
+  //   0,
+  //   canvas.height / 2,
+  //   canvas.width,
+  //   canvas.height / 2
+  // );
 
   if (gamePhase === 'result' && winners.length > 0) {
     const w = winners[0];
-    const blink = Math.sin(performance.now() * 0.006) > 0;
-    const tint = w === 'player' ? `rgba(119,82,255,${blink ? 0.24 : 0.08})`
-      : w === 'banker' ? `rgba(245,88,88,${blink ? 0.24 : 0.08})`
-        : `rgba(88,179,115,${blink ? 0.24 : 0.08})`;
+    const glow = (Math.sin(performance.now() * 0.0032) + 1) * 0.5;
+    const alpha = 0.06 + glow * 0.20;
+    const tint = w === 'player' ? `rgba(119,82,255,${alpha})`
+      : w === 'banker' ? `rgba(245,88,88,${alpha})`
+        : `rgba(88,179,115,${alpha})`;
     // const tint = w === 'player' ? COLORS.FILLBLUE
     //   : w === 'banker' ? COLORS.FILLRED
     //     : COLORS.FILLGREEN;
@@ -1036,8 +1038,8 @@ const drawStatistics = (GEOMETRY) => {
   }
 
   ctx.fillStyle = COLORS.PRIMARYBLACK;
-  ctx.fillRect(gE.X, gE.Y, gE.W, gE.H);
-  ctx.fillRect(gA.X, gA.Y, gA.W, gA.H);
+  // ctx.fillRect(gE.X, gE.Y, gE.W, gE.H);
+  // ctx.fillRect(gA.X, gA.Y, gA.W, gA.H);
 
 
   // -- Fetch the Data here
@@ -1103,7 +1105,7 @@ const drawStatistics = (GEOMETRY) => {
       const predH = summary.H * 0.50;
       const predX = slotX + pad;
       const predY = summary.Y + (summary.H - predH) * 0.5;
-      const predR = Math.min(predW * 0.14, predH * 0.25);
+      const predR = Math.min(predW * 0.14, predH * 0.22);
       const isP = key === 'playerPrediction';
 
       ctx.beginPath();
@@ -1303,7 +1305,8 @@ const drawStatistics = (GEOMETRY) => {
   populateSmallEye(gridA);
   populateCockroach(gridA);
   ctx.restore();
-  maxScrollXA = Math.max(0, gridA.totalWidth - scoreBoardA.W);
+  const trailA = scoreBoardA.W * 0.35;
+  maxScrollXA = Math.max(0, gridA.totalWidth - scoreBoardA.W + trailA);
 
   // --- gridE (Bead Road) ---
   ctx.save();
@@ -1311,13 +1314,12 @@ const drawStatistics = (GEOMETRY) => {
   ctx.rect(scoreBoardE.X, scoreBoardE.Y, scoreBoardE.W, scoreBoardE.H);
   ctx.clip();
   ctx.translate(-scrollXE, 0);
-  const gridE = constructGrid(6, 54, scoreBoardE.X, scoreBoardE.Y, scoreBoardE.H, 1);
+  const gridE = constructGrid(6, 18, scoreBoardE.X, scoreBoardE.Y, scoreBoardE.H, 1);
   populateBeadRoad(gridE);
   ctx.restore();
-  maxScrollXE = Math.max(0, gridE.totalWidth - scoreBoardE.W);
+  const trailE = scoreBoardE.W * 0.35;
+  maxScrollXE = Math.max(0, gridE.totalWidth - scoreBoardE.W + trailE);
   // --- SCROLLABLE END ********************************************************************************
-
-
 
 }
 
@@ -1716,7 +1718,7 @@ const resize = (e) => {
   const buttonGap = spacing / 2;
 
   containerAvailableWidth = canvas.width;
-  containerMaxWidth = containerAvailableWidth//580 * scale;
+  containerMaxWidth = containerAvailableWidth//1440 * scale;
   containerWidth = Math.min(containerAvailableWidth, containerMaxWidth)
   leftGutter = (canvas.width - containerWidth) / 2;
 
