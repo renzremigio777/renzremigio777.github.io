@@ -13,10 +13,15 @@ let width = window.innerWidth;
 let height = window.innerHeight;
 let scale = window.devicePixelRatio;
 let tileSize = Math.min(width, height) / 32;
-let scrollX = 0;
+let scrollXA = 0;
+let scrollXE = 0;
+let maxScrollXA = 0;
+let maxScrollXE = 0;
 let isTouching = false;
 let screenX = 0;
-let scoreBoardBounds = null;
+let activeScrollTarget = null;
+let scoreBoardBoundsA = null;
+let scoreBoardBoundsE = null;
 let undoBounds = null;
 let cancelBounds = null;
 let balance = 510000;
@@ -27,7 +32,7 @@ let playerCards = [null, null, null];
 let bankerCards = [null, null, null];
 let gamePhase = 'betting'; // 'betting' | 'dealing' | 'result'
 let bettingCountdownStart = performance.now();
-const BETTING_DURATION = 3000; // 3 seconds for demo purposes
+const BETTING_DURATION = 12000; // 12 seconds for demo purposes
 let winners = [];
 let phaseScheduled = false;
 const fmtCurrency = (() => {
@@ -45,6 +50,7 @@ let hitRegions = {};
 let hoverRegion = null;
 let pressedRegion = null;
 let chipButtonCenter = { x: 0, y: 0, r: 0 };
+let chipRowBounds = [];   // populated on desktop/wide; empty on mobile
 let betChipPositions = {};
 let flyingChips = [];
 let activePopup = null;
@@ -65,7 +71,7 @@ const REGION_INFO = {
 let containerAvailableWidth = 0;
 let containerMaxWidth = 580;
 let containerWidth = containerMaxWidth;
-let maxScrollX = containerMaxWidth; // depends on your content width
+// scrollXA / scrollXE / maxScrollXA / maxScrollXE declared above
 let leftGutter = 0;
 
 // optional height (full or constrained)
@@ -75,10 +81,10 @@ const containerHeight = canvas.height;
 
 const values = ["P", "B", "T"];
 const results = [];
-// for (let i = 0; i < 15; i++) {
-//   const randomValue = values[Math.floor(Math.random() * values.length)];
-//   results.push({ value: randomValue });
-// }
+for (let i = 0; i < 15; i++) {
+  const randomValue = values[Math.floor(Math.random() * values.length)];
+  results.push({ value: randomValue });
+}
 
 let chips = [100, 200, 500, 1000, 5000, 10000, 20000]
 let currentChipIndex = 0;
@@ -222,7 +228,7 @@ const getFontSize = (w, h, factor = 0.22) => {
 }
 
 const getBreakpoint = (w) => {
-  if (w >= 1920) return "wide";
+  if (w >= 1440) return "wide";
   if (w >= 1280) return "desktop";
   if (w >= 768) return "tablet";
   return "mobile";
@@ -231,7 +237,6 @@ const getBreakpoint = (w) => {
 const computeGeometry = () => {
 
   const bp = getBreakpoint(containerWidth);
-  console.log(bp, containerWidth)
 
   let uiY = canvas.height * 0.40;
   let uiH = canvas.height * 0.60;
@@ -266,19 +271,21 @@ const computeGeometry = () => {
     };
   }
 
-  // wide: gridE sidebar | BET OPTIONS+MENU BAR center | gridA sidebar
+  // wide: gridE sidebar | WALLET+BET OPTIONS+MENU BAR center | gridA sidebar
   uiY = canvas.height * 0.65;
   uiH = canvas.height * 0.35;
   const centerW = Math.round(containerWidth * 0.36);
   const sideW = Math.round((containerWidth - centerW) / 2);
+  const walletH = uiH * 0.15;
   const betH = uiH * 0.65;
   const menuH = uiH - betH;
   return {
     video,
-    statisticsGridE: { X: leftGutter, Y: uiY, W: sideW, H: betH },
-    statisticsGridA: { X: leftGutter + sideW + centerW, Y: uiY, W: sideW, H: betH },
-    betOptions: { X: leftGutter + sideW, Y: uiY, W: centerW, H: betH },
-    menuBar: { X: leftGutter + sideW, Y: uiY + betH, W: centerW, H: menuH },
+    statisticsGridE: { X: leftGutter, Y: uiY + uiH * 0.25, W: sideW, H: betH },
+    statisticsGridA: { X: leftGutter + sideW + centerW, Y: uiY + uiH * 0.25, W: sideW, H: betH },
+    betOptions: { X: leftGutter + sideW, Y: uiY + walletH, W: centerW, H: betH },
+    menuBar: { X: leftGutter + sideW, Y: uiY + walletH + betH, W: centerW, H: menuH },
+    walletBar: { X: leftGutter + sideW, Y: uiY, W: centerW, H: walletH },
   };
 }
 
@@ -1013,7 +1020,7 @@ const drawStatistics = (GEOMETRY) => {
 
   // Combined bounding box for the summary bar
   const statX = Math.min(gE.X, gA.X);
-  const statY = Math.min(gE.Y, gA.Y);
+  const statY = gE.Y//Math.min(gE.Y, gA.Y);
   const statW = Math.max(gE.X + gE.W, gA.X + gA.W) - statX;
   const statH = Math.max(gE.H, gA.H);
 
@@ -1051,50 +1058,52 @@ const drawStatistics = (GEOMETRY) => {
 
   // Slot-based layout: divide summary.W into equal slots so items always fit
   const slotW = summary.W / cols;
-  const radius = Math.min(summary.H * 0.30, slotW * 0.32);
-  const fontSz = clamp(10 * scale, radius * 1.1, 16 * scale);
+  const radius = Math.min(summary.H * 0.26, slotW * 0.28);
+  const fontSz = clamp(9 * scale, radius * 0.95, 12 * scale);
 
   ctx.save();
   ctx.beginPath();
   ctx.rect(summary.X, summary.Y, summary.W, summary.H);
   ctx.clip();
 
+  const pad = slotW * 0.10;
+
   let slotIndex = 0;
   for (const [key, obj] of Object.entries(stats)) {
     const slotX = summary.X + slotIndex * slotW;
-    const slotCX = slotX + slotW * 0.5;
     const slotCY = summary.Y + summary.H * 0.5;
 
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     if (['playerTotal', 'bankerTotal', 'tieTotal', 'playerPairTotal', 'bankerPairTotal'].includes(key)) {
+      const circleCX = slotX + pad + radius;
       ctx.beginPath();
-      ctx.arc(slotX + slotW * 0.28, slotCY, radius, 0, Math.PI * 2);
+      ctx.arc(circleCX, slotCY, radius, 0, Math.PI * 2);
       ctx.closePath();
       ctx.fillStyle = stats[key].bg;
       ctx.fill();
       ctx.font = `600 ${fontSz}px Interroman, Arial`;
       ctx.fillStyle = '#fff';
-      if (['playerTotal', 'bankerTotal', 'tieTotal'].includes(key)) {
-        ctx.fillText(key.toUpperCase()[0], slotX + slotW * 0.28, slotCY);
-        ctx.fillText(obj.value, slotX + slotW * 0.72, slotCY);
-      } else {
-        ctx.fillText(key === 'playerPairTotal' ? 'PP' : 'BP', slotX + slotW * 0.28, slotCY);
-        ctx.fillText(obj.value, slotX + slotW * 0.72, slotCY);
-      }
+      ctx.textAlign = 'center';
+      const label = ['playerTotal', 'bankerTotal', 'tieTotal'].includes(key)
+        ? key.toUpperCase()[0]
+        : (key === 'playerPairTotal' ? 'PP' : 'BP');
+      ctx.fillText(label, circleCX, slotCY);
+      ctx.textAlign = 'start';
+      ctx.fillText(obj.value, circleCX + radius + pad, slotCY);
 
     } else if (key === 'gameNo') {
       ctx.font = `600 ${fontSz}px Interroman, Arial`;
       ctx.fillStyle = '#fff';
-      ctx.fillText(`#${obj.value}`, slotCX, slotCY);
+      ctx.textAlign = 'start';
+      ctx.fillText(`#${obj.value}`, slotX + pad, slotCY);
 
     } else if (['playerPrediction', 'bankerPrediction'].includes(key)) {
-      const predW = slotW * 0.88;
-      const predH = summary.H * 0.62;
-      const predX = slotX + (slotW - predW) * 0.5;
-      const predY = summary.Y + summary.H * 0.19;
-      const predR = Math.min(predW * 0.18, predH * 0.38);
+      const predW = slotW - pad * 2;
+      const predH = summary.H * 0.50;
+      const predX = slotX + pad;
+      const predY = summary.Y + (summary.H - predH) * 0.5;
+      const predR = Math.min(predW * 0.14, predH * 0.25);
       const isP = key === 'playerPrediction';
 
       ctx.beginPath();
@@ -1107,6 +1116,7 @@ const drawStatistics = (GEOMETRY) => {
 
       ctx.font = `600 ${fontSz}px Interroman, Arial`;
       ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
       ctx.fillText(isP ? 'P' : 'B', predX + predW * 0.14, slotCY);
 
       ctx.beginPath();
@@ -1148,10 +1158,8 @@ const drawStatistics = (GEOMETRY) => {
     W: gA.W,
     H: gA.H * scoreBoardRatio,
   };
-  scoreBoardBounds = {
-    X: statX, Y: statY + summary.H,
-    W: statW, H: statH * scoreBoardRatio,
-  };
+  scoreBoardBoundsA = { X: scoreBoardA.X, Y: scoreBoardA.Y, W: scoreBoardA.W, H: scoreBoardA.H };
+  scoreBoardBoundsE = { X: scoreBoardE.X, Y: scoreBoardE.Y, W: scoreBoardE.W, H: scoreBoardE.H };
 
 
 
@@ -1373,25 +1381,25 @@ const drawStatistics = (GEOMETRY) => {
   ctx.beginPath();
   ctx.rect(scoreBoardA.X, scoreBoardA.Y, scoreBoardA.W, scoreBoardA.H);
   ctx.clip();
-  ctx.translate(-scrollX, 0);
+  ctx.translate(-scrollXA, 0);
   const gridA = constructGrid(9, 54, scoreBoardA.X, scoreBoardA.Y, scoreBoardA.H, 1, 3, 6);
   populateBigRoad(gridA);
   populateBigEye(gridA);
   populateSmallEye(gridA);
   populateCockroach(gridA);
   ctx.restore();
+  maxScrollXA = Math.max(0, gridA.totalWidth - scoreBoardA.W);
 
   // --- gridE (Bead Road) ---
   ctx.save();
   ctx.beginPath();
   ctx.rect(scoreBoardE.X, scoreBoardE.Y, scoreBoardE.W, scoreBoardE.H);
   ctx.clip();
-  ctx.translate(-scrollX, 0);
+  ctx.translate(-scrollXE, 0);
   const gridE = constructGrid(6, 54, scoreBoardE.X, scoreBoardE.Y, scoreBoardE.H);
   populateBeadRoad(gridE);
   ctx.restore();
-
-  maxScrollX = (gridA.totalWidth + gridE.totalWidth) / 5;
+  maxScrollXE = Math.max(0, gridE.totalWidth - scoreBoardE.W);
   // --- SCROLLABLE END ********************************************************************************
 
 
@@ -1410,7 +1418,7 @@ const drawMenuBar = (GEOMETRY) => {
     H: GEOMETRY['menuBar'].H * 0.5,
   }
 
-  ctx.fillStyle = COLORS.PRIMARYBLACK;
+  ctx.fillStyle = COLORS.FILLBLUE;
   // ctx.fillRect(GEOMETRY['menuBar'].X, GEOMETRY['menuBar'].Y, GEOMETRY['menuBar'].W, GEOMETRY['menuBar'].H);
 
   // ctx.setLineDash([5, 5])
@@ -1430,30 +1438,34 @@ const drawMenuBar = (GEOMETRY) => {
   const radius = main.H * 0.40;
   const diameter = radius * 2;
 
-  ctx.arc(main.X + main.W * 0.10, main.Y + radius + 10, radius, -angle * 45, angle * 0, false)
-  ctx.arc(main.X + main.W * 0.10 + diameter, main.Y + radius, radius, angle * 87, angle * 45, true)
-  ctx.arc(main.X + main.W * 0.90 - diameter, main.Y + radius, radius, angle * 45, angle * 3, true)
-  ctx.arc(main.X + main.W * 0.90, main.Y + radius + 10, radius, -angle * 90, -angle * 45, false)
-  ctx.lineTo(main.X + main.W, main.Y + 10)
-  ctx.lineTo(main.X + main.W, main.Y + main.H)
 
-  ctx.strokeStyle = "#1f1f1f"
-  ctx.lineWidth = 1.75 * scale;
-  ctx.stroke();
 
-  ctx.lineTo(main.X, main.Y + main.H)
-  ctx.fillStyle = COLORS.SECONDARYBLACK;
+  // ctx.arc(main.X + main.W * 0.10, main.Y + radius + 10, radius, -angle * 45, angle * 0, false)
+  // ctx.arc(main.X + main.W * 0.10 + diameter, main.Y + radius, radius, angle * 87, angle * 45, true)
+  // ctx.arc(main.X + main.W * 0.90 - diameter, main.Y + radius, radius, angle * 45, angle * 3, true)
+  // ctx.arc(main.X + main.W * 0.90, main.Y + radius + 10, radius, -angle * 90, -angle * 45, false)
+  // ctx.lineTo(main.X + main.W, main.Y + 10)
+  // ctx.strokeStyle = "#1f1f1f"
+  // ctx.lineWidth = 1.75 * scale;
+  // ctx.stroke();
 
-  ctx.fill();
+  // ctx.lineTo(main.X + main.W, main.Y + main.H)
+  // ctx.lineTo(main.X, main.Y + main.H)
+  // ctx.fillStyle = COLORS.SECONDARYBLACK;
 
-  // -- Side buttons: centered exactly on the arc bump positions (10% and 90% of main.W) --
-  const btnCY = main.Y + radius + 10;                         // matches arc bump center Y
-  const btnH = radius * 1.80;                                // fills the arc cup area
-  const btnW = Math.min(main.H * 0.68, main.W * 0.14);      // constrained to not crowd chips
-  const btnY = btnCY - btnH * 0.5;
-  const btnPillR = btnH * 0.18;
-  const btnIconCY = btnY + btnH * 0.36;                           // icon center (upper third)
-  const btnLabelY = btnY + btnH * 0.80;                           // label (lower area)
+  // ctx.fill();
+
+  // -- Side buttons: aligned with chipsController gaps --
+  const chipsCtrlX = main.X + main.W * 0.5 - main.W * 0.325;   // = chipsController.X
+  const chipsCtrlRX = chipsCtrlX + main.W * 0.65;                // = chipsController right edge
+  const leftGapCX = main.X + (chipsCtrlX - main.X) * 0.5;
+  const rightGapCX = chipsCtrlRX + (main.X + main.W - chipsCtrlRX) * 0.5;
+  const btnH = main.H * 0.75;
+  const btnW = Math.min(main.H * 0.68, (chipsCtrlX - main.X) * 0.88);
+  const btnY = main.Y + (main.H - btnH) * 0.5;
+  const btnPillR = btnH * 0.12;
+  const btnIconCY = btnY + btnH * 0.36;
+  const btnLabelY = btnY + btnH * 0.80;
   const btnFont = `300 ${clamp(7, (btnH / scale) * 0.20, 12) * scale}px Interroman, Arial`;
 
   const drawSideBtnBg = (bx) => {
@@ -1466,57 +1478,60 @@ const drawMenuBar = (GEOMETRY) => {
     ctx.stroke();
   };
 
-  // -- Chat Button (left arc bump at 10%) --
-  const chatX = main.X + main.W * 0.10 - btnW * 0.5;
+  // -- Chat Button (centered in left gap) --
+  const chatX = leftGapCX - btnW * 0.5;
   const chatIconCX = chatX + btnW * 0.5;
   drawSideBtnBg(chatX);
 
-  const bW = btnW * 0.60, bH = bW * 0.72, bRad = bW * 0.18;
-  const bX = chatIconCX - bW * 0.5, bY2 = btnIconCY - bH * 0.58;
+  // Filled speech bubble
+  ctx.save();
+  const cbW = btnW * 0.52, cbH = cbW * 0.80, cbRad = cbW * 0.22;
+  const cbX = chatIconCX - cbW * 0.5, cbY = btnIconCY - cbH * 0.62;
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
   ctx.beginPath();
-  ctx.roundRect(bX, bY2, bW, bH, bRad);
-  ctx.strokeStyle = 'rgba(255,255,255,0.90)';
-  ctx.lineWidth = 1.2 * scale;
-  ctx.stroke();
+  ctx.roundRect(cbX, cbY, cbW, cbH, cbRad);
+  ctx.fill();
+  // tail — small filled triangle bottom-left
   ctx.beginPath();
-  ctx.moveTo(bX + bW * 0.16, bY2 + bH);
-  ctx.lineTo(bX + bW * 0.03, bY2 + bH + bH * 0.42);
-  ctx.lineTo(bX + bW * 0.36, bY2 + bH);
-  ctx.strokeStyle = 'rgba(255,255,255,0.90)';
-  ctx.stroke();
-  const dotR = bW * 0.07;
-  [0.27, 0.50, 0.73].forEach(t => {
-    ctx.beginPath();
-    ctx.arc(bX + bW * t, bY2 + bH * 0.50, dotR, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.90)';
-    ctx.fill();
-  });
+  ctx.moveTo(cbX + cbW * 0.18, cbY + cbH);
+  ctx.lineTo(cbX + cbW * 0.06, cbY + cbH + cbH * 0.32);
+  ctx.lineTo(cbX + cbW * 0.40, cbY + cbH);
+  ctx.fill();
+  ctx.restore();
+
   ctx.font = btnFont; ctx.fillStyle = 'rgba(255,255,255,0.80)';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('Chat', chatIconCX, btnLabelY);
 
 
-  // -- Lobby Button (right arc bump at 90%) --
-  const lobbyX = main.X + main.W * 0.90 - btnW * 0.5;
+  // -- Lobby Button (centered in right gap) --
+  const lobbyX = rightGapCX - btnW * 0.5;
   const lobbyIconCX = lobbyX + btnW * 0.5;
   drawSideBtnBg(lobbyX);
 
-  ctx.save(); ctx.setLineDash([]);
-  const cW = btnW * 0.60, cH = cW * 0.58;
-  const cX = lobbyIconCX - cW * 0.5, cY = btnIconCY - cH * 0.52;
-  ctx.strokeStyle = 'rgba(255,255,255,0.90)'; ctx.lineWidth = 0.9 * scale;
-  ctx.beginPath(); ctx.roundRect(cX, cY, cW, cH, cH * 0.28); ctx.stroke();
-  ctx.beginPath(); ctx.arc(cX + cW * 0.22, cY + cH, cW * 0.11, Math.PI, 0, true); ctx.stroke();
-  ctx.beginPath(); ctx.arc(cX + cW * 0.78, cY + cH, cW * 0.11, Math.PI, 0, true); ctx.stroke();
-  const dpSz = cH * 0.19, dpCX2 = cX + cW * 0.27, dpCY2 = cY + cH * 0.50;
-  ctx.fillStyle = 'rgba(255,255,255,0.80)';
-  ctx.beginPath(); ctx.rect(dpCX2 - dpSz * 1.5, dpCY2 - dpSz * 0.5, dpSz * 3, dpSz); ctx.fill();
-  ctx.beginPath(); ctx.rect(dpCX2 - dpSz * 0.5, dpCY2 - dpSz * 1.5, dpSz, dpSz * 3); ctx.fill();
-  const aBtnR = cH * 0.09, aCX2 = cX + cW * 0.73, aCY2 = cY + cH * 0.50;
-  ctx.fillStyle = 'rgba(255,255,255,0.80)';
-  [[0, -1], [1, 0], [0, 1], [-1, 0]].forEach(([dx, dy]) => {
-    ctx.beginPath(); ctx.arc(aCX2 + dx * aBtnR * 2, aCY2 + dy * aBtnR * 2, aBtnR, 0, Math.PI * 2); ctx.fill();
-  });
+  // Filled house icon
+  ctx.save();
+  const hW = btnW * 0.50, hH = hW * 0.90;
+  const hX = lobbyIconCX - hW * 0.5, hY = btnIconCY - hH * 0.56;
+  const roofH = hH * 0.44, bodyH = hH * 0.56;
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  // roof — triangle
+  ctx.beginPath();
+  ctx.moveTo(hX + hW * 0.5, hY);
+  ctx.lineTo(hX + hW, hY + roofH);
+  ctx.lineTo(hX, hY + roofH);
+  ctx.closePath();
+  ctx.fill();
+  // body — rectangle
+  ctx.beginPath();
+  ctx.rect(hX + hW * 0.10, hY + roofH, hW * 0.80, bodyH);
+  ctx.fill();
+  // door — dark cutout
+  const dW = hW * 0.28, dH = bodyH * 0.58;
+  ctx.fillStyle = 'rgba(0,0,0,0.40)';
+  ctx.beginPath();
+  ctx.roundRect(hX + hW * 0.5 - dW * 0.5, hY + roofH + bodyH - dH, dW, dH, dW * 0.30);
+  ctx.fill();
   ctx.restore();
   ctx.font = btnFont; ctx.fillStyle = 'rgba(255,255,255,0.80)';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1527,20 +1542,23 @@ const drawMenuBar = (GEOMETRY) => {
   hitRegions.lobby = lobbyShape;
 
   const chipsController = {
-    X: main.X + main.W / 2 - (main.W * 0.325),
-    Y: main.Y,
+    X: chipsCtrlX,
+    Y: main.Y + (main.H - btnH) * 0.5,
     W: main.W * 0.65,
     H: main.H * 0.75
   }
+
+  // --- Breakpoint — needed by both undo/cancel sizing and chip row ---
+  const bp = getBreakpoint(containerWidth / scale);
+  const isDesktopOrWide = bp === 'desktop' || bp === 'wide';
+  const ctrlSlotW = isDesktopOrWide ? chipsController.W * 0.12 : chipsController.W / 3;
 
   // --- Undo Button
   const undoButton = {
     X: chipsController.X,
     Y: chipsController.Y,
-    W: chipsController.W / 3,
+    W: ctrlSlotW,
     H: chipsController.H,
-    CX: chipsController.H * 0.125,
-    CY: chipsController.H * 0.25,
     R: chipsController.H * 0.125,
   }
 
@@ -1573,12 +1591,10 @@ const drawMenuBar = (GEOMETRY) => {
 
   // --- cancel Button
   const cancelButton = {
-    X: chipsController.X + (chipsController.W / 3) * 2,
+    X: chipsController.X + chipsController.W - ctrlSlotW,
     Y: chipsController.Y,
-    W: chipsController.W / 3,
+    W: ctrlSlotW,
     H: chipsController.H,
-    CX: chipsController.X + chipsController / 2,
-    CY: chipsController.H / 2,
     R: chipsController.H * 0.125
   }
 
@@ -1606,84 +1622,90 @@ const drawMenuBar = (GEOMETRY) => {
   cancelBounds = { X: cancelButton.X, Y: cancelButton.Y, W: cancelButton.W, H: cancelButton.H };
 
 
-  // --- Chip Button
-  const chipButton = {
-    X: chipsController.X + (chipsController.W / 3),
-    Y: chipsController.Y,
-    W: chipsController.W / 3,
-    H: chipsController.H,
-    CX: chipsController.X + chipsController / 2,
-    CY: chipsController.H / 2,
-    R: chipsController.H * 0.125
-  }
-
-  const chipCX = chipButton.X + chipButton.W / 2;
-  const chipCY = chipButton.Y + chipButton.H * 0.5;
-  const chipR = chipButton.H * 0.38;
-  chipButtonCenter = { x: chipCX, y: chipCY, r: chipR };
-
-  // Outer body
-  const chipShape = new Path2D();
-  ctx.lineWidth = 1.5 * scale;
-  chipShape.arc(chipCX, chipCY, chipR, 0, Math.PI * 2);
-  chipShape.closePath();
-
-  const chipColor = CHIP_COLORS[currentChipIndex];
-  hitRegions.chip = chipShape;
-  ctx.save();
-  ctx.shadowColor = chipColor.shadow;
-  ctx.shadowBlur = 10;
-  ctx.strokeStyle = chipColor.stroke;
-  ctx.stroke(chipShape);
-  ctx.fillStyle = chipColor.fill;
-  ctx.fill(chipShape);
-  if (pressedRegion === 'chip') {
-    ctx.fill(chipShape);
-    ctx.shadowColor = "#f7f6d1";
-  }
-  ctx.restore();
-
-  // Edge segments
-  const chipSegs = 8;
-  for (let i = 0; i < chipSegs; i++) {
-    const segStart = (Math.PI * 2 / chipSegs) * i;
-    const segEnd = segStart + (Math.PI * 2 / chipSegs) * 0.55;
-    ctx.beginPath();
-    ctx.arc(chipCX, chipCY, chipR * 0.9, segStart, segEnd);
-    ctx.arc(chipCX, chipCY, chipR * 0.74, segEnd, segStart, true);
-    ctx.closePath();
-    ctx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)";
-    ctx.fill();
-  }
-
-  // Inner ring
-  ctx.beginPath();
-  ctx.arc(chipCX, chipCY, chipR * 0.62, 0, Math.PI * 2);
-  ctx.strokeStyle = chipColor.stroke;
-  ctx.lineWidth = 1 * scale;
-  ctx.stroke();
-
-
-
-  // Label
-  const chipFontSize = clamp(10, chipR * 0.58, 40);
-  ctx.font = `700 ${chipFontSize}px Interroman, Arial`;
-  ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
+  // --- Chip area: row on desktop/wide, single carousel on mobile/tablet ---
+  const chipAreaX = chipsController.X + ctrlSlotW;
+  const chipAreaW = chipsController.W - ctrlSlotW * 2;
   const formatter = new Intl.NumberFormat('en', { notation: 'compact' });
-  let formattedValue = chips[currentChipIndex] > 900 ? formatter.format(chips[currentChipIndex]) : chips[currentChipIndex].toString();
-  ctx.fillText(formattedValue, chipCX, chipCY);
+
+  const drawSingleChip = (cx, cy, r, colorIndex, isSelected) => {
+    const chipColor = CHIP_COLORS[colorIndex];
+    const chipShape = new Path2D();
+    chipShape.arc(cx, cy, r, 0, Math.PI * 2);
+    chipShape.closePath();
+    ctx.save();
+    ctx.globalAlpha = isSelected ? 1.0 : 0.45;
+    ctx.shadowColor = chipColor.shadow;
+    ctx.shadowBlur = isSelected ? 14 : 4;
+    ctx.strokeStyle = chipColor.stroke;
+    ctx.lineWidth = 1.5 * scale;
+    ctx.stroke(chipShape);
+    ctx.fillStyle = chipColor.fill;
+    ctx.fill(chipShape);
+    ctx.restore();
+    // Edge segments
+    ctx.save();
+    ctx.globalAlpha = isSelected ? 1.0 : 0.45;
+    const segs = 8;
+    for (let i = 0; i < segs; i++) {
+      const s = (Math.PI * 2 / segs) * i;
+      const e = s + (Math.PI * 2 / segs) * 0.55;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.9, s, e);
+      ctx.arc(cx, cy, r * 0.74, e, s, true);
+      ctx.closePath();
+      ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.62, 0, Math.PI * 2);
+    ctx.strokeStyle = chipColor.stroke;
+    ctx.lineWidth = 1 * scale;
+    ctx.stroke();
+    const fmtVal = chips[colorIndex] > 900 ? formatter.format(chips[colorIndex]) : chips[colorIndex].toString();
+    const fs = clamp(8, r * 0.55, 36);
+    ctx.font = `700 ${fs}px Interroman, Arial`;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(fmtVal, cx, cy);
+    ctx.restore();
+  };
+
+  if (isDesktopOrWide) {
+    // Row of all chips between undo and cancel slots
+    chipRowBounds = [];
+    hitRegions.chip = null;
+    const slotW = chipAreaW / chips.length;
+    const rowR = Math.min(chipsController.H * 0.42, slotW * 0.44);
+    const rowCY = chipsController.Y + chipsController.H * 0.5;
+    chips.forEach((_, i) => {
+      const cx = chipAreaX + slotW * i + slotW * 0.5;
+      drawSingleChip(cx, rowCY, rowR, i, i === currentChipIndex);
+      chipRowBounds.push({ X: cx - rowR, Y: rowCY - rowR, W: rowR * 2, H: rowR * 2, index: i });
+    });
+    const selCX = chipAreaX + (chipAreaW / chips.length) * currentChipIndex + (chipAreaW / chips.length) * 0.5;
+    chipButtonCenter = { x: selCX, y: rowCY, r: rowR };
+  } else {
+    // Mobile/tablet — single cycling chip centered between undo and cancel
+    chipRowBounds = [];
+    const chipCX = chipAreaX + chipAreaW * 0.5;
+    const chipCY = chipsController.Y + chipsController.H * 0.5;
+    const chipR = chipsController.H * 0.38;
+    chipButtonCenter = { x: chipCX, y: chipCY, r: chipR };
+    const chipShape = new Path2D();
+    chipShape.arc(chipCX, chipCY, chipR, 0, Math.PI * 2);
+    chipShape.closePath();
+    hitRegions.chip = chipShape;
+    drawSingleChip(chipCX, chipCY, chipR, currentChipIndex, true);
+  }
 
 
 
   // --- Wallet ---
-  const isWide = GEOMETRY['statisticsGridA'].X > GEOMETRY['menuBar'].X + GEOMETRY['menuBar'].W + 1;
-  const wallet = isWide
-    ? { X: GEOMETRY['statisticsGridA'].X, Y: GEOMETRY['statisticsGridA'].Y, W: GEOMETRY['statisticsGridA'].W, H: GEOMETRY['statisticsGridA'].H * 0.20 }
+  const isWide = GEOMETRY['statisticsGridA'].X > GEOMETRY['statisticsGridE'].X + GEOMETRY['statisticsGridE'].W + 1;
+  const wallet = isWide && GEOMETRY['walletBar']
+    ? { ...GEOMETRY['walletBar'] }
     : { X: GEOMETRY['menuBar'].X, Y: GEOMETRY['menuBar'].Y + main.H, W: GEOMETRY['menuBar'].W, H: GEOMETRY['menuBar'].H * 0.5 };
-
   const wRef = wallet.H / scale;
   const wPad = wallet.W * 0.03;
   const row1H = wallet.H * 0.38;
@@ -1691,12 +1713,15 @@ const drawMenuBar = (GEOMETRY) => {
   const row1CY = wallet.Y + row1H * 0.55;
   const row2CY = wallet.Y + row1H + wallet.H * 0.05 + row2H * 0.52;
   const icoR = clamp(5 * scale, wallet.H * 0.18, 12 * scale);
-  const titleFs = clamp(8, wRef * 0.13, 13) * scale;
-  const balFs = clamp(10, wRef * 0.22, 17) * scale;
-  const subFs = clamp(7, wRef * 0.11, 11) * scale;
+  const titleFs = clamp(12, wRef * 0.13, 13) * scale;
+  const balFs = clamp(13, wRef * 0.22, 17) * scale;
+  const subFs = clamp(12, wRef * 0.11, 11) * scale;
 
   ctx.save();
   ctx.beginPath(); ctx.rect(wallet.X, wallet.Y, wallet.W, wallet.H); ctx.clip();
+
+  ctx.fillStyle = isWide ? 'rgba(8,8,18,0.90)' : 'rgba(0,0,0,0)';
+  // ctx.fillRect(wallet.X, wallet.Y, wallet.W, wallet.H);
 
   // Row 1 — game title (left) + live time (right)
   ctx.textBaseline = 'middle';
@@ -1761,7 +1786,6 @@ const resize = (e) => {
   scale = window.devicePixelRatio || 1;
 
 
-
   const vw = window.visualViewport?.width || window.innerWidth;
   const vh = window.visualViewport?.height || window.innerHeight;
   canvas.width = vw * scale;
@@ -1782,8 +1806,8 @@ const resize = (e) => {
   leftGutter = (canvas.width - containerWidth) / 2;
 
 
-  scrollX = 0;
-  maxScrollX = containerWidth; // depends on your content width
+  scrollXA = 0;
+  scrollXE = 0;
 }
 
 
@@ -2012,14 +2036,13 @@ canvas.addEventListener('pointerdown', (e) => {
     pressedRegion = 'b_bonus';
   } else if (hitRegions.B_PAIR && ctx.isPointInPath(hitRegions.B_PAIR, x, y)) {
     pressedRegion = 'b_pair';
+  } else if (chipRowBounds.length > 0 && chipRowBounds.some(b => x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H)) {
+    const hit = chipRowBounds.find(b => x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H);
+    currentChipIndex = hit.index;
+    pressedRegion = 'chip';
   } else if (hitRegions.chip && ctx.isPointInPath(hitRegions.chip, x, y)) {
     pressedRegion = 'chip';
-
-    currentChipIndex++;
-    if (currentChipIndex >= chips.length) {
-      currentChipIndex = 0
-    }
-
+    currentChipIndex = (currentChipIndex + 1) % chips.length;
   } else if (hitRegions.lobby && ctx.isPointInPath(hitRegions.lobby, x, y)) {
     pressedRegion = 'lobby';
   } else if (undoBounds && x >= undoBounds.X && x <= undoBounds.X + undoBounds.W && y >= undoBounds.Y && y <= undoBounds.Y + undoBounds.H) {
@@ -2092,29 +2115,35 @@ canvas.addEventListener('pointerup', () => {
 canvas.addEventListener('pointercancel', () => { pressedRegion = null; });
 
 canvas.addEventListener("touchstart", (e) => {
-  if (!scoreBoardBounds) return;
   const rect = canvas.getBoundingClientRect();
   const tx = (e.touches[0].clientX - rect.left) * scale;
   const ty = (e.touches[0].clientY - rect.top) * scale;
-  const sb = scoreBoardBounds;
-  if (tx < sb.X || tx > sb.X + sb.W || ty < sb.Y || ty > sb.Y + sb.H) return;
+  const inBounds = (b) => b && tx >= b.X && tx <= b.X + b.W && ty >= b.Y && ty <= b.Y + b.H;
+  if (inBounds(scoreBoardBoundsA)) {
+    activeScrollTarget = 'A';
+  } else if (inBounds(scoreBoardBoundsE)) {
+    activeScrollTarget = 'E';
+  } else {
+    activeScrollTarget = null;
+    return;
+  }
   isTouching = true;
   screenX = e.touches[0].clientX;
 });
 
 canvas.addEventListener("touchmove", (e) => {
-  if (!isTouching) return;
-
+  if (!isTouching || !activeScrollTarget) return;
   const currentX = e.touches[0].clientX;
   const dx = screenX - currentX;
-
-  scrollX += dx;
-  scrollX = Math.max(0, Math.min(scrollX, maxScrollX));
+  if (activeScrollTarget === 'A') {
+    scrollXA = Math.max(0, Math.min(scrollXA + dx, maxScrollXA));
+  } else {
+    scrollXE = Math.max(0, Math.min(scrollXE + dx, maxScrollXE));
+  }
   screenX = currentX;
-
-
 });
 
 canvas.addEventListener("touchend", () => {
   isTouching = false;
+  activeScrollTarget = null;
 });
