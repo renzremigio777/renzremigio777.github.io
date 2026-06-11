@@ -133,6 +133,20 @@ let volumeBounds = null;
 let layoutBounds = null;
 let chatCloseBounds = null;
 let chatSendBounds = null;
+let isSettingsOpen  = false;
+let isUserPrefOpen  = false;
+let topNavGameHits    = [];
+let topNavSettingsHit = null;
+let topNavUserHit     = null;
+let topNavSettingHits = [];
+
+const GAME_NAV = [
+  { id: 'baccarat1', label: 'BAC 1'   },
+  { id: 'baccarat2', label: 'BAC 2'   },
+  { id: 'baccarat3', label: 'VIP BAC' },
+  { id: 'gostop',    label: 'GO-STOP' },
+  { id: 'oddeven',   label: 'ODD/EVN' },
+];
 
 const REGION_INFO = {
   player:  { label: 'PLAYER',  odds: '0.95 : 1', desc: 'Bet on the Player hand to win.', color: '#7752ff' },
@@ -1187,7 +1201,7 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
       sideShape.lineTo(sideBet.X, sideBet.Y + sideBet.H);
     }
     sideShape.closePath();
-    hitRegions[side] = sideShape;
+    hitRegions[side.toLowerCase()] = sideShape;
     const sideBetKey = side.toLowerCase();
     ctx.save();
     const sideWin = gamePhase === 'result' && winners.includes(sideBetKey);
@@ -1283,186 +1297,292 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
   }
 }
 
-// ── Two-tile bet options (Go-Stop & Odd-Even) — same glass/chip/card feel ────
+// ── Two-tile bet options — identical arc shapes to baccarat, parameterised ────
 const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = false) => {
-  const bO  = GEOMETRY['betOptions'];
-  const gap = 7 * scale;
-  const borderRadius = bO.H * 0.12;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // ── exact same geometry constants as baccarat ──
+  const arcRadius    = Math.min(GEOMETRY['betOptions'].W * 0.2, GEOMETRY['betOptions'].H * 0.5);
+  const angle        = Math.PI / 90;
+  const betOptionsGap = 7 * scale;
+  const borderRadius = GEOMETRY['betOptions'].H * 0.15;
   const borderWidth  = 2.5 * scale;
-  const hRef = bO.H / scale;
-  const titleFs  = clamp(13, hRef * 0.14, 22) * scale;
-  const oddsFs   = clamp(9,  hRef * 0.08, 14) * scale;
-  const statFs   = clamp(8,  hRef * 0.065, 12) * scale;
-  const pbH      = clamp(5, bO.H * 0.016, 8) * scale;
-  const pbR      = pbH * 0.5;
-  const betChipR = bO.H * 0.07;
-  const bettingOpen = gamePhase === 'betting';
-  const pulse    = (Math.sin(performance.now() * 0.0022) + 1) * 0.5;
+  const hRef         = GEOMETRY['betOptions'].H / scale;
+  const mainBetfontSize = clamp(11, hRef * 0.10, 18) * scale;
+  const pbH          = clamp(5, GEOMETRY['betOptions'].H * 0.016, 8) * scale;
+  const pbR          = pbH * 0.5;
+  const betChipR     = GEOMETRY['betOptions'].H * 0.07;
+  const bO           = GEOMETRY['betOptions'];
+  const bettingOpen  = gamePhase === 'betting';
+  const betting      = bettingOpen;
+  const colorA       = TILE_COLORS[keyA];
+  const colorB       = TILE_COLORS[keyB];
 
-  // Optional ball reveal (oddeven)
-  let ballAreaH = 0;
+  // ── result tint overlay ──
+  if (gamePhase === 'result' && winners.length > 0) {
+    const w   = winners[0];
+    const glow  = (Math.sin(performance.now() * 0.0032) + 1) * 0.5;
+    const alpha = 0.06 + glow * 0.20;
+    const tintMap = { go:'255,64,64', stop:'64,128,255', odd:'176,64,255', even:'16,192,96' };
+    ctx.fillStyle = `rgba(${tintMap[w] || '255,255,255'},${alpha})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // ── Tile A geometry (mirrors PLAYER) ──
+  const tA = {
+    X: bO.X + betOptionsGap,
+    Y: bO.Y + betOptionsGap,
+    TW: bO.W * 0.5 - betOptionsGap * 2,
+    LH: (bO.H * 0.65) - betOptionsGap,
+    CX: bO.X + bO.W * 0.5,
+    CY: bO.Y + bO.H * 0.65,
+    R: arcRadius,
+  };
+  const tAStart = Math.atan2(tA.Y - tA.CY, (tA.X + tA.TW) - tA.CX + betOptionsGap * 0.25);
+  const tAArcX  = tA.CX + tA.R * Math.cos(tAStart);
+  const shapeA  = new Path2D();
+  shapeA.moveTo(tAArcX, tA.Y);
+  shapeA.arc(tA.CX, tA.CY, tA.R, tAStart, Math.PI, true);
+  shapeA.lineTo(tA.X, tA.Y + tA.LH);
+  shapeA.arc(tA.X + borderRadius, tA.Y + borderRadius, borderRadius, angle * 90, -angle * 45, false);
+  shapeA.closePath();
+  hitRegions[keyA] = shapeA;
+
+  const winA   = gamePhase === 'result' && winners.includes(keyA);
+  const blinkA = winA && Math.sin(performance.now() * 0.006) > 0;
+  ctx.save();
+  ctx.shadowColor = colorA.stroke;
+  ctx.shadowBlur  = winA ? (blinkA ? 50*scale : 6*scale) : betting && bets[keyA] > 0 ? 18*scale : 0;
+  ctx.strokeStyle = blinkA ? '#ffffff' : colorA.stroke;
+  ctx.lineWidth   = (betting && bets[keyA] > 0) || winA ? borderWidth * 1.8 : borderWidth;
+  ctx.stroke(shapeA); ctx.shadowBlur = 0;
+  ctx.fillStyle = colorA.fill; ctx.fill(shapeA);
+  if (blinkA) { ctx.fillStyle = 'rgba(255,255,255,0.38)'; ctx.fill(shapeA); }
+  if (betting && pressedRegion === keyA) { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(shapeA); }
+  ctx.restore();
+
+  ctx.fillStyle = '#d6dbb7';
+  ctx.font = `600 ${mainBetfontSize}px Interroman, Arial`;
+  ctx.fillText(labelA, tA.X + tA.TW * 0.5 - tA.R * 0.5, tA.Y + tA.LH * 0.2);
+  ctx.fillStyle = '#fff';
+  ctx.font = `300 ${mainBetfontSize * 0.75}px Interroman, Arial`;
+  ctx.fillText('1 : 1', tA.X + tA.TW * 0.5 - tA.R * 0.5, tA.Y + tA.LH * 0.325);
+
+  if (gamePhase !== 'result') drawBetChip(tA.X + tA.TW * 0.35, tA.Y + tA.LH * 0.55, betChipR, bets[keyA]);
+  betChipPositions[keyA] = { x: tA.X + tA.TW * 0.35, y: tA.Y + tA.LH * 0.55, r: betChipR };
+
+  // Stats A
+  { const statsY = tA.CY - tA.R * 0.26;
+    const sFS = clamp(8*scale, tA.R * 0.22, 11*scale), dotR = sFS * 0.34;
+    const sX = tA.X + betOptionsGap, sW = tA.TW - tA.R - betOptionsGap * 2;
+    const cnt = betHistory.filter(b => b.region === keyA).length;
+    ctx.fillStyle = colorA.stroke;
+    ctx.beginPath(); ctx.arc(sX + dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
+    ctx.font = `600 ${sFS}px Interroman, Arial`; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(255,255,255,0.72)';
+    ctx.fillText(`${cnt} bet${cnt !== 1 ? 's' : ''}`, sX + dotR * 2.6, statsY);
+    ctx.fillStyle = '#d6dbb7'; ctx.textAlign = 'end';
+    ctx.fillText(fmtCurrency(bets[keyA]), sX + sW, statsY);
+  }
+  // Progress bar A (left→right)
+  { const pBarX = tA.X + betOptionsGap, pBarW = tA.TW - tA.R - betOptionsGap * 2;
+    const pbY = tA.CY - tA.R * 0.06;
+    const pRatio = bets[keyA] / ((bets[keyA] + bets[keyB]) || 1);
+    ctx.beginPath(); ctx.roundRect(pBarX, pbY, pBarW, pbH, pbR);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
+    if (pRatio > 0) {
+      const fw = Math.max(pbH, pBarW * pRatio);
+      const pg = ctx.createLinearGradient(pBarX, pbY, pBarX + fw, pbY);
+      pg.addColorStop(0, colorA.stroke); pg.addColorStop(1, colorA.neon);
+      ctx.save(); ctx.beginPath(); ctx.roundRect(pBarX, pbY, fw, pbH, pbR);
+      ctx.fillStyle = pg; ctx.shadowColor = colorA.neon; ctx.shadowBlur = 8*scale; ctx.fill(); ctx.restore();
+    }
+  }
+
+  // ── Tile B geometry (mirrors BANKER) ──
+  const tB = {
+    X: bO.X + bO.W * 0.5 + betOptionsGap,
+    Y: bO.Y + betOptionsGap,
+    TW: bO.W * 0.5 - betOptionsGap * 2,
+    LH: (bO.H * 0.65) - betOptionsGap,
+    CX: bO.X + bO.W * 0.5,
+    CY: bO.Y + bO.H * 0.65,
+    R: arcRadius,
+  };
+  const tBStart = Math.atan2(tB.Y - tB.CY, tB.X - tB.CX - betOptionsGap * 0.25);
+  const tBArcX  = tB.CX + tB.R * Math.cos(tBStart);
+  const shapeB  = new Path2D();
+  shapeB.moveTo(tBArcX, tB.Y);
+  shapeB.arc(tB.CX, tB.CY, tB.R, tBStart, 0, false);
+  shapeB.lineTo(tB.X + tB.TW, tB.Y + tB.LH);
+  shapeB.arc(tB.X + tB.TW - borderRadius, tB.Y + borderRadius, borderRadius, angle * 0, -angle * 45, true);
+  shapeB.closePath();
+  hitRegions[keyB] = shapeB;
+
+  const winB   = gamePhase === 'result' && winners.includes(keyB);
+  const blinkB = winB && Math.sin(performance.now() * 0.006) > 0;
+  ctx.save();
+  ctx.shadowColor = colorB.stroke;
+  ctx.shadowBlur  = winB ? (blinkB ? 50*scale : 6*scale) : betting && bets[keyB] > 0 ? 18*scale : 0;
+  ctx.strokeStyle = blinkB ? '#ffffff' : colorB.stroke;
+  ctx.lineWidth   = (betting && bets[keyB] > 0) || winB ? borderWidth * 1.8 : borderWidth;
+  ctx.stroke(shapeB); ctx.shadowBlur = 0;
+  ctx.fillStyle = colorB.fill; ctx.fill(shapeB);
+  if (blinkB) { ctx.fillStyle = 'rgba(255,255,255,0.38)'; ctx.fill(shapeB); }
+  if (betting && pressedRegion === keyB) { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(shapeB); }
+  ctx.restore();
+
+  ctx.textAlign = 'center';
+  ctx.font = `600 ${mainBetfontSize}px Interroman, Arial`;
+  ctx.fillStyle = '#d6dbb7';
+  ctx.fillText(labelB, tB.X + tB.TW / 2 + tB.R / 2, tB.Y + tB.LH * 0.2);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `300 ${mainBetfontSize * 0.70}px Interroman, Arial`;
+  ctx.fillText('1 : 1', tB.X + tB.TW / 2 + tB.R / 2, tB.Y + tB.LH * 0.325);
+
+  if (gamePhase !== 'result') drawBetChip(tB.X + tB.TW * 0.65, tB.Y + tB.LH * 0.55, betChipR, bets[keyB]);
+  betChipPositions[keyB] = { x: tB.X + tB.TW * 0.65, y: tB.Y + tB.LH * 0.55, r: betChipR };
+
+  // Stats B (mirrored)
+  { const statsY = tB.CY - tB.R * 0.26;
+    const sFS = clamp(8*scale, tB.R * 0.22, 11*scale), dotR = sFS * 0.34;
+    const sRX = tB.X + tB.TW - betOptionsGap, sW = tB.TW - tB.R - betOptionsGap * 2;
+    const sX  = sRX - sW;
+    const cnt = betHistory.filter(b => b.region === keyB).length;
+    ctx.fillStyle = '#d6dbb7'; ctx.font = `600 ${sFS}px Interroman, Arial`;
+    ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+    ctx.fillText(fmtCurrency(bets[keyB]), sX, statsY);
+    ctx.fillStyle = 'rgba(255,255,255,0.72)'; ctx.textAlign = 'end';
+    ctx.fillText(`${cnt} bet${cnt !== 1 ? 's' : ''}`, sRX - dotR * 2.6, statsY);
+    ctx.fillStyle = colorB.stroke;
+    ctx.beginPath(); ctx.arc(sRX - dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
+  }
+  // Progress bar B (right→left)
+  { const bBarRX = tB.X + tB.TW - betOptionsGap, bBarW = tB.TW - tB.R - betOptionsGap * 2;
+    const bBarX = bBarRX - bBarW, pbY = tB.CY - tB.R * 0.06;
+    const bRatio = bets[keyB] / ((bets[keyA] + bets[keyB]) || 1);
+    ctx.beginPath(); ctx.roundRect(bBarX, pbY, bBarW, pbH, pbR);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
+    if (bRatio > 0) {
+      const fw = Math.max(pbH, bBarW * bRatio), fx = bBarRX - fw;
+      const bg = ctx.createLinearGradient(bBarRX, pbY, fx, pbY);
+      bg.addColorStop(0, colorB.stroke); bg.addColorStop(1, colorB.neon);
+      ctx.save(); ctx.beginPath(); ctx.roundRect(fx, pbY, fw, pbH, pbR);
+      ctx.fillStyle = bg; ctx.shadowColor = colorB.neon; ctx.shadowBlur = 8*scale; ctx.fill(); ctx.restore();
+    }
+  }
+
+  // ── Center TIE circle (ball for oddeven, round indicator for gostop) ──
+  const center = { CX: bO.X + bO.W * 0.5, CY: bO.Y + bO.H * 0.65, R: arcRadius - betOptionsGap };
+  const centerShape = new Path2D();
+  centerShape.arc(center.CX, center.CY, center.R, angle * 90, angle * 0, false);
+  centerShape.closePath();
+
   if (showBall) {
-    ballAreaH = bO.H * 0.38;
-    const ballR  = clamp(20 * scale, ballAreaH * 0.38, 50 * scale);
-    const ballCX = bO.X + bO.W * 0.5;
-    const ballCY = bO.Y + ballAreaH * 0.52;
-    const hasResult = gamePhase === 'result' || (gamePhase === 'dealing' && revealNumber);
-    const tileKey   = gamePhase === 'result' ? winners[0] : null;
-    const bc        = tileKey ? TILE_COLORS[tileKey] : null;
-
-    if (hasResult && revealNumber) {
-      ctx.save();
-      ctx.shadowColor = bc ? bc.neon : 'rgba(255,255,255,0.5)';
-      ctx.shadowBlur  = 30 * scale;
-      const bg = ctx.createRadialGradient(ballCX - ballR * 0.28, ballCY - ballR * 0.28, ballR * 0.06, ballCX, ballCY, ballR);
-      bg.addColorStop(0, 'rgba(255,255,255,0.18)');
-      bg.addColorStop(0.6, bc ? bc.fill : '#111');
-      bg.addColorStop(1, 'rgba(0,0,0,0.55)');
-      ctx.beginPath(); ctx.arc(ballCX, ballCY, ballR, 0, Math.PI * 2);
-      ctx.fillStyle = bg; ctx.fill();
-      ctx.strokeStyle = bc ? bc.stroke : 'rgba(255,255,255,0.30)'; ctx.lineWidth = 2 * scale; ctx.stroke();
-      ctx.restore();
-      const numFs = clamp(16 * scale, ballR * 0.82, 40 * scale);
+    const winKey = gamePhase === 'result' ? winners[0] : null;
+    const bc     = winKey ? TILE_COLORS[winKey] : null;
+    const hasNum = revealNumber !== null;
+    ctx.save();
+    ctx.shadowColor = bc ? bc.neon : 'rgba(255,255,255,0.18)';
+    ctx.shadowBlur  = hasNum ? 22*scale : 4*scale;
+    ctx.fillStyle   = bc ? bc.fill : '#0a0816';
+    ctx.fill(centerShape);
+    ctx.strokeStyle = bc ? bc.stroke : 'rgba(255,255,255,0.22)';
+    ctx.lineWidth   = hasNum ? 2.5*scale : (betting && bets[keyA] > 0 ? borderWidth * 1.8 : borderWidth);
+    ctx.stroke(centerShape);
+    ctx.restore();
+    if (hasNum) {
+      const numFs = clamp(14*scale, center.R * 0.68, 30*scale);
       ctx.font = `900 ${numFs}px Interroman, Arial`; ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.shadowColor = bc ? bc.neon : '#fff'; ctx.shadowBlur = 10 * scale;
-      ctx.fillText(String(revealNumber), ballCX, ballCY - numFs * 0.12);
+      ctx.shadowColor = bc ? bc.neon : '#fff'; ctx.shadowBlur = 10*scale;
+      ctx.fillText(String(revealNumber), center.CX, center.CY - numFs * 0.14);
       ctx.shadowBlur = 0;
-      ctx.font = `400 ${clamp(8 * scale, ballR * 0.28, 14 * scale)}px Interroman, Arial`;
-      ctx.fillStyle = bc ? bc.neon : 'rgba(255,255,255,0.65)';
-      ctx.fillText(tileKey ? tileKey.toUpperCase() : '', ballCX, ballCY + numFs * 0.58);
+      ctx.font = `400 ${clamp(7*scale, center.R * 0.26, 11*scale)}px Interroman, Arial`;
+      ctx.fillStyle = bc ? bc.neon : 'rgba(255,255,255,0.55)';
+      ctx.fillText(winKey ? winKey.toUpperCase() : '', center.CX, center.CY + numFs * 0.54);
     } else {
-      // Idle spinning dots
       const t = performance.now() * 0.0014;
       for (let d = 0; d < 3; d++) {
         const a = t + (d / 3) * Math.PI * 2;
-        ctx.beginPath(); ctx.arc(ballCX + Math.cos(a) * ballR * 0.44, ballCY + Math.sin(a) * ballR * 0.44, ballR * 0.13 * (0.6 + 0.4 * Math.sin(t * 2 + d)), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${0.22 + 0.16 * Math.sin(t + d)})`; ctx.fill();
+        ctx.beginPath();
+        ctx.arc(center.CX + Math.cos(a) * center.R * 0.40, center.CY + Math.sin(a) * center.R * 0.40,
+          center.R * 0.11 * (0.6 + 0.4 * Math.sin(t * 2 + d)), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${0.18 + 0.14 * Math.sin(t + d)})`; ctx.fill();
       }
     }
-  }
-
-  // ─ Tiles ─
-  const tileY = bO.Y + ballAreaH + gap;
-  const tileH = bO.H - ballAreaH - gap * 2;
-  const halfW = bO.W * 0.5 - gap * 1.5;
-
-  const drawTile = (tx, key, label, odds) => {
-    const color = TILE_COLORS[key];
-    const isWin  = gamePhase === 'result' && winners[0] === key;
-    const blink  = isWin && Math.sin(performance.now() * 0.006) > 0;
+  } else {
+    // GoStop: neutral round counter
     ctx.save();
-    ctx.shadowColor = color.neon;
-    ctx.shadowBlur  = isWin ? (blink ? 50 * scale : 8 * scale) : bettingOpen && bets[key] > 0 ? 18 * scale : 0;
-    ctx.beginPath(); ctx.roundRect(tx, tileY, halfW, tileH, borderRadius);
-    ctx.fillStyle = color.fill; ctx.fill();
-    if (blink) { ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fill(); }
-    ctx.strokeStyle = blink ? '#ffffff' : color.stroke;
-    ctx.lineWidth   = isWin || (bettingOpen && bets[key] > 0) ? borderWidth * 1.8 : borderWidth;
-    ctx.beginPath(); ctx.roundRect(tx, tileY, halfW, tileH, borderRadius); ctx.stroke();
-    if (bettingOpen && pressedRegion === key) { ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); }
+    ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fill(centerShape);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = borderWidth * 0.7; ctx.stroke(centerShape);
+    const rndFs = clamp(7*scale, center.R * 0.30, 12*scale);
+    ctx.font = `600 ${rndFs}px Interroman, Arial`;
+    ctx.fillStyle = 'rgba(255,255,255,0.42)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(`${results.length + 1}`, center.CX, center.CY - center.R * 0.15);
+    ctx.font = `300 ${clamp(6*scale, center.R * 0.22, 9*scale)}px Interroman, Arial`;
+    ctx.fillStyle = 'rgba(255,255,255,0.26)';
+    ctx.fillText('RND', center.CX, center.CY + center.R * 0.26);
     ctx.restore();
-
-    const mx = tx + halfW * 0.5, my = tileY + tileH * 0.5;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = `900 ${titleFs}px Interroman, Arial`; ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = color.neon; ctx.shadowBlur = 12 * scale;
-    ctx.fillText(label, mx, my - titleFs * 0.52);
-    ctx.shadowBlur = 0;
-    ctx.font = `300 ${oddsFs}px Interroman, Arial`; ctx.fillStyle = 'rgba(255,255,255,0.60)';
-    ctx.fillText(odds, mx, my + oddsFs * 0.14);
-
-    // Bet chip indicator
-    const chipY = my + oddsFs + statFs;
-    if (bets[key] > 0 && gamePhase !== 'result') drawBetChip(mx, chipY, betChipR, bets[key]);
-    betChipPositions[key] = { x: mx, y: chipY, r: betChipR };
-
-    // Stats row
-    const sFS = statFs, dotR = sFS * 0.34;
-    const statsY = tileY + tileH - gap - sFS;
-    const cnt = betHistory.filter(b => b.region === key).length;
-    ctx.fillStyle = color.stroke;
-    ctx.beginPath(); ctx.arc(tx + gap + dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
-    ctx.font = `600 ${sFS}px Interroman, Arial`; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(255,255,255,0.72)';
-    ctx.fillText(`${cnt} bet${cnt !== 1 ? 's' : ''}`, tx + gap + dotR * 2.6, statsY);
-    ctx.fillStyle = '#d6dbb7'; ctx.textAlign = 'end';
-    ctx.fillText(fmtCurrency(bets[key]), tx + halfW - gap, statsY);
-
-    // Progress bar
-    const totalB = Object.values(bets).reduce((s, v) => s + v, 0) || 1;
-    const pbY = statsY - sFS * 1.2;
-    const pbW = halfW - gap * 2;
-    ctx.beginPath(); ctx.roundRect(tx + gap, pbY, pbW, pbH, pbR);
-    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
-    const ratio = bets[key] / totalB;
-    if (ratio > 0) {
-      const fw = Math.max(pbH, pbW * ratio);
-      const pg = ctx.createLinearGradient(tx + gap, 0, tx + gap + fw, 0);
-      pg.addColorStop(0, color.stroke); pg.addColorStop(1, color.neon);
-      ctx.save(); ctx.beginPath(); ctx.roundRect(tx + gap, pbY, fw, pbH, pbR);
-      ctx.fillStyle = pg; ctx.shadowColor = color.neon; ctx.shadowBlur = 8 * scale; ctx.fill(); ctx.restore();
-    }
-
-    // Win banner
-    if (isWin) {
-      ctx.font = `900 ${titleFs * 0.60}px Interroman, Arial`; ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = color.neon; ctx.shadowBlur = 20 * scale; ctx.textAlign = 'center';
-      ctx.fillText('WIN!', mx, tileY + tileH * 0.85);
-      ctx.shadowBlur = 0;
-    }
-
-    // Hit region
-    const path = new Path2D();
-    path.roundRect(tx, tileY, halfW, tileH, borderRadius);
-    hitRegions[key] = path;
-  };
-
-  drawTile(bO.X + gap,               keyA, labelA, '1 : 1');
-  drawTile(bO.X + gap * 2 + halfW,   keyB, labelB, '1 : 1');
-
-  // Countdown bar
-  if (bettingOpen) {
-    const elapsed = (performance.now() - bettingCountdownStart) % BETTING_DURATION;
-    const prog  = 1 - elapsed / BETTING_DURATION;
-    const barH  = 4 * scale, barY = bO.Y + bO.H - gap - barH;
-    ctx.beginPath(); ctx.roundRect(bO.X + gap, barY, bO.W - gap * 2, barH, barH * 0.5);
-    ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill();
-    if (prog > 0) {
-      ctx.beginPath(); ctx.roundRect(bO.X + gap, barY, (bO.W - gap * 2) * prog, barH, barH * 0.5);
-      const cg = ctx.createLinearGradient(bO.X + gap, 0, bO.X + gap + (bO.W - gap * 2) * prog, 0);
-      cg.addColorStop(0, TILE_COLORS[keyA].stroke); cg.addColorStop(1, TILE_COLORS[keyB].stroke);
-      ctx.fillStyle = cg; ctx.fill();
-    }
   }
 
-  // Betting status badge
-  {
-    const hRefL = bO.H / scale;
-    const statusFs = clamp(8, hRefL * 0.055, 10) * scale;
+  // ── Score / WIN display on result (same position as baccarat) ──
+  if (gamePhase === 'result') {
+    const scoreFs = clamp(24, hRef * 0.40, 58) * scale;
+    const glow    = (Math.sin(performance.now() * 0.0032) + 1) * 0.5;
+    ctx.save();
+    ctx.font = `900 ${scoreFs}px Interroman, Arial`;
+    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'top';
+    if (winA) {
+      ctx.shadowColor = colorA.neon; ctx.shadowBlur = (10 + glow * 18)*scale;
+      ctx.textAlign = 'end';
+      ctx.fillText('WIN', tA.X + tA.TW - betOptionsGap, tA.Y + betOptionsGap * 0.5);
+    }
+    if (winB) {
+      ctx.shadowColor = colorB.neon; ctx.shadowBlur = (10 + glow * 18)*scale;
+      ctx.textAlign = 'start';
+      ctx.fillText('WIN', tB.X + betOptionsGap, tB.Y + betOptionsGap * 0.5);
+    }
+    ctx.restore();
+  }
+
+  // ── Disabled overlay during dealing (same as baccarat) ──
+  const noCardsYet = true;
+  if (gamePhase === 'dealing' && noCardsYet) {
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(bO.X, bO.Y, bO.W, bO.H, borderRadius * 1.1);
+    ctx.fillStyle = 'rgba(10,10,20,0.58)'; ctx.fill();
+    ctx.beginPath(); ctx.roundRect(bO.X, bO.Y, bO.W, bO.H, borderRadius * 1.1);
+    ctx.fillStyle = 'rgba(80,80,100,0.18)'; ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Betting status badge (identical to baccarat) ──
+  { const statusFs = clamp(8, hRef * 0.055, 10) * scale;
     ctx.font = `700 ${statusFs}px Interroman, Arial`;
     const statusText = bettingOpen ? 'BETTING OPEN' : 'BETTING CLOSED';
-    const dotColor = bettingOpen ? '#4ade80' : '#f87171';
-    const bgColor  = bettingOpen ? 'rgba(74,222,128,0.12)'  : 'rgba(248,113,113,0.10)';
-    const bdColor  = bettingOpen ? 'rgba(74,222,128,0.40)'  : 'rgba(248,113,113,0.28)';
-    const txColor  = bettingOpen ? '#bbf7d0' : '#fecaca';
-    const dotR  = statusFs * 0.24, pad = 8 * scale;
+    const dotColor   = bettingOpen ? '#4ade80'  : '#f87171';
+    const bgColor    = bettingOpen ? 'rgba(74,222,128,0.12)'  : 'rgba(248,113,113,0.10)';
+    const bdColor    = bettingOpen ? 'rgba(74,222,128,0.40)'  : 'rgba(248,113,113,0.28)';
+    const txColor    = bettingOpen ? '#bbf7d0' : '#fecaca';
+    const dotR = statusFs * 0.24, pad = 8*scale;
     const pillH = statusFs * 1.8;
-    const pillW = ctx.measureText(statusText).width + dotR * 2 + pad * 2.5 + 4 * scale;
+    const pillW = ctx.measureText(statusText).width + dotR * 2 + pad * 2.5 + 4*scale;
     const pillX = bO.X + bO.W * 0.5 - pillW * 0.5;
-    const pillY = bO.Y + gap + (showBall ? 0 : 0);
+    const pillY = bO.Y + betOptionsGap;
     ctx.save();
     ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
     ctx.fillStyle = bgColor; ctx.fill();
     ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
-    ctx.strokeStyle = bdColor; ctx.lineWidth = 1 * scale; ctx.stroke();
+    ctx.strokeStyle = bdColor; ctx.lineWidth = 1*scale; ctx.stroke();
     const dotX = pillX + pad + dotR, dotY = pillY + pillH * 0.5;
     ctx.beginPath(); ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
     ctx.fillStyle = dotColor;
-    if (bettingOpen) { ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 4 * scale; }
+    if (bettingOpen) { ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 4*scale; }
     ctx.fill(); ctx.shadowBlur = 0;
     ctx.fillStyle = txColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(statusText, dotX + dotR + 4 * scale, dotY);
+    ctx.fillText(statusText, dotX + dotR + 4*scale, dotY);
     ctx.restore();
   }
 };
@@ -2682,6 +2802,218 @@ const drawChat = () => {
   ctx.restore();
 };
 
+// ─── Top Navigation Bar ──────────────────────────────────────────────────────
+const drawTopNav = () => {
+  const S       = scale;
+  const navH    = clamp(30*S, canvas.height * 0.042, 44*S);
+  const navY    = 7*S;
+  const navR    = navH * 0.5;
+  const navW    = clamp(260*S, containerWidth * 0.88, containerWidth * 0.94);
+  const navX    = leftGutter + (containerWidth - navW) * 0.5;
+  const divX    = navX + navW * 0.70;
+  const pad     = 4*S;
+  const inBound = (b) => b && _mx >= b.X && _mx <= b.X + b.W && _my >= b.Y && _my <= b.Y + b.H;
+
+  // ── Panel background ──
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(navX, navY, navW, navH, navR);
+  const bg = ctx.createLinearGradient(navX, navY, navX, navY + navH);
+  bg.addColorStop(0, 'rgba(255,255,255,0.10)');
+  bg.addColorStop(1, 'rgba(255,255,255,0.03)');
+  ctx.fillStyle = bg; ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 0.8*S; ctx.stroke();
+  ctx.restore();
+
+  // Clip interior
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(navX, navY, navW, navH, navR); ctx.clip();
+
+  // Divider line
+  ctx.beginPath();
+  ctx.moveTo(divX, navY + navH * 0.15); ctx.lineTo(divX, navY + navH * 0.85);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 0.8*S; ctx.stroke();
+
+  // ── Game tabs ──
+  const gameSectionW = divX - navX;
+  const tabW  = gameSectionW / GAME_NAV.length;
+  const tabFs = clamp(7*S, navH * 0.28, 10*S);
+  const activeId = (window.GAME_CONFIG && window.GAME_CONFIG.gameId) || 'baccarat1';
+  topNavGameHits = [];
+
+  GAME_NAV.forEach((g, i) => {
+    const tx = navX + tabW * i;
+    const cy = navY + navH * 0.5;
+    const isActive = g.id === activeId;
+    const hovered = topNavGameHits.length > i && false; // placeholder
+
+    if (isActive) {
+      ctx.beginPath(); ctx.roundRect(tx + pad * 0.5, navY + pad * 0.4, tabW - pad, navH - pad * 0.8, navH * 0.30);
+      ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.30)'; ctx.lineWidth = 0.7*S; ctx.stroke();
+    }
+
+    ctx.font = `${isActive ? 600 : 400} ${tabFs}px Interroman, Arial`;
+    ctx.fillStyle = isActive ? '#ffffff' : 'rgba(255,255,255,0.50)';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(g.label, tx + tabW * 0.5, cy + (isActive ? -1*S : 0));
+
+    if (isActive) {
+      ctx.beginPath(); ctx.arc(tx + tabW * 0.5, navY + navH - pad * 0.55, 2*S, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff'; ctx.fill();
+    }
+
+    topNavGameHits.push({ id: g.id, X: tx, Y: navY, W: tabW, H: navH });
+  });
+
+  // ── Utility slots ──
+  const utilW   = navX + navW - divX;
+  const slotW   = utilW * 0.5;
+  const icoSz   = navH * 0.36;
+  const sCX     = divX + slotW * 0.5;
+  const uCX     = divX + slotW * 1.5;
+  const midY    = navY + navH * 0.5;
+
+  // Settings button highlight
+  if (isSettingsOpen) {
+    ctx.beginPath(); ctx.roundRect(divX + pad * 0.5, navY + pad * 0.4, slotW - pad, navH - pad * 0.8, navH * 0.30);
+    ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+  }
+  // Gear icon
+  const gr = icoSz * 0.46, gi = icoSz * 0.20;
+  ctx.strokeStyle = isSettingsOpen ? '#ffffff' : 'rgba(255,255,255,0.70)';
+  ctx.lineWidth = 1.2*S; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(sCX, midY, gi, 0, Math.PI * 2); ctx.stroke();
+  for (let t = 0; t < 6; t++) {
+    const a = (Math.PI * 2 / 6) * t;
+    ctx.beginPath();
+    ctx.moveTo(sCX + Math.cos(a) * (gr * 0.68), midY + Math.sin(a) * (gr * 0.68));
+    ctx.lineTo(sCX + Math.cos(a) * gr,           midY + Math.sin(a) * gr);
+    ctx.stroke();
+  }
+  ctx.beginPath(); ctx.arc(sCX, midY, gr, 0, Math.PI * 2); ctx.stroke();
+  topNavSettingsHit = { X: divX, Y: navY, W: slotW, H: navH };
+
+  // User/Profile button highlight
+  if (isUserPrefOpen) {
+    ctx.beginPath(); ctx.roundRect(divX + slotW + pad * 0.5, navY + pad * 0.4, slotW - pad, navH - pad * 0.8, navH * 0.30);
+    ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+  }
+  // Person icon
+  const ur = icoSz * 0.46;
+  ctx.strokeStyle = isUserPrefOpen ? '#ffffff' : 'rgba(255,255,255,0.70)';
+  ctx.lineWidth = 1.2*S; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(uCX, midY - ur * 0.20, ur * 0.36, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(uCX, midY + ur * 0.68, ur * 0.58, Math.PI * 1.15, Math.PI * 1.85, false); ctx.stroke();
+  topNavUserHit = { X: divX + slotW, Y: navY, W: slotW, H: navH };
+
+  ctx.restore(); // end clip
+
+  // ── Settings dropdown ──
+  if (isSettingsOpen) {
+    const dropW = clamp(160*S, navW * 0.38, 240*S);
+    const dropX = Math.min(sCX - dropW * 0.5, navX + navW - dropW - 4*S);
+    const dropY = navY + navH + 3*S;
+    const rowH  = navH * 0.96;
+    const settingItems = [
+      { key: 'mute',   label: 'Sound',  active: !isMuted },
+      { key: 'layout', label: 'Layout', active: layoutMode === 'playing', valOn: 'Playing', valOff: 'Monitor' },
+    ];
+    const dropH = settingItems.length * rowH + 8*S;
+    topNavSettingHits = [];
+
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(dropX, dropY, dropW, dropH, 8*S);
+    ctx.fillStyle = 'rgba(6,7,20,0.96)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 0.8*S; ctx.stroke();
+
+    const lFs    = clamp(8*S, rowH * 0.30, 11*S);
+    const tglW   = rowH * 1.52, tglH = rowH * 0.42, tglR = tglH * 0.5;
+
+    settingItems.forEach((item, i) => {
+      const ry = dropY + 4*S + rowH * i;
+      ctx.font = `400 ${lFs}px Interroman, Arial`;
+      ctx.fillStyle = 'rgba(255,255,255,0.78)'; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+      ctx.fillText(item.label, dropX + 12*S, ry + rowH * 0.5);
+
+      const tgX = dropX + dropW - 12*S - tglW;
+      const tgY = ry + (rowH - tglH) * 0.5;
+      ctx.beginPath(); ctx.roundRect(tgX, tgY, tglW, tglH, tglR);
+      ctx.fillStyle = item.active ? 'rgba(70,190,110,0.50)' : 'rgba(255,255,255,0.12)'; ctx.fill();
+      ctx.strokeStyle = item.active ? 'rgba(70,190,110,0.80)' : 'rgba(255,255,255,0.20)'; ctx.lineWidth = 0.7*S; ctx.stroke();
+      const knobX = item.active ? tgX + tglW - tglH * 0.5 : tgX + tglH * 0.5;
+      ctx.beginPath(); ctx.arc(knobX, tgY + tglH * 0.5, tglH * 0.38, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff'; ctx.fill();
+
+      const valFs = clamp(6.5*S, rowH * 0.24, 9*S);
+      ctx.font = `500 ${valFs}px Interroman, Arial`;
+      ctx.fillStyle = item.active ? 'rgba(70,210,120,0.90)' : 'rgba(255,255,255,0.35)';
+      ctx.textAlign = 'end'; ctx.textBaseline = 'middle';
+      const valStr = item.active ? (item.valOn || 'On') : (item.valOff || 'Off');
+      ctx.fillText(valStr, tgX - 5*S, ry + rowH * 0.5);
+
+      topNavSettingHits.push({ key: item.key, X: tgX - 6*S, Y: tgY - 4*S, W: tglW + 12*S, H: tglH + 8*S });
+    });
+    ctx.restore();
+  }
+
+  // ── User prefs dropdown ──
+  if (isUserPrefOpen) {
+    const dropW = clamp(170*S, navW * 0.40, 250*S);
+    const dropX = Math.min(uCX - dropW * 0.5, navX + navW - dropW - 4*S);
+    const dropY = navY + navH + 3*S;
+    const dropH = clamp(88*S, navH * 3.4, 120*S);
+    const pd    = 12*S;
+
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(dropX, dropY, dropW, dropH, 8*S);
+    ctx.fillStyle = 'rgba(6,7,20,0.96)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 0.8*S; ctx.stroke();
+
+    const valFs = clamp(9*S, dropH * 0.11, 13*S);
+    const subFs = clamp(7*S, dropH * 0.08, 10*S);
+
+    // Avatar
+    const avR  = dropH * 0.17;
+    const avCX = dropX + pd + avR;
+    const avCY = dropY + dropH * 0.38;
+    const avG  = ctx.createLinearGradient(avCX - avR, avCY - avR, avCX + avR, avCY + avR);
+    avG.addColorStop(0, '#5040cc'); avG.addColorStop(1, '#3020a0');
+    ctx.beginPath(); ctx.arc(avCX, avCY, avR, 0, Math.PI * 2);
+    ctx.fillStyle = avG; ctx.fill();
+    ctx.strokeStyle = 'rgba(160,140,255,0.60)'; ctx.lineWidth = S; ctx.stroke();
+    ctx.font = `700 ${avR * 0.88}px Interroman, Arial`;
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('P', avCX, avCY);
+
+    const txX = avCX + avR + pd * 0.65;
+    ctx.font = `600 ${valFs}px Interroman, Arial`; ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+    ctx.fillText('Player_777', txX, avCY - valFs * 0.55);
+    ctx.font = `300 ${subFs}px Interroman, Arial`; ctx.fillStyle = 'rgba(255,255,255,0.42)';
+    ctx.fillText('Live Member', txX, avCY + subFs * 0.65);
+
+    // Divider
+    const divY2 = dropY + dropH * 0.64;
+    ctx.beginPath(); ctx.moveTo(dropX + pd, divY2); ctx.lineTo(dropX + dropW - pd, divY2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = 0.5*S; ctx.stroke();
+
+    // Balance row
+    const rowCY = divY2 + (dropY + dropH - divY2) * 0.45;
+    const lFs   = clamp(8*S, dropH * 0.08, 11*S);
+    ctx.font = `400 ${lFs}px Interroman, Arial`; ctx.fillStyle = 'rgba(255,255,255,0.46)';
+    ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+    ctx.fillText('Balance', dropX + pd, rowCY);
+    ctx.font = `600 ${valFs * 0.88}px Interroman, Arial`; ctx.fillStyle = '#e8c84a';
+    ctx.textAlign = 'end';
+    ctx.fillText(fmtCurrency(balance), dropX + dropW - pd, rowCY);
+
+    ctx.restore();
+  }
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+let _mx = 0, _my = 0; // last pointer position for top-nav hover (canvas coords)
+
 const loop = () => {
   // --- Clear ---
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2689,6 +3021,7 @@ const loop = () => {
   // drawGrid();
   // drawLayout();
   drawUI();
+  drawTopNav();
   drawPopup();
   drawFlyingChips();
   drawPhaseBanner();
@@ -2709,6 +3042,13 @@ canvas.addEventListener('pointermove', (e) => {
   const rect = canvas.getBoundingClientRect();
   const x = (e.clientX - rect.left) * scale;
   const y = (e.clientY - rect.top) * scale;
+  _mx = x; _my = y;
+
+  const inB = (b) => b && x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H;
+  const overNavGame    = topNavGameHits.some(b => inB(b));
+  const overNavSetting = topNavSettingsHit && inB(topNavSettingsHit);
+  const overNavUser    = topNavUserHit    && inB(topNavUserHit);
+  const overNavToggle  = topNavSettingHits.some(b => inB(b));
 
   const overChip = hitRegions.chip && ctx.isPointInPath(hitRegions.chip, x, y);
   let overBetOption = false;
@@ -2726,7 +3066,7 @@ canvas.addEventListener('pointermove', (e) => {
   const overUndo      = undoBounds   && x >= undoBounds.X   && x <= undoBounds.X   + undoBounds.W   && y >= undoBounds.Y   && y <= undoBounds.Y   + undoBounds.H;
   const overCancel    = cancelBounds && x >= cancelBounds.X && x <= cancelBounds.X + cancelBounds.W && y >= cancelBounds.Y && y <= cancelBounds.Y + cancelBounds.H;
   const overChipRow   = chipRowBounds.some(b => x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H);
-  canvas.style.cursor = (overChip || overChipRow || overBetOption || overChat || overLobby || overVolume || overLayout || overUndo || overCancel || overChatClose || overChatSend) ? 'pointer' : 'default';
+  canvas.style.cursor = (overChip || overChipRow || overBetOption || overChat || overLobby || overVolume || overLayout || overUndo || overCancel || overChatClose || overChatSend || overNavGame || overNavSetting || overNavUser || overNavToggle) ? 'pointer' : 'default';
 });
 
 canvas.addEventListener('pointerdown', (e) => {
@@ -2741,6 +3081,19 @@ canvas.addEventListener('pointerdown', (e) => {
     const onCard = p && x >= p.X && x <= p.X + p.W && y >= p.Y && y <= p.Y + p.H;
     if (onClose || !onCard) activePopup = null;
     return;
+  }
+
+  // ── Top-nav hit detection ──
+  {
+    const inB = (b) => b && x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H;
+    const navGame    = topNavGameHits.find(b => inB(b));
+    const navSetting = topNavSettingHits.find(b => inB(b));
+    if (navGame)    { pressedRegion = 'nav_game_' + navGame.id;  hoverRegion = pressedRegion; return; }
+    if (inB(topNavSettingsHit)) { pressedRegion = 'nav_settings'; hoverRegion = pressedRegion; return; }
+    if (inB(topNavUserHit))     { pressedRegion = 'nav_user';     hoverRegion = pressedRegion; return; }
+    if (navSetting) { pressedRegion = 'nav_setting_' + navSetting.key; hoverRegion = pressedRegion; return; }
+    // Dismiss open panels when clicking outside nav area
+    if (isSettingsOpen || isUserPrefOpen) { isSettingsOpen = false; isUserPrefOpen = false; }
   }
 
   let hitBetKey = null;
@@ -2779,6 +3132,31 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointerup', () => {
+  // ── Top-nav actions ──
+  if (pressedRegion && pressedRegion.startsWith('nav_game_')) {
+    const gid = pressedRegion.slice(9);
+    window.location.href = '/pages/game.html?game=' + gid;
+    pressedRegion = null; return;
+  }
+  if (pressedRegion === 'nav_settings') {
+    isSettingsOpen = !isSettingsOpen;
+    if (isSettingsOpen) isUserPrefOpen = false;
+    pressedRegion = null; return;
+  }
+  if (pressedRegion === 'nav_user') {
+    isUserPrefOpen = !isUserPrefOpen;
+    if (isUserPrefOpen) isSettingsOpen = false;
+    pressedRegion = null; return;
+  }
+  if (pressedRegion === 'nav_setting_mute') {
+    isMuted = !isMuted; videoEl.muted = isMuted;
+    pressedRegion = null; return;
+  }
+  if (pressedRegion === 'nav_setting_layout') {
+    layoutMode = layoutMode === 'playing' ? 'monitoring' : 'playing';
+    pressedRegion = null; return;
+  }
+
   if (pressedRegion === 'lobby') { window.location.href = '/'; return; }
 
   if (pressedRegion === 'chat') {
