@@ -7,6 +7,7 @@
     baccarat3: { src: '/assets/js/hud/baccarat3.js' },
     gostop:    { src: '/assets/js/hud/gostop.js'    },
     oddeven:   { src: '/assets/js/hud/oddeven.js'   },
+    colorgame: { src: '/assets/js/hud/colorgame.js' },
   };
 
   const params = new URLSearchParams(window.location.search);

@@ -26,6 +26,23 @@ videoEl.play().catch(() => { });
 const iosVideoUnlock = () => { videoEl.play().catch(() => { }); document.removeEventListener('touchstart', iosVideoUnlock); };
 document.addEventListener('touchstart', iosVideoUnlock, { once: true });
 
+// --- Background Music ---
+const musicEl = document.createElement('audio');
+musicEl.loop = true;
+musicEl.volume = 0.35;
+musicEl.src = (window.GAME_CONFIG && window.GAME_CONFIG.musicSrc) || '/assets/audio/bg-music.mp3';
+musicEl.style.display = 'none';
+document.body.appendChild(musicEl);
+
+let musicUnlocked = false;
+const unlockMusic = () => {
+  if (musicUnlocked) return;
+  musicUnlocked = true;
+  musicEl.muted = isMuted;
+  musicEl.play().catch(() => {});
+};
+document.addEventListener('pointerdown', unlockMusic, { once: true });
+
 const drawVideo = (GEOMETRY) => {
   if (videoEl.readyState < 2) return;
   const vw = videoEl.videoWidth, vh = videoEl.videoHeight;
@@ -80,8 +97,9 @@ let undoBounds = null;
 let cancelBounds = null;
 let balance = 510000;
 const GAME_TYPE = (window.GAME_CONFIG && window.GAME_CONFIG.gameType) || 'baccarat';
-let bets = GAME_TYPE === 'gostop'  ? { go: 0, stop: 0 }
-         : GAME_TYPE === 'oddeven' ? { odd: 0, even: 0 }
+let bets = GAME_TYPE === 'gostop'    ? { go: 0, stop: 0 }
+         : GAME_TYPE === 'oddeven'   ? { odd: 0, even: 0 }
+         : GAME_TYPE === 'colorgame' ? { red: 0, blue: 0, yellow: 0, green: 0, white: 0, pink: 0 }
          : { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
 let betHistory = [];
 let lastBets = {};
@@ -92,6 +110,7 @@ let bettingCountdownStart = performance.now();
 const BETTING_DURATION = 12000; // 12 seconds for demo purposes
 let lastGEOMETRY = null;
 let winners = [];
+let colorGameDice = [null, null, null]; // colorgame: each element is a color key (result per die)
 let phaseScheduled = false;
 const fmtCurrency = (() => {
   const fmt = new Intl.NumberFormat('en', { notation: 'compact' });
@@ -117,6 +136,7 @@ let popupCloseHit = null;
 
 // --- UI Feature State ---
 let isMuted = false;
+let isVideoOn = !!(window.GAME_CONFIG && window.GAME_CONFIG.videoEnabled);
 let layoutMode = 'playing'; // 'playing' | 'monitoring'
 let isChatOpen = false;
 let chatMessages = [
@@ -131,10 +151,13 @@ let chatInputValue = '';
 let chatInputEl = null;
 let volumeBounds = null;
 let layoutBounds = null;
+let videoBounds  = null;
+let walletChipTarget = { x: 0, y: 0, r: 0 };
 let chatCloseBounds = null;
 let chatSendBounds = null;
 let isSettingsOpen  = false;
 let isUserPrefOpen  = false;
+let isGameDropOpen  = false;
 let topNavGameHits    = [];
 let topNavSettingsHit = null;
 let topNavUserHit     = null;
@@ -146,6 +169,7 @@ const GAME_NAV = [
   { id: 'baccarat3', label: 'VIP BAC' },
   { id: 'gostop',    label: 'GO-STOP' },
   { id: 'oddeven',   label: 'ODD/EVN' },
+  { id: 'colorgame', label: 'COLOR'   },
 ];
 
 const REGION_INFO = {
@@ -160,6 +184,12 @@ const REGION_INFO = {
   stop:    { label: 'STOP',    odds: '1 : 1',    desc: 'Bet that the dealer collects.', color: '#4080ff' },
   odd:     { label: 'ODD',     odds: '1 : 1',    desc: 'Bet on an odd number.', color: '#b040ff' },
   even:    { label: 'EVEN',    odds: '1 : 1',    desc: 'Bet on an even number.', color: '#10c060' },
+  red:     { label: 'RED',     odds: '1 : 1',    desc: 'Bet on the Red color.', color: '#e82020' },
+  blue:    { label: 'BLUE',    odds: '1 : 1',    desc: 'Bet on the Blue color.', color: '#2060e8' },
+  yellow:  { label: 'YELLOW',  odds: '1 : 1',    desc: 'Bet on the Yellow color.', color: '#e8b800' },
+  green:   { label: 'GREEN',   odds: '1 : 1',    desc: 'Bet on the Green color.', color: '#20c060' },
+  white:   { label: 'WHITE',   odds: '1 : 1',    desc: 'Bet on the White color.', color: '#c0c8d0' },
+  pink:    { label: 'PINK',    odds: '1 : 1',    desc: 'Bet on the Pink color.', color: '#e020a0' },
 };
 
 let containerAvailableWidth = 0;
@@ -173,12 +203,20 @@ const containerY = 0;
 const containerHeight = canvas.height;
 
 
-const _seedValues = GAME_TYPE === 'gostop'  ? ['G', 'S']
-                  : GAME_TYPE === 'oddeven' ? ['O', 'E']
+const COLOR_GAME_KEYS = ['red', 'blue', 'yellow', 'green', 'white', 'pink'];
+
+const _seedValues = GAME_TYPE === 'gostop'    ? ['G', 'S']
+                  : GAME_TYPE === 'oddeven'   ? ['O', 'E']
+                  : GAME_TYPE === 'colorgame' ? ['R', 'B', 'Y', 'G', 'W', 'P']
                   : ['P', 'B', 'T'];
 const results = [];
 for (let i = 0; i < 30; i++) {
-  results.push({ value: _seedValues[Math.floor(Math.random() * _seedValues.length)] });
+  if (GAME_TYPE === 'colorgame') {
+    const roll = Array.from({ length: 3 }, () => COLOR_GAME_KEYS[Math.floor(Math.random() * 6)]);
+    results.push({ value: roll[0].charAt(0).toUpperCase(), dice: roll });
+  } else {
+    results.push({ value: _seedValues[Math.floor(Math.random() * _seedValues.length)] });
+  }
 }
 
 let chips = [100, 200, 500, 1000, 5000, 10000, 20000]
@@ -319,10 +357,17 @@ if (window.GAME_CONFIG && window.GAME_CONFIG.colors) {
 
 // Non-baccarat tile palettes — can be overridden via GAME_CONFIG.tileColors
 const TILE_COLORS = Object.assign({
-  go:   { fill: '#1a0808', stroke: '#ff4040', neon: '#ff7070' },
-  stop: { fill: '#080e1a', stroke: '#4080ff', neon: '#6699ff' },
-  odd:  { fill: '#120430', stroke: '#b040ff', neon: '#cc77ff' },
-  even: { fill: '#03180a', stroke: '#10c060', neon: '#30e880' },
+  go:     { fill: '#1a0808', stroke: '#ff4040', neon: '#ff7070' },
+  stop:   { fill: '#080e1a', stroke: '#4080ff', neon: '#6699ff' },
+  odd:    { fill: '#120430', stroke: '#b040ff', neon: '#cc77ff' },
+  even:   { fill: '#03180a', stroke: '#10c060', neon: '#30e880' },
+  // Color Game palette
+  red:    { fill: '#5a0a0a', stroke: '#e82020', neon: '#ff5555' },
+  blue:   { fill: '#0a1060', stroke: '#2060e8', neon: '#5599ff' },
+  yellow: { fill: '#5a4800', stroke: '#e8b800', neon: '#ffe050' },
+  green:  { fill: '#0a4020', stroke: '#20c060', neon: '#50e890' },
+  white:  { fill: '#484848', stroke: '#c0c8d0', neon: '#ffffff' },
+  pink:   { fill: '#5a0840', stroke: '#e020a0', neon: '#ff60cc' },
 }, (window.GAME_CONFIG && window.GAME_CONFIG.tileColors) || {});
 
 let revealNumber = null; // used by oddeven during result phase
@@ -484,10 +529,30 @@ const calcWinners = (p, b) => {
 
 const PAYOUTS = { player: 1, banker: 0.95, tie: 8, p_bonus: 4, p_pair: 11, b_bonus: 4, b_pair: 11 };
 
+const spawnWinChips = (betKey, winAmount) => {
+  const src = betChipPositions[betKey];
+  if (!src || !walletChipTarget.x) return;
+  const count = Math.min(6, Math.max(1, Math.round(winAmount / 500)));
+  for (let i = 0; i < count; i++) {
+    flyingChips.push({
+      x0: src.x + (Math.random() - 0.5) * src.r * 0.6,
+      y0: src.y + (Math.random() - 0.5) * src.r * 0.6,
+      r0: (src.r || chipButtonCenter.r) * 0.85,
+      x1: walletChipTarget.x, y1: walletChipTarget.y, r1: walletChipTarget.r * 0.55,
+      amount: Math.round(winAmount / count),
+      colorIndex: chipColorIndex(winAmount),
+      startTime: performance.now() + i * 90,
+      duration: 550 + Math.random() * 120,
+    });
+  }
+};
+
 const applyPayouts = (winnerList) => {
   Object.keys(bets).forEach(region => {
     if (bets[region] > 0 && winnerList.includes(region)) {
-      balance += bets[region] * (1 + PAYOUTS[region]);
+      const payout = bets[region] * (1 + PAYOUTS[region]);
+      balance += payout;
+      spawnWinChips(region, payout);
     }
   });
 };
@@ -500,8 +565,10 @@ const startNewRound = () => {
   bankerCards = [null, null, null];
   winners = [];
   revealNumber = null;
-  bets = GAME_TYPE === 'gostop'  ? { go: 0, stop: 0 }
-       : GAME_TYPE === 'oddeven' ? { odd: 0, even: 0 }
+  colorGameDice = [null, null, null];
+  bets = GAME_TYPE === 'gostop'    ? { go: 0, stop: 0 }
+       : GAME_TYPE === 'oddeven'   ? { odd: 0, even: 0 }
+       : GAME_TYPE === 'colorgame' ? { red: 0, blue: 0, yellow: 0, green: 0, white: 0, pink: 0 }
        : { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
   betHistory = [];
 };
@@ -517,7 +584,11 @@ const runSimpleDeal = () => {
       winKey = revealNumber % 2 === 1 ? 'odd' : 'even';
     }
     winners = [winKey];
-    if (bets[winKey] > 0) balance += bets[winKey] * (1 + 1);
+    if (bets[winKey] > 0) {
+      const payout = bets[winKey] * 2;
+      balance += payout;
+      spawnWinChips(winKey, payout);
+    }
     gamePhase = 'result';
     const v = GAME_TYPE === 'gostop' ? (winKey === 'go' ? 'G' : 'S') : (winKey === 'odd' ? 'O' : 'E');
     results.push({ value: v });
@@ -525,7 +596,32 @@ const runSimpleDeal = () => {
   }, 3000);
 };
 
+const runColorGameDeal = () => {
+  gamePhase = 'dealing';
+  colorGameDice = [null, null, null];
+  setTimeout(() => {
+    const roll = Array.from({ length: 3 }, () => COLOR_GAME_KEYS[Math.floor(Math.random() * 6)]);
+    colorGameDice = roll;
+    // count how many dice show each color
+    const counts = {};
+    roll.forEach(c => { counts[c] = (counts[c] || 0) + 1; });
+    winners = Object.keys(counts);
+    // payout: original stake + 1× per matching die
+    winners.forEach(key => {
+      if (bets[key] > 0) {
+        const payout = bets[key] + bets[key] * counts[key];
+        balance += payout;
+        spawnWinChips(key, payout);
+      }
+    });
+    gamePhase = 'result';
+    results.push({ value: roll[0].charAt(0).toUpperCase(), dice: roll });
+    setTimeout(startNewRound, 5500);
+  }, 3000);
+};
+
 const runDeal = () => {
+  if (GAME_TYPE === 'colorgame') return runColorGameDeal();
   if (GAME_TYPE !== 'baccarat') return runSimpleDeal();
   gamePhase = 'dealing';
   const { p, b } = dealBaccaratHands();
@@ -721,7 +817,7 @@ const drawUI = () => {
   const GEOMETRY = computeGeometry();
   lastGEOMETRY = GEOMETRY;
 
-  drawVideo(GEOMETRY);
+  if (isVideoOn) drawVideo(GEOMETRY);
   const uiShadow = ctx.createLinearGradient(0, GEOMETRY.uiY, 0, GEOMETRY.uiY + GEOMETRY.uiH);
   uiShadow.addColorStop(0, 'rgba(10, 8, 28, 0)');
   uiShadow.addColorStop(0.5, 'rgba(10, 8, 28, 0.85)');
@@ -733,13 +829,15 @@ const drawUI = () => {
   drawbetOptions(GEOMETRY);
   drawStatistics(GEOMETRY);
   drawMenuBar(GEOMETRY);
+  // colorgame dice live view is rendered inside drawStatistics (gE panel)
 
 }
 
 // ── Dispatcher: routes to game-specific bet option renderer ─────────────────
 const drawbetOptions = (GEOMETRY) => {
-  if (GAME_TYPE === 'gostop')  return drawBetOptionsSimple(GEOMETRY, 'go',  'stop', 'GO',   'STOP');
-  if (GAME_TYPE === 'oddeven') return drawBetOptionsSimple(GEOMETRY, 'odd', 'even', 'ODD',  'EVEN', true);
+  if (GAME_TYPE === 'gostop')    return drawBetOptionsSimple(GEOMETRY, 'go',  'stop', 'GO',   'STOP');
+  if (GAME_TYPE === 'oddeven')   return drawBetOptionsSimple(GEOMETRY, 'odd', 'even', 'ODD',  'EVEN', true);
+  if (GAME_TYPE === 'colorgame') return drawBetOptionsColorGame(GEOMETRY);
   return drawBetOptionsBaccarat(GEOMETRY);
 };
 
@@ -1302,10 +1400,11 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // ── exact same geometry constants as baccarat ──
-  const arcRadius    = Math.min(GEOMETRY['betOptions'].W * 0.2, GEOMETRY['betOptions'].H * 0.5);
+  // ── smaller arc for simple games (no side-bet row needs the space) ──
+  const arcRadius    = Math.min(GEOMETRY['betOptions'].W * 0.2, GEOMETRY['betOptions'].H * 0.5) * 0.65;
   const angle        = Math.PI / 90;
   const betOptionsGap = 7 * scale;
+  const centerGap     = betOptionsGap;
   const borderRadius = GEOMETRY['betOptions'].H * 0.15;
   const borderWidth  = 2.5 * scale;
   const hRef         = GEOMETRY['betOptions'].H / scale;
@@ -1329,23 +1428,38 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
+  // ── Tile geometry — tiles fill full height; circle centred vertically ──
+  const tileCY = bO.Y + bO.H * 0.5;
+  const tileLH = bO.H - 2 * betOptionsGap; // full panel height
+
+  // betOptionsGap between circle edge and tile arc boundary on every side
+  const center = { CX: bO.X + bO.W * 0.5, CY: tileCY, R: arcRadius - betOptionsGap };
+  // Compute arc end angles so each arc lands exactly above its inner edge → lineTo is vertical
+  const halfGap   = centerGap * 0.5;
+  const safeRatio = arcRadius > 0 ? Math.min(halfGap / arcRadius, 1) : 0;
+  const tAEnd     = Math.acos(-safeRatio); // slightly past π/2 → ends at (center − halfGap, …)
+  const tBEnd     = Math.acos( safeRatio); // slightly before π/2 → ends at (center + halfGap, …)
+
   // ── Tile A geometry (mirrors PLAYER) ──
+  // Inner gap = betOptionsGap * 0.5 per side so total centre gap = betOptionsGap (same as outer gaps)
   const tA = {
     X: bO.X + betOptionsGap,
     Y: bO.Y + betOptionsGap,
-    TW: bO.W * 0.5 - betOptionsGap * 2,
-    LH: (bO.H * 0.65) - betOptionsGap,
+    TW: bO.W * 0.5 - betOptionsGap - centerGap * 0.5,
+    LH: tileLH,
     CX: bO.X + bO.W * 0.5,
-    CY: bO.Y + bO.H * 0.65,
+    CY: tileCY,
     R: arcRadius,
   };
-  const tAStart = Math.atan2(tA.Y - tA.CY, (tA.X + tA.TW) - tA.CX + betOptionsGap * 0.25);
+  const tAStart = Math.atan2(tA.Y - tA.CY, (tA.X + tA.TW) - tA.CX);
   const tAArcX  = tA.CX + tA.R * Math.cos(tAStart);
   const shapeA  = new Path2D();
   shapeA.moveTo(tAArcX, tA.Y);
-  shapeA.arc(tA.CX, tA.CY, tA.R, tAStart, Math.PI, true);
-  shapeA.lineTo(tA.X, tA.Y + tA.LH);
-  shapeA.arc(tA.X + borderRadius, tA.Y + borderRadius, borderRadius, angle * 90, -angle * 45, false);
+  shapeA.arc(tA.CX, tA.CY, tA.R, tAStart, tAEnd, true);                                          // CCW: top → left → bottom
+  shapeA.lineTo(tA.X + tA.TW, bO.Y + bO.H - betOptionsGap);                                      // down to inner edge at panel floor
+  shapeA.lineTo(tA.X + borderRadius, bO.Y + bO.H - betOptionsGap);                               // left along floor
+  shapeA.arc(tA.X + borderRadius, bO.Y + bO.H - betOptionsGap - borderRadius, borderRadius, Math.PI / 2, Math.PI, false); // bottom-left corner
+  shapeA.arc(tA.X + borderRadius, tA.Y + borderRadius, borderRadius, angle * 90, -angle * 45, false);                     // top-left corner
   shapeA.closePath();
   hitRegions[keyA] = shapeA;
 
@@ -1402,21 +1516,23 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
 
   // ── Tile B geometry (mirrors BANKER) ──
   const tB = {
-    X: bO.X + bO.W * 0.5 + betOptionsGap,
+    X: bO.X + bO.W * 0.5 + centerGap * 0.5,
     Y: bO.Y + betOptionsGap,
-    TW: bO.W * 0.5 - betOptionsGap * 2,
-    LH: (bO.H * 0.65) - betOptionsGap,
+    TW: bO.W * 0.5 - betOptionsGap - centerGap * 0.5,
+    LH: tileLH,
     CX: bO.X + bO.W * 0.5,
-    CY: bO.Y + bO.H * 0.65,
+    CY: tileCY,
     R: arcRadius,
   };
-  const tBStart = Math.atan2(tB.Y - tB.CY, tB.X - tB.CX - betOptionsGap * 0.25);
+  const tBStart = Math.atan2(tB.Y - tB.CY, tB.X - tB.CX);
   const tBArcX  = tB.CX + tB.R * Math.cos(tBStart);
   const shapeB  = new Path2D();
   shapeB.moveTo(tBArcX, tB.Y);
-  shapeB.arc(tB.CX, tB.CY, tB.R, tBStart, 0, false);
-  shapeB.lineTo(tB.X + tB.TW, tB.Y + tB.LH);
-  shapeB.arc(tB.X + tB.TW - borderRadius, tB.Y + borderRadius, borderRadius, angle * 0, -angle * 45, true);
+  shapeB.arc(tB.CX, tB.CY, tB.R, tBStart, tBEnd, false);                                                                   // CW: top → right → bottom
+  shapeB.lineTo(tB.X, bO.Y + bO.H - betOptionsGap);                                                                        // down to inner edge at panel floor
+  shapeB.lineTo(tB.X + tB.TW - borderRadius, bO.Y + bO.H - betOptionsGap);                                                 // right along floor
+  shapeB.arc(tB.X + tB.TW - borderRadius, bO.Y + bO.H - betOptionsGap - borderRadius, borderRadius, Math.PI / 2, 0, true); // bottom-right corner
+  shapeB.arc(tB.X + tB.TW - borderRadius, tB.Y + borderRadius, borderRadius, angle * 0, -angle * 45, true);                // top-right corner
   shapeB.closePath();
   hitRegions[keyB] = shapeB;
 
@@ -1474,9 +1590,8 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
   }
 
   // ── Center TIE circle (ball for oddeven, round indicator for gostop) ──
-  const center = { CX: bO.X + bO.W * 0.5, CY: bO.Y + bO.H * 0.65, R: arcRadius - betOptionsGap };
   const centerShape = new Path2D();
-  centerShape.arc(center.CX, center.CY, center.R, angle * 90, angle * 0, false);
+  centerShape.arc(center.CX, center.CY, center.R, 0, Math.PI * 2); // full circle
   centerShape.closePath();
 
   if (showBall) {
@@ -1493,15 +1608,16 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
     ctx.stroke(centerShape);
     ctx.restore();
     if (hasNum) {
-      const numFs = clamp(14*scale, center.R * 0.68, 30*scale);
+      // Ball number in upper portion, ODD/EVEN label below
+      const numFs = clamp(12*scale, center.R * 0.60, 28*scale);
       ctx.font = `900 ${numFs}px Interroman, Arial`; ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.shadowColor = bc ? bc.neon : '#fff'; ctx.shadowBlur = 10*scale;
-      ctx.fillText(String(revealNumber), center.CX, center.CY - numFs * 0.14);
+      ctx.fillText(String(revealNumber), center.CX, center.CY - center.R * 0.18);
       ctx.shadowBlur = 0;
       ctx.font = `400 ${clamp(7*scale, center.R * 0.26, 11*scale)}px Interroman, Arial`;
       ctx.fillStyle = bc ? bc.neon : 'rgba(255,255,255,0.55)';
-      ctx.fillText(winKey ? winKey.toUpperCase() : '', center.CX, center.CY + numFs * 0.54);
+      ctx.fillText(winKey ? winKey.toUpperCase() : '', center.CX, center.CY + center.R * 0.42);
     } else {
       const t = performance.now() * 0.0014;
       for (let d = 0; d < 3; d++) {
@@ -1527,34 +1643,147 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
     ctx.restore();
   }
 
-  // ── Score / WIN display on result (same position as baccarat) ──
-  if (gamePhase === 'result') {
-    const scoreFs = clamp(24, hRef * 0.40, 58) * scale;
-    const glow    = (Math.sin(performance.now() * 0.0032) + 1) * 0.5;
+  // ── Result overlay — enhanced ──────────────────────────────────────────────
+  if (gamePhase === 'result' && winners.length > 0) {
+    const t      = performance.now();
+    const glow   = (Math.sin(t * 0.003) + 1) * 0.5;
+    const wKey   = winners[0];
+    const isWinA = wKey === keyA;
+    const winTile  = isWinA ? tA : tB;
+    const winShape = isWinA ? shapeA : shapeB;
+    const loseShp  = isWinA ? shapeB : shapeA;
+    const winColor = isWinA ? colorA : colorB;
+    const winLbl   = isWinA ? labelA : labelB;
+    const profit   = bets[wKey];
+
+    // Always anchor WIN/payout on the winning tile
+    const wCX = isWinA ? tA.X + tA.TW * 0.5 - tA.R * 0.5 : tB.X + tB.TW * 0.5 + tB.R * 0.5;
+    const wCY = winTile.Y + winTile.LH * 0.40;
+    const textCX   = wCX;
+    const winFs    = clamp(18*scale, winTile.LH * 0.26, 50*scale);
+    const subFs    = clamp(8*scale,  winTile.LH * 0.09, 14*scale);
+    const winTextY = wCY - winFs * 0.56;
+    const payoutY  = wCY + subFs * 0.55;
+
+    // Helper: hex color → rgb string
+    const hr = (h) => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+
+    // 1 ─ Dim the losing tile
     ctx.save();
-    ctx.font = `900 ${scoreFs}px Interroman, Arial`;
-    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'top';
-    if (winA) {
-      ctx.shadowColor = colorA.neon; ctx.shadowBlur = (10 + glow * 18)*scale;
-      ctx.textAlign = 'end';
-      ctx.fillText('WIN', tA.X + tA.TW - betOptionsGap, tA.Y + betOptionsGap * 0.5);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fill(loseShp);
+    ctx.globalAlpha = 0.12;
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = scale;
+    const lTile = isWinA ? tB : tA;
+    for (let d = -lTile.TW; d < lTile.TW + lTile.LH; d += 14*scale) {
+      ctx.save(); ctx.clip(loseShp);
+      ctx.beginPath();
+      ctx.moveTo(lTile.X + d, lTile.Y);
+      ctx.lineTo(lTile.X + d + lTile.LH, lTile.Y + lTile.LH);
+      ctx.stroke();
+      ctx.restore();
     }
-    if (winB) {
-      ctx.shadowColor = colorB.neon; ctx.shadowBlur = (10 + glow * 18)*scale;
-      ctx.textAlign = 'start';
-      ctx.fillText('WIN', tB.X + betOptionsGap, tB.Y + betOptionsGap * 0.5);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    // 2 ─ Radial glow — on winning tile
+    ctx.save();
+    const rg = ctx.createRadialGradient(wCX, wCY, 0, wCX, wCY, winTile.TW * 0.78);
+    rg.addColorStop(0,   `rgba(${hr(winColor.neon)},0.28)`);
+    rg.addColorStop(0.5, `rgba(${hr(winColor.stroke)},0.10)`);
+    rg.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = rg; ctx.fill(winShape);
+    ctx.restore();
+
+    // 3 ─ Orbiting sparkles — orbit winning tile
+    ctx.save();
+    const orCX = wCX;
+    const orCY = wCY;
+    const orR  = winTile.TW * 0.28;
+    const orRy = orR * 0.52;
+    for (let p = 0; p < 6; p++) {
+      const a  = t * 0.0018 + (p / 6) * Math.PI * 2;
+      const sx = orCX + Math.cos(a) * orR;
+      const sy = orCY + Math.sin(a) * orRy;
+      const sr = clamp(1.5*scale, (2.8 + Math.sin(a * 2 + t * 0.004) * 1.4)*scale, 5*scale);
+      ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${(0.48 + 0.48 * Math.sin(a + t * 0.003)).toFixed(2)})`;
+      ctx.shadowColor = winColor.neon; ctx.shadowBlur = 9*scale;
+      ctx.fill();
     }
+    ctx.shadowBlur = 0; ctx.restore();
+
+    // 4 ─ WIN text
+    ctx.save();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `900 ${winFs}px Interroman, Arial`;
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = winColor.neon; ctx.shadowBlur = (14 + glow * 22)*scale;
+    ctx.fillText('WIN', textCX, winTextY);
+    ctx.shadowBlur = 0;
+
+    // 5 ─ Payout (gold, profit only)
+    if (profit > 0) {
+      ctx.font = `700 ${subFs * 1.3}px Interroman, Arial`;
+      ctx.fillStyle = '#fcd34d';
+      ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 10*scale;
+      ctx.fillText(`+${fmtCurrency(profit)}`, textCX, payoutY);
+      ctx.shadowBlur = 0;
+    }
+
+    // 6 ─ Outcome label pill — skipped for odd/even (ODD/EVEN already in arc)
+    if (!showBall) {
+      const plFs = clamp(7*scale, winTile.LH * 0.07, 11*scale);
+      ctx.font = `700 ${plFs}px Interroman, Arial`;
+      const plW = ctx.measureText(winLbl).width + 16*scale;
+      const plH = plFs * 2.1;
+      const plX = wCX - plW * 0.5;
+      const plY = wCY + winFs * 0.56 + (profit > 0 ? subFs * 2.1 : subFs * 0.8);
+      ctx.beginPath(); ctx.roundRect(plX, plY, plW, plH, plH * 0.5);
+      ctx.fillStyle = winColor.fill; ctx.fill();
+      ctx.strokeStyle = winColor.stroke; ctx.lineWidth = scale; ctx.stroke();
+      ctx.fillStyle = winColor.neon; ctx.textBaseline = 'middle';
+      ctx.fillText(winLbl, wCX, plY + plH * 0.5);
+    }
+
     ctx.restore();
   }
 
-  // ── Disabled overlay during dealing (same as baccarat) ──
-  const noCardsYet = true;
-  if (gamePhase === 'dealing' && noCardsYet) {
+  // ── Dealing overlay — animated spinner ──────────────────────────────────────
+  if (gamePhase === 'dealing') {
+    const t = performance.now();
     ctx.save();
     ctx.beginPath(); ctx.roundRect(bO.X, bO.Y, bO.W, bO.H, borderRadius * 1.1);
-    ctx.fillStyle = 'rgba(10,10,20,0.58)'; ctx.fill();
-    ctx.beginPath(); ctx.roundRect(bO.X, bO.Y, bO.W, bO.H, borderRadius * 1.1);
-    ctx.fillStyle = 'rgba(80,80,100,0.18)'; ctx.fill();
+    ctx.fillStyle = 'rgba(6,7,20,0.68)'; ctx.fill();
+    ctx.restore();
+
+    // Spinner ring
+    const sR  = clamp(12*scale, bO.H * 0.075, 20*scale);
+    const sCX = bO.X + bO.W * 0.5;
+    const sCY = bO.Y + bO.H * 0.5;
+    const arc = (t * 0.0028) % (Math.PI * 2);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(sCX, sCY, sR, arc, arc + Math.PI * 1.25);
+    ctx.strokeStyle = colorA.stroke;
+    ctx.lineWidth = sR * 0.20; ctx.lineCap = 'round'; ctx.stroke();
+    // Trailing arc (faint)
+    ctx.globalAlpha = 0.22;
+    ctx.beginPath();
+    ctx.arc(sCX, sCY, sR, arc + Math.PI * 1.25, arc + Math.PI * 2);
+    ctx.strokeStyle = colorA.stroke; ctx.lineWidth = sR * 0.14; ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.restore();  
+
+    // Animated label
+    const dealFs = clamp(8*scale, bO.H * 0.058, 11*scale);
+    const dotCnt = 1 + Math.floor((t / 480) % 3);
+    const dtxt   = (showBall ? 'DRAWING' : 'DEALING') + '.'.repeat(dotCnt);
+    ctx.save();
+    ctx.font = `600 ${dealFs}px Interroman, Arial`;
+    ctx.fillStyle = 'rgba(255,255,255,0.60)';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(dtxt, sCX, sCY + sR * 1.90);
     ctx.restore();
   }
 
@@ -1584,6 +1813,388 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
     ctx.fillStyle = txColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillText(statusText, dotX + dotR + 4*scale, dotY);
     ctx.restore();
+  }
+};
+
+// ── Color Game — 3 dice cubes display ────────────────────────────────────────
+const _drawColorGameDice = (x, y, w, h) => {
+  const gap = 6 * scale;
+  const diceSize = Math.min(h, (w - gap * 4) / 3);
+  const totalW = diceSize * 3 + gap * 2;
+  const startX = x + (w - totalW) / 2;
+  const startY = y + (h - diceSize) / 2;
+  const dR = diceSize * 0.16;
+  const t = performance.now();
+  const isDealing = gamePhase === 'dealing';
+
+  for (let i = 0; i < 3; i++) {
+    const dx = startX + i * (diceSize + gap);
+    const dy = startY;
+    const cx = dx + diceSize / 2;
+    const cy = dy + diceSize / 2;
+
+    let colorKey;
+    if (isDealing) {
+      // Each die independently cycles through colors at different speeds
+      const phase = (t * 0.010 + i * 1.7) % COLOR_GAME_KEYS.length;
+      colorKey = COLOR_GAME_KEYS[Math.floor(phase)];
+    } else {
+      colorKey = colorGameDice[i];
+    }
+
+    const color = colorKey ? TILE_COLORS[colorKey] : null;
+
+    // ── Die face ──
+    ctx.save();
+    if (color && !isDealing) {
+      ctx.shadowColor = color.neon;
+      ctx.shadowBlur  = 18 * scale;
+    }
+    ctx.beginPath();
+    ctx.roundRect(dx, dy, diceSize, diceSize, dR);
+    if (color) {
+      const fg = ctx.createLinearGradient(dx, dy, dx + diceSize, dy + diceSize);
+      fg.addColorStop(0, colorKey === 'white' ? '#c8d0d8' : color.stroke);
+      fg.addColorStop(1, color.fill);
+      ctx.fillStyle = fg;
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    }
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = color ? color.stroke : 'rgba(255,255,255,0.16)';
+    ctx.lineWidth   = 2 * scale;
+    ctx.stroke();
+
+    // Diagonal bevel: bright top-left → dark bottom-right
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(dx, dy, diceSize, diceSize, dR);
+    ctx.clip();
+    const bv = ctx.createLinearGradient(dx, dy, dx + diceSize, dy + diceSize);
+    bv.addColorStop(0,   'rgba(255,255,255,0.22)');
+    bv.addColorStop(0.5, 'rgba(255,255,255,0)');
+    bv.addColorStop(1,   'rgba(0,0,0,0.22)');
+    ctx.fillStyle = bv;
+    ctx.fillRect(dx, dy, diceSize, diceSize);
+    ctx.restore();
+
+    ctx.restore();
+
+    // ── Color label ──
+    if (colorKey) {
+      const fs = clamp(8 * scale, diceSize * 0.22, 18 * scale);
+      ctx.save();
+      ctx.font = `700 ${fs}px Interroman, Arial`;
+      ctx.fillStyle    = colorKey === 'white' ? '#1a1a2e' : '#ffffff';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      if (!isDealing && color) { ctx.shadowColor = color.neon; ctx.shadowBlur = 8 * scale; }
+      ctx.fillText(colorKey.toUpperCase(), cx, cy);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    } else {
+      ctx.font          = `300 ${diceSize * 0.36}px Interroman, Arial`;
+      ctx.fillStyle     = 'rgba(255,255,255,0.18)';
+      ctx.textAlign     = 'center';
+      ctx.textBaseline  = 'middle';
+      ctx.fillText('?', cx, cy);
+    }
+
+    // Die index label
+    ctx.font          = `400 ${clamp(7 * scale, diceSize * 0.16, 11 * scale)}px Interroman, Arial`;
+    ctx.fillStyle     = 'rgba(255,255,255,0.28)';
+    ctx.textAlign     = 'center';
+    ctx.textBaseline  = 'top';
+    ctx.fillText(`DIE ${i + 1}`, cx, dy + diceSize + 3 * scale);
+  }
+};
+
+// ── Color Game — 6-tile bet options + dice strip ──────────────────────────────
+const drawBetOptionsColorGame = (GEOMETRY) => {
+  const bO = GEOMETRY['betOptions'];
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+
+  const gap          = 8 * scale;
+  const bettingOpen  = gamePhase === 'betting';
+  const tileR        = bO.H * 0.06;
+  const borderWidth  = 2 * scale;
+  const hRef         = bO.H / scale;
+
+  // ── Layout — tiles fill the full bet options height (dice shown in popup) ──
+  const tileAreaY  = bO.Y;
+  const tileAreaH  = bO.H;
+  const COLS = 3, ROWS = 2;
+  const tileW = (bO.W - gap * (COLS + 1)) / COLS;
+  const tileH = (tileAreaH - gap * (ROWS + 1)) / ROWS;
+  const chipR = Math.min(tileW, tileH) * 0.13;
+
+  // Screen-tint on any winning color
+  if (gamePhase === 'result' && winners.length > 0) {
+    const glow  = (Math.sin(performance.now() * 0.0032) + 1) * 0.5;
+    const alpha = 0.04 + glow * 0.12;
+    const c     = TILE_COLORS[winners[0]];
+    const rgb   = c.neon.slice(1).match(/../g).map(h => parseInt(h, 16)).join(',');
+    ctx.fillStyle = `rgba(${rgb},${alpha})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // ── 6 color tiles ──
+  COLOR_GAME_KEYS.forEach((key, i) => {
+    const col = i % COLS;
+    const row = Math.floor(i / COLS);
+    const tx  = bO.X + gap + col * (tileW + gap);
+    const ty  = tileAreaY + gap + row * (tileH + gap);
+    const cx  = tx + tileW / 2;
+    const cy  = ty + tileH / 2;
+
+    const color    = TILE_COLORS[key];
+    const isWin    = gamePhase === 'result' && winners.includes(key);
+    const blink    = isWin && Math.sin(performance.now() * 0.006) > 0;
+    const hasBet   = bets[key] > 0;
+    const matchCnt = colorGameDice.filter(d => d === key).length;
+
+    // Border radius only on the 4 panel outer corners; inner edges are flush
+    const rTL = (row === 0       && col === 0)       ? tileR : 0;
+    const rTR = (row === 0       && col === COLS - 1) ? tileR : 0;
+    const rBR = (row === ROWS - 1 && col === COLS - 1) ? tileR : 0;
+    const rBL = (row === ROWS - 1 && col === 0)       ? tileR : 0;
+    const shape = new Path2D();
+    shape.roundRect(tx, ty, tileW, tileH, [rTL, rTR, rBR, rBL]);
+    hitRegions[key] = shape;
+
+    // ── Tile background ──
+    ctx.save();
+    ctx.shadowColor = color.stroke;
+    ctx.shadowBlur  = isWin ? (blink ? 55 * scale : 10 * scale) : hasBet ? 18 * scale : 0;
+    ctx.strokeStyle = blink ? '#ffffff' : color.stroke;
+    ctx.lineWidth   = (hasBet || isWin) ? borderWidth * 2 : borderWidth;
+    ctx.stroke(shape);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle  = color.fill;
+    ctx.fill(shape);
+    // Gradient sheen
+    const tg = ctx.createLinearGradient(tx, ty, tx, ty + tileH);
+    tg.addColorStop(0, 'rgba(255,255,255,0.09)');
+    tg.addColorStop(1, 'rgba(0,0,0,0.18)');
+    ctx.fillStyle = tg; ctx.fill(shape);
+    if (blink) { ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill(shape); }
+    if (bettingOpen && pressedRegion === key) { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(shape); }
+
+    // Dim + hatch losing tiles during result
+    if (gamePhase === 'result' && !isWin) {
+      ctx.fillStyle = 'rgba(0,0,0,0.58)'; ctx.fill(shape);
+      ctx.save();
+      ctx.globalAlpha = 0.10; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = scale;
+      for (let d = -tileW; d < tileW + tileH; d += 12 * scale) {
+        ctx.save(); ctx.clip(shape);
+        ctx.beginPath();
+        ctx.moveTo(tx + d, ty); ctx.lineTo(tx + d + tileH, ty + tileH);
+        ctx.stroke(); ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    // Dealing dim
+    if (gamePhase === 'dealing') {
+      ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fill(shape);
+    }
+    ctx.restore();
+
+    // ── Labels — only during betting/dealing ──
+    if (gamePhase !== 'result') {
+      const nameFs = clamp(9 * scale, tileH * 0.21, 22 * scale);
+      ctx.font      = `700 ${nameFs}px Interroman, Arial`;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(key.toUpperCase(), cx, ty + tileH * 0.30);
+
+      ctx.font      = `300 ${nameFs * 0.62}px Interroman, Arial`;
+      ctx.fillStyle = 'rgba(255,255,255,0.50)';
+      ctx.fillText('1 : 1', cx, ty + tileH * 0.50);
+
+      if (gamePhase === 'betting') {
+        drawBetChip(cx, ty + tileH * 0.76, chipR, bets[key]);
+      }
+    }
+    betChipPositions[key] = { x: cx, y: ty + tileH * 0.76, r: chipR };
+
+    // ── WIN result overlay on each winning tile ──
+    if (isWin) {
+      const t    = performance.now();
+      const glow = (Math.sin(t * 0.003) + 1) * 0.5;
+      const profit = bets[key] * matchCnt;
+
+      // Radial glow fill
+      ctx.save();
+      const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, tileW * 0.70);
+      rg.addColorStop(0, 'rgba(255,255,255,0.22)');
+      rg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = rg; ctx.fill(shape);
+
+      // Orbiting sparkles
+      for (let p = 0; p < 5; p++) {
+        const a  = t * 0.0020 + (p / 5) * Math.PI * 2;
+        const sx = cx + Math.cos(a) * tileW * 0.34;
+        const sy = cy + Math.sin(a) * tileH * 0.28;
+        const sr = clamp(1.5 * scale, (2.5 + Math.sin(a * 2 + t * 0.004) * 1.2) * scale, 4.5 * scale);
+        ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+        ctx.fillStyle  = `rgba(255,255,255,${(0.45 + 0.45 * Math.sin(a + t * 0.003)).toFixed(2)})`;
+        ctx.shadowColor = color.neon; ctx.shadowBlur = 8 * scale;
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+
+      // WIN text
+      const winFs = clamp(13 * scale, tileH * 0.24, 40 * scale);
+      ctx.font      = `900 ${winFs}px Interroman, Arial`;
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = color.neon; ctx.shadowBlur = (12 + glow * 20) * scale;
+      ctx.fillText('WIN', cx, ty + tileH * (profit > 0 ? 0.24 : 0.35));
+      ctx.shadowBlur = 0;
+
+      // Multiplier badge (×2, ×3 — shown only when more than 1 die matched)
+      if (matchCnt > 1) {
+        const mFs = clamp(8 * scale, tileH * 0.16, 22 * scale);
+        ctx.font      = `700 ${mFs}px Interroman, Arial`;
+        ctx.fillStyle = color.neon;
+        ctx.fillText(`×${matchCnt}`, cx, ty + tileH * 0.46);
+      }
+
+      // Payout
+      if (profit > 0) {
+        const payFs = clamp(8 * scale, tileH * 0.14, 18 * scale);
+        ctx.font      = `700 ${payFs}px Interroman, Arial`;
+        ctx.fillStyle = '#fcd34d';
+        ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 8 * scale;
+        ctx.fillText(`+${fmtCurrency(profit)}`, cx, ty + tileH * (matchCnt > 1 ? 0.66 : 0.58));
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.restore();
+    }
+  });
+
+  // ── Betting-open status badge ──
+  { const statusFs = clamp(8, hRef * 0.055, 10) * scale;
+    ctx.font = `700 ${statusFs}px Interroman, Arial`;
+    const statusText = bettingOpen ? 'BETTING OPEN' : 'BETTING CLOSED';
+    const dotColor   = bettingOpen ? '#4ade80'  : '#f87171';
+    const bgColor    = bettingOpen ? 'rgba(74,222,128,0.12)'  : 'rgba(248,113,113,0.10)';
+    const bdColor    = bettingOpen ? 'rgba(74,222,128,0.40)'  : 'rgba(248,113,113,0.28)';
+    const txColor    = bettingOpen ? '#bbf7d0' : '#fecaca';
+    const dotR = statusFs * 0.24, pad = 8 * scale;
+    const pillH = statusFs * 1.8;
+    const pillW = ctx.measureText(statusText).width + dotR * 2 + pad * 2.5 + 4 * scale;
+    const pillX = bO.X + bO.W * 0.5 - pillW * 0.5;
+    const pillY = bO.Y + gap * 0.5; // top-centre float, above tile content
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
+    ctx.fillStyle = bgColor; ctx.fill();
+    ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
+    ctx.strokeStyle = bdColor; ctx.lineWidth = 1 * scale; ctx.stroke();
+    const dotX = pillX + pad + dotR, dotY = pillY + pillH * 0.5;
+    ctx.beginPath(); ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+    ctx.fillStyle = dotColor;
+    if (bettingOpen) { ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 4 * scale; }
+    ctx.fill(); ctx.shadowBlur = 0;
+    ctx.fillStyle = txColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(statusText, dotX + dotR + 4 * scale, dotY);
+    ctx.restore();
+  }
+};
+
+// ── Color Game — dice result popup (drawn on top of everything) ──────────────
+const _drawColorGameResultPopup = (GEOMETRY) => {
+  if (gamePhase !== 'dealing' && gamePhase !== 'result') return;
+
+  const vid  = GEOMETRY['video'];
+  const t    = performance.now();
+  const isDealing = gamePhase === 'dealing';
+  const gap  = 10 * scale;
+
+  // ── Scrim over video area ──
+  ctx.fillStyle = 'rgba(6,7,20,0.62)';
+  ctx.fillRect(vid.X, vid.Y, vid.W, vid.H);
+
+  // ── Popup geometry ──
+  const popW    = Math.min(containerWidth * 0.84, 400 * scale);
+  const diceH   = clamp(52 * scale, popW * 0.20, 96 * scale);
+  const labelH  = clamp(11 * scale, diceH * 0.20, 16 * scale);
+  const titleH  = gap * 2.6;
+  const popH    = gap + titleH + gap * 0.8 + diceH + labelH + gap * 1.5;
+  const popX    = vid.X + vid.W * 0.5 - popW * 0.5;
+  const popY    = vid.Y + vid.H * 0.5 - popH * 0.5;
+  const popR    = 10 * scale;
+
+  // ── Glass panel background ──
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(popX, popY, popW, popH, popR);
+  ctx.fillStyle = 'rgba(8,8,22,0.88)'; ctx.fill();
+  const shimmer = ctx.createLinearGradient(popX, popY, popX, popY + popH * 0.4);
+  shimmer.addColorStop(0, 'rgba(255,255,255,0.07)');
+  shimmer.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.beginPath(); ctx.roundRect(popX, popY, popW, popH, popR);
+  ctx.fillStyle = shimmer; ctx.fill();
+  ctx.beginPath(); ctx.roundRect(popX, popY, popW, popH, popR);
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = scale; ctx.stroke();
+  ctx.restore();
+
+  // ── Title row ──
+  const dotCnt   = 1 + Math.floor((t / 460) % 3);
+  const titleTxt = isDealing ? `ROLLING${'.'.repeat(dotCnt)}` : 'RESULT';
+  const titleFs  = clamp(10 * scale, titleH * 0.56, 16 * scale);
+  ctx.save();
+  ctx.font      = `700 ${titleFs}px Interroman, Arial`;
+  ctx.fillStyle = isDealing ? 'rgba(255,255,255,0.65)' : '#ffffff';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (!isDealing) { ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 8 * scale; }
+  ctx.fillText(titleTxt, popX + popW * 0.5, popY + gap + titleH * 0.5);
+  ctx.shadowBlur = 0;
+
+  // Thin divider
+  ctx.beginPath();
+  ctx.moveTo(popX + gap * 2, popY + gap + titleH + gap * 0.5);
+  ctx.lineTo(popX + popW - gap * 2, popY + gap + titleH + gap * 0.5);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = scale; ctx.stroke();
+  ctx.restore();
+
+  // ── 3 dice ──
+  const diceAreaY = popY + gap + titleH + gap;
+  _drawColorGameDice(popX + gap, diceAreaY, popW - gap * 2, diceH + labelH);
+
+  // ── Result footer: winning color pills ──
+  if (!isDealing && winners.length > 0) {
+    const winCounts = {};
+    colorGameDice.forEach(c => { if (c) winCounts[c] = (winCounts[c] || 0) + 1; });
+    const pillFs   = clamp(8 * scale, titleFs * 0.75, 12 * scale);
+    const pillH2   = pillFs * 1.8;
+    const pillGap  = 6 * scale;
+    ctx.font = `700 ${pillFs}px Interroman, Arial`;
+    // Measure total width to centre the row
+    const items = Object.entries(winCounts).map(([k, cnt]) => ({
+      key: k, cnt,
+      lbl: cnt > 1 ? `${k.toUpperCase()} ×${cnt}` : k.toUpperCase(),
+    }));
+    const widths  = items.map(it => ctx.measureText(it.lbl).width + pillFs * 1.2);
+    const totalW  = widths.reduce((a, b) => a + b, 0) + pillGap * (items.length - 1);
+    let px = popX + popW * 0.5 - totalW * 0.5;
+    const py = diceAreaY + diceH + labelH + gap * 0.4;
+    items.forEach((it, idx) => {
+      const c  = TILE_COLORS[it.key];
+      const pw = widths[idx];
+      ctx.save();
+      ctx.beginPath(); ctx.roundRect(px, py, pw, pillH2, pillH2 * 0.5);
+      ctx.fillStyle = c.fill; ctx.fill();
+      ctx.strokeStyle = c.stroke; ctx.lineWidth = scale; ctx.stroke();
+      ctx.fillStyle   = c.neon;
+      ctx.textAlign   = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = c.neon; ctx.shadowBlur = 6 * scale;
+      ctx.fillText(it.lbl, px + pw * 0.5, py + pillH2 * 0.5);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+      px += pw + pillGap;
+    });
   }
 };
 
@@ -1638,6 +2249,13 @@ const drawStatistics = (GEOMETRY) => {
   const pCount    = results.filter(r => r.value === 'P').length;
   const bCount    = results.filter(r => r.value === 'B').length;
   const tCount    = results.filter(r => r.value === 'T').length;
+  // colorgame: count each color across all dice faces
+  const cgCounts  = GAME_TYPE === 'colorgame'
+    ? COLOR_GAME_KEYS.reduce((acc, k) => {
+        acc[k] = results.reduce((n, r) => n + (r.dice || []).filter(d => d === k).length, 0);
+        return acc;
+      }, {})
+    : {};
 
   const stats = GAME_TYPE === 'gostop' ? {
     gameNo:         { bg: null,                hasIcon: false, value: results.length },
@@ -1651,6 +2269,14 @@ const drawStatistics = (GEOMETRY) => {
     evenTotal:      { bg: TILE_COLORS.even.stroke, hasIcon: true,  value: evenCount, label: 'E' },
     oddPrediction:  { bg: TILE_COLORS.odd.stroke,  isPred: true,   predKey: 'odd'  },
     evenPrediction: { bg: TILE_COLORS.even.stroke, isPred: true,   predKey: 'even' },
+  } : GAME_TYPE === 'colorgame' ? {
+    gameNo:      { bg: null,                      hasIcon: false, value: results.length },
+    redCount:    { bg: TILE_COLORS.red.stroke,    hasIcon: true,  value: cgCounts.red,    label: 'R' },
+    blueCount:   { bg: TILE_COLORS.blue.stroke,   hasIcon: true,  value: cgCounts.blue,   label: 'B' },
+    yellowCount: { bg: TILE_COLORS.yellow.stroke, hasIcon: true,  value: cgCounts.yellow, label: 'Y' },
+    greenCount:  { bg: TILE_COLORS.green.stroke,  hasIcon: true,  value: cgCounts.green,  label: 'G' },
+    whiteCount:  { bg: TILE_COLORS.white.stroke,  hasIcon: true,  value: cgCounts.white,  label: 'W' },
+    pinkCount:   { bg: TILE_COLORS.pink.stroke,   hasIcon: true,  value: cgCounts.pink,   label: 'P' },
   } : {
     gameNo: { bg: null, hasIcon: false, value: 42 },
     playerTotal: { bg: COLORS.PLAYERBLUE, hasIcon: true, value: pCount,  label: 'P' },
@@ -1664,22 +2290,34 @@ const drawStatistics = (GEOMETRY) => {
   const cols = Object.keys(stats).length;
 
 
-  // Slot-based layout: divide summary.W into equal slots so items always fit
-  const slotW = summary.W / cols;
-  // Icon/text sizes are fixed to container height — not stretched by slot width
-  const icoR  = clamp(5 * scale, summary.H * 0.26, 10 * scale);
-  const fontSz = clamp(7 * scale, icoR * 0.82, 10 * scale);
-  const gap   = icoR * 0.65;   // space between icon and value text
+  // ── Summary bar: two-tier layout (badge row + value row) ──
+  const slotW  = summary.W / cols;
+  const icoR   = clamp(4 * scale, summary.H * 0.20, 8 * scale);
+  const valFs  = clamp(8 * scale, summary.H * 0.30, 13 * scale);
+  const lblFs  = clamp(5 * scale, summary.H * 0.18, 9  * scale);
+  const badgeY = summary.Y + summary.H * 0.34;   // center of badge row
+  const valY   = summary.Y + summary.H * 0.72;   // center of value row
+  const pctY   = summary.Y + summary.H * 0.90;   // sub-label (% or ratio)
+
+  // Total non-tie results for percentage calculation
+  const totalForPct = results.filter(r => r.value !== 'T').length || 1;
+  const cgTotalDice = GAME_TYPE === 'colorgame'
+    ? (results.reduce((n, r) => n + (r.dice ? r.dice.length : 0), 0) || 1)
+    : 1;
 
   ctx.save();
   ctx.beginPath();
   ctx.rect(summary.X, summary.Y, summary.W, summary.H);
   ctx.clip();
+
+  // Background gradient
   const sumGrad = ctx.createLinearGradient(summary.X, summary.Y, summary.X, summary.Y + summary.H);
-  sumGrad.addColorStop(0, 'rgba(255, 255, 255, 0.07)');
-  sumGrad.addColorStop(1, 'rgba(255, 255, 255, 0.02)');
+  sumGrad.addColorStop(0, 'rgba(255,255,255,0.09)');
+  sumGrad.addColorStop(1, 'rgba(255,255,255,0.02)');
   ctx.fillStyle = sumGrad;
   ctx.fillRect(summary.X, summary.Y, summary.W, summary.H);
+
+  // Bottom border
   ctx.beginPath();
   ctx.moveTo(summary.X, summary.Y + summary.H);
   ctx.lineTo(summary.X + summary.W, summary.Y + summary.H);
@@ -1689,62 +2327,85 @@ const drawStatistics = (GEOMETRY) => {
 
   let slotIndex = 0;
   for (const [key, obj] of Object.entries(stats)) {
-    // Center each item group within its slot
     const slotMidX = summary.X + slotIndex * slotW + slotW * 0.5;
-    const slotCY = summary.Y + summary.H * 0.5;
+
+    // Vertical separator (skip first)
+    if (slotIndex > 0) {
+      ctx.beginPath();
+      ctx.moveTo(summary.X + slotIndex * slotW, summary.Y + summary.H * 0.15);
+      ctx.lineTo(summary.X + slotIndex * slotW, summary.Y + summary.H * 0.85);
+      ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+      ctx.lineWidth = 0.5 * scale;
+      ctx.stroke();
+    }
 
     ctx.textBaseline = 'middle';
 
     if (obj.hasIcon) {
       const lbl = obj.label || key.toUpperCase()[0];
-      ctx.font = `600 ${fontSz}px Interroman, Arial`;
-      const valW   = ctx.measureText(String(obj.value)).width;
-      const groupW = icoR * 2 + gap + valW;
-      const circleCX = slotMidX - groupW * 0.5 + icoR;
-      ctx.beginPath();
-      ctx.arc(circleCX, slotCY, icoR, 0, Math.PI * 2);
-      ctx.closePath();
-      ctx.fillStyle = obj.bg;
-      ctx.fill();
+      const pct = GAME_TYPE === 'colorgame'
+        ? Math.round((cgCounts[key.replace('Count', '')] || obj.value) / cgTotalDice * 100)
+        : Math.round(obj.value / totalForPct * 100);
+
+      // Colored pill badge
+      const pillW = icoR * 2.8, pillH = icoR * 1.7, pillR = pillH * 0.5;
+      const pillX = slotMidX - pillW * 0.5, pillY = badgeY - pillH * 0.5;
+      ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillR);
+      ctx.fillStyle = obj.bg + 'cc'; ctx.fill();
+      ctx.strokeStyle = obj.bg; ctx.lineWidth = 0.7 * scale; ctx.stroke();
+      ctx.font = `700 ${lblFs}px Interroman, Arial`;
+      ctx.fillStyle = key.includes('white') || key.includes('White') ? '#1a1a2e' : '#fff';
+      ctx.textAlign = 'center'; ctx.fillText(lbl, slotMidX, badgeY);
+
+      // Count value
+      ctx.font = `600 ${valFs}px Interroman, Arial`;
       ctx.fillStyle = '#fff';
-      ctx.textAlign = 'center';
-      ctx.fillText(lbl, circleCX, slotCY);
-      ctx.textAlign = 'start';
-      ctx.fillText(String(obj.value), circleCX + icoR + gap, slotCY);
+      ctx.textAlign = 'center'; ctx.fillText(String(obj.value), slotMidX, valY);
+
+      // Percentage sub-label
+      if (summary.H > 28 * scale) {
+        ctx.font = `400 ${lblFs * 0.88}px Interroman, Arial`;
+        ctx.fillStyle = obj.bg + 'bb';
+        ctx.fillText(`${pct}%`, slotMidX, pctY);
+      }
 
     } else if (key === 'gameNo') {
-      ctx.font = `500 ${fontSz}px Interroman, Arial`;
-      ctx.fillStyle = 'rgba(255,255,255,0.55)';
-      ctx.textAlign = 'center';
-      ctx.fillText(`#${obj.value}`, slotMidX, slotCY);
+      // "GAME" label on top row, number on value row
+      ctx.font = `400 ${lblFs}px Interroman, Arial`;
+      ctx.fillStyle = 'rgba(255,255,255,0.40)';
+      ctx.textAlign = 'center'; ctx.fillText('GAME', slotMidX, badgeY);
+      ctx.font = `700 ${valFs * 1.1}px Interroman, Arial`;
+      ctx.fillStyle = 'rgba(255,255,255,0.90)';
+      ctx.fillText(String(obj.value), slotMidX, valY);
 
     } else if (obj.isPred) {
-      const predH = clamp(12 * scale, summary.H * 0.52, 18 * scale);
-      const predW = clamp(36 * scale, slotW * 0.82, 58 * scale);
-      const predX = slotMidX - predW * 0.5;
-      const predY = slotCY - predH * 0.5;
-      const predR = predH * 0.28;
-      const dotR  = clamp(2 * scale, predH * 0.18, 4 * scale);
-      const predStroke = obj.bg;
-      const predFill   = predStroke + '55';
+      // Prediction capsule — trend dots + arrow
+      const capH = clamp(10 * scale, summary.H * 0.44, 16 * scale);
+      const capW = clamp(32 * scale, slotW * 0.78, 52 * scale);
+      const capX = slotMidX - capW * 0.5, capY = badgeY - capH * 0.5;
+      const capR = capH * 0.5;
+      const dot  = clamp(1.5 * scale, capH * 0.16, 3.2 * scale);
+      const col  = obj.bg;
+      ctx.beginPath(); ctx.roundRect(capX, capY, capW, capH, capR);
+      ctx.fillStyle = 'rgba(0,0,0,0.30)'; ctx.fill();
+      ctx.strokeStyle = col + 'aa'; ctx.lineWidth = 0.7 * scale; ctx.stroke();
 
+      // Two-dot pattern
+      ctx.beginPath(); ctx.arc(slotMidX - dot * 2.2, badgeY, dot, 0, Math.PI * 2);
+      ctx.strokeStyle = col; ctx.lineWidth = 0.6 * scale; ctx.stroke();
+      ctx.beginPath(); ctx.arc(slotMidX + dot * 0.4, badgeY, dot, 0, Math.PI * 2);
+      ctx.fillStyle = col; ctx.fill();
+      // Arrow
       ctx.beginPath();
-      ctx.roundRect(predX, predY, predW, predH, predR);
-      ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
-      ctx.strokeStyle = predStroke; ctx.lineWidth = 0.8 * scale; ctx.stroke();
+      ctx.moveTo(slotMidX + dot * 2.6, badgeY + dot * 0.8);
+      ctx.lineTo(slotMidX + dot * 4.2, badgeY - dot * 0.4);
+      ctx.strokeStyle = col; ctx.lineWidth = 0.8 * scale; ctx.lineCap = 'round'; ctx.stroke();
 
-      ctx.font = `600 ${fontSz}px Interroman, Arial`; ctx.fillStyle = '#fff';
+      // Label below
+      ctx.font = `500 ${lblFs}px Interroman, Arial`;
+      ctx.fillStyle = col + 'cc';
       ctx.textAlign = 'center';
-      ctx.fillText((obj.predKey || '?').toUpperCase().slice(0, 2), predX + predW * 0.15, slotCY);
-
-      ctx.beginPath(); ctx.arc(predX + predW * 0.38, slotCY, dotR, 0, Math.PI * 2);
-      ctx.strokeStyle = predStroke; ctx.lineWidth = 0.8 * scale; ctx.stroke();
-      ctx.beginPath(); ctx.arc(predX + predW * 0.60, slotCY, dotR, 0, Math.PI * 2);
-      ctx.fillStyle = predStroke; ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(predX + predW * 0.78, slotCY + dotR * 0.7);
-      ctx.lineTo(predX + predW * 0.90, slotCY - dotR * 0.4);
-      ctx.strokeStyle = predStroke; ctx.lineWidth = 0.8 * scale; ctx.stroke();
+      ctx.fillText((obj.predKey || '').toUpperCase().slice(0, 3), slotMidX, valY);
     }
 
     slotIndex++;
@@ -1909,16 +2570,301 @@ const drawStatistics = (GEOMETRY) => {
       ctx.restore();
     });
   };
+  if (GAME_TYPE === 'colorgame') {
+    // ── Color Game: both sections side-by-side inside gE (color stats no longer in gA) ──
+    maxScrollXA = 0; maxScrollXE = 0;
+
+    // ── LEFT column: recent rolls (1/4); RIGHT column: color stats (3/4) ──
+    const divW      = 1 * scale;
+    const rollsW    = Math.floor(scoreBoardE.W * 0.25);
+    const statsX    = scoreBoardE.X + rollsW + divW;
+    const statsW    = scoreBoardE.W - rollsW - divW;
+
+    // Thin vertical divider
+    ctx.beginPath();
+    ctx.moveTo(scoreBoardE.X + rollsW, scoreBoardE.Y);
+    ctx.lineTo(scoreBoardE.X + rollsW, scoreBoardE.Y + scoreBoardE.H);
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = divW; ctx.stroke();
+
+    // Layout metrics for the rolls column
+    const cgHdrFs   = clamp(5 * scale, scoreBoardE.H * 0.055, 9 * scale);
+    const topPad    = cgHdrFs + 3 * scale;
+    const cgGap     = clamp(2 * scale, rollsW * 0.035, 4 * scale);
+    const rnColW    = clamp(7 * scale, rollsW * 0.14, 13 * scale);
+    const diceAreaW = rollsW - rnColW;
+    const DPER      = 3;
+    const cgRounds  = results.slice().reverse();
+    const isLive    = gamePhase === 'dealing' || gamePhase === 'result';
+    const contentH  = scoreBoardE.H - topPad;
+
+    const histForSizing = Math.max(1, Math.min(cgRounds.length, 15));
+    const cellSzW       = (diceAreaW - cgGap * (DPER + 1)) / DPER;
+    const cellSzH       = (contentH - cgGap) / histForSizing;
+    const cellSz        = Math.min(cellSzW, cellSzH);
+    const rowH          = cellSz + cgGap;
+    const maxRows       = Math.floor(contentH / rowH);
+    const histCount     = Math.min(cgRounds.length, maxRows);
+    const usedH         = histCount * rowH;
+
+    // ── Recent rolls (clipped to left quarter) ──
+    ctx.save();
+    ctx.beginPath(); ctx.rect(scoreBoardE.X, scoreBoardE.Y, rollsW, scoreBoardE.H); ctx.clip();
+
+    // Section label
+    ctx.font = `500 ${cgHdrFs}px Interroman, Arial`;
+    ctx.fillStyle = 'rgba(255,255,255,0.30)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('RECENT ROLLS', scoreBoardE.X + 2 * scale, scoreBoardE.Y + 1 * scale);
+
+    // Helper — draw one dice row at a given Y, given an array of 3 color keys
+    const drawDiceRow = (dice, rowIdx, dy, isLatest, isLiveRow) => {
+      const t = performance.now();
+      dice.forEach((colorKeyRaw, di) => {
+        let colorKey = colorKeyRaw;
+        // Cycling animation for live row during dealing
+        if (isLiveRow && gamePhase === 'dealing') {
+          const phase = (t * 0.010 + di * 1.7) % COLOR_GAME_KEYS.length;
+          colorKey = COLOR_GAME_KEYS[Math.floor(phase)];
+        }
+        const c = colorKey ? TILE_COLORS[colorKey] : null;
+        const dx = scoreBoardE.X + rnColW + cgGap + di * (cellSz + cgGap);
+
+        // Cell background
+        ctx.beginPath(); ctx.roundRect(dx, dy, cellSz, cellSz, cellSz * 0.20);
+        if (c) {
+          const cg = ctx.createLinearGradient(dx, dy, dx, dy + cellSz);
+          cg.addColorStop(0, c.stroke + '55'); cg.addColorStop(1, c.fill + 'dd');
+          ctx.fillStyle = cg;
+        } else {
+          ctx.fillStyle = isLiveRow ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)';
+        }
+        ctx.fill();
+
+        // Border
+        if (c) {
+          ctx.save();
+          const glow = isLiveRow && gamePhase === 'result';
+          if (glow) { ctx.shadowColor = c.neon; ctx.shadowBlur = 6 * scale; }
+          ctx.strokeStyle = (isLatest || glow) ? c.neon : c.stroke + '88';
+          ctx.lineWidth   = (isLatest || glow)  ? 1.2 * scale : 0.6 * scale;
+          ctx.stroke(); ctx.restore();
+        } else if (isLiveRow) {
+          ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 0.8 * scale; ctx.stroke();
+        }
+
+        // Letter / question mark
+        if (colorKey) {
+          const fs = clamp(5 * scale, cellSz * 0.32, 11 * scale);
+          ctx.font = `700 ${fs}px Interroman, Arial`;
+          ctx.fillStyle = colorKey === 'white' ? '#1a1a2e' : '#fff';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          if (isLiveRow && gamePhase === 'result' && c) { ctx.shadowColor = c.neon; ctx.shadowBlur = 5 * scale; }
+          ctx.fillText(colorKey[0].toUpperCase(), dx + cellSz * 0.5, dy + cellSz * 0.5);
+          ctx.shadowBlur = 0;
+        } else if (isLiveRow) {
+          const fs = clamp(5 * scale, cellSz * 0.36, 12 * scale);
+          ctx.font = `300 ${fs}px Interroman, Arial`;
+          ctx.fillStyle = 'rgba(255,255,255,0.22)';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          const dotCnt = 1 + Math.floor((t / 300) % 3);
+          ctx.fillText('.'.repeat(dotCnt), dx + cellSz * 0.5, dy + cellSz * 0.5);
+        }
+      });
+    };
+
+    // ── Draw history rows ──
+    cgRounds.slice(0, histCount).forEach((r, rowIdx) => {
+      const dice     = r.dice || [null, null, null];
+      const dy       = scoreBoardE.Y + topPad + rowIdx * rowH + cgGap * 0.5;
+      const isLatest = rowIdx === 0 && !isLive;
+      const rn       = results.length - rowIdx;
+
+      ctx.font = `400 ${clamp(4 * scale, cellSz * 0.28, 8 * scale)}px Interroman, Arial`;
+      ctx.fillStyle = isLatest ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.22)';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText(`${rn}`, scoreBoardE.X + rnColW - 2 * scale, dy + cellSz * 0.5);
+
+      drawDiceRow(dice, rowIdx, dy, isLatest, false);
+    });
+
+    // ── Live dice in remaining space ──
+    if (isLive) {
+      const liveY = scoreBoardE.Y + topPad + usedH;
+      const remH  = contentH - usedH;
+
+      // Separator between history and live
+      if (histCount > 0) {
+        ctx.beginPath();
+        ctx.moveTo(scoreBoardE.X + 2 * scale, liveY + cgGap * 0.3);
+        ctx.lineTo(scoreBoardE.X + rollsW - 2 * scale, liveY + cgGap * 0.3);
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 0.5 * scale;
+        ctx.setLineDash([2 * scale, 3 * scale]); ctx.stroke(); ctx.setLineDash([]);
+      }
+
+      // Status tag (ROLLING... or RESULT)
+      const t0       = performance.now();
+      const isDealing0 = gamePhase === 'dealing';
+      const tagFs    = clamp(4.5 * scale, cellSz * 0.22, 8 * scale);
+      const dotCnt0  = 1 + Math.floor((t0 / 460) % 3);
+      const tagTxt   = isDealing0 ? `ROLLING${'.'.repeat(dotCnt0)}` : 'RESULT';
+      ctx.font = `600 ${tagFs}px Interroman, Arial`;
+      ctx.fillStyle = isDealing0 ? 'rgba(255,255,255,0.45)' : 'rgba(255,220,100,0.90)';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText(tagTxt, scoreBoardE.X + rollsW - 2 * scale, liveY + cgGap + cellSz * 0.5);
+
+      // Live dice — same row height as history
+      const liveDy = liveY + cgGap * 0.5;
+      const liveDice = isDealing0 ? [null, null, null] : colorGameDice;
+      drawDiceRow(liveDice, -1, liveDy, false, true);
+
+      // Winning pills if result + more room below
+      if (!isDealing0 && winners.length > 0 && remH > rowH + tagFs * 2.4) {
+        const winCounts = {};
+        colorGameDice.forEach(c => { if (c) winCounts[c] = (winCounts[c] || 0) + 1; });
+        const pillFs  = clamp(5 * scale, cellSz * 0.22, 8 * scale);
+        const pillH2  = pillFs * 1.8;
+        const pillGap = 4 * scale;
+        ctx.font = `700 ${pillFs}px Interroman, Arial`;
+        const items = Object.entries(winCounts).map(([k, cnt]) => ({
+          key: k, cnt, lbl: cnt > 1 ? `${k[0].toUpperCase()}×${cnt}` : k[0].toUpperCase(),
+        }));
+        const widths = items.map(it => ctx.measureText(it.lbl).width + pillFs * 1.0);
+        const totalPW = widths.reduce((a, b) => a + b, 0) + pillGap * (items.length - 1);
+        let px = scoreBoardE.X + rnColW + (diceAreaW - totalPW) * 0.5;
+        const py = liveDy + cellSz + cgGap;
+        items.forEach((it, idx) => {
+          const c = TILE_COLORS[it.key];
+          const pw = widths[idx];
+          ctx.save();
+          ctx.beginPath(); ctx.roundRect(px, py, pw, pillH2, pillH2 * 0.5);
+          ctx.fillStyle = c.fill + 'cc'; ctx.fill();
+          ctx.strokeStyle = c.stroke; ctx.lineWidth = 0.7 * scale; ctx.stroke();
+          ctx.fillStyle = c.neon; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.shadowColor = c.neon; ctx.shadowBlur = 5 * scale;
+          ctx.fillText(it.lbl, px + pw * 0.5, py + pillH2 * 0.5);
+          ctx.shadowBlur = 0; ctx.restore();
+          px += pw + pillGap;
+        });
+      }
+    }
+    ctx.restore();
+
+    // ── RIGHT: color stats tile grid (3/4 of panel width) ──
+    ctx.save();
+    ctx.beginPath(); ctx.rect(statsX, scoreBoardE.Y, statsW, scoreBoardE.H); ctx.clip();
+
+    const cgHdrFsA = clamp(5 * scale, scoreBoardE.H * 0.055, 9 * scale);
+    ctx.font = `500 ${cgHdrFsA}px Interroman, Arial`;
+    ctx.fillStyle = 'rgba(255,255,255,0.30)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('COLOR STATS', statsX + 2 * scale, scoreBoardE.Y + 1 * scale);
+
+    const totalDice  = results.reduce((n, r) => n + (r.dice ? r.dice.length : 0), 0) || 1;
+    const maxCgCount = Math.max(1, ...COLOR_GAME_KEYS.map(k => cgCounts[k] || 0));
+    const fqTopPad   = cgHdrFsA + 3 * scale;
+    const fqGap      = clamp(2 * scale, statsW * 0.025, 4 * scale);
+    const FQ_COLS = 3, FQ_ROWS = 2;
+    const tW = (statsW - fqGap * (FQ_COLS + 1)) / FQ_COLS;
+    const tH = (scoreBoardE.H - fqTopPad - fqGap * (FQ_ROWS + 1)) / FQ_ROWS;
+    const tR = Math.min(tW, tH) * 0.14;
+
+    COLOR_GAME_KEYS.forEach((key, ki) => {
+      const col = ki % FQ_COLS, row = Math.floor(ki / FQ_COLS);
+      const tx  = statsX + fqGap + col * (tW + fqGap);
+      const ty  = scoreBoardE.Y + fqTopPad + fqGap + row * (tH + fqGap);
+      const cx  = tx + tW * 0.5, cy  = ty + tH * 0.5;
+      const cnt   = cgCounts[key] || 0;
+      const ratio = cnt / totalDice;
+      const isHot = cnt === maxCgCount && cnt > 0;
+      const c     = TILE_COLORS[key];
+
+      // ── Tile background ──
+      ctx.save();
+      const tileGrad = ctx.createLinearGradient(tx, ty, tx + tW, ty + tH);
+      tileGrad.addColorStop(0, c.fill + 'ee');
+      tileGrad.addColorStop(1, c.fill + '88');
+      ctx.beginPath(); ctx.roundRect(tx, ty, tW, tH, tR);
+      ctx.fillStyle = tileGrad; ctx.fill();
+      // Border
+      ctx.strokeStyle = isHot ? c.neon : c.stroke + '66';
+      ctx.lineWidth   = isHot ? 1.2 * scale : 0.6 * scale;
+      if (isHot) { ctx.shadowColor = c.neon; ctx.shadowBlur = 8 * scale; }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+
+      // ── Radial arc ring ──
+      const arcR    = Math.min(tW, tH) * 0.36;
+      const arcLW   = clamp(1.5 * scale, arcR * 0.14, 3.5 * scale);
+      const arcStart = -Math.PI * 0.5; // 12 o'clock
+      const arcEnd   = arcStart + ratio * Math.PI * 2;
+      // Track (empty)
+      ctx.beginPath(); ctx.arc(cx, cy, arcR, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,0,0,0.30)'; ctx.lineWidth = arcLW; ctx.stroke();
+      // Fill arc
+      if (cnt > 0) {
+        ctx.save();
+        ctx.shadowColor = c.neon; ctx.shadowBlur = isHot ? 7 * scale : 3 * scale;
+        ctx.beginPath(); ctx.arc(cx, cy, arcR, arcStart, arcEnd);
+        ctx.strokeStyle = c.neon; ctx.lineWidth = arcLW; ctx.lineCap = 'round';
+        ctx.stroke(); ctx.restore();
+      }
+      // Arc cap dot at tip
+      if (cnt > 0) {
+        const capX = cx + Math.cos(arcEnd) * arcR;
+        const capY = cy + Math.sin(arcEnd) * arcR;
+        ctx.beginPath(); ctx.arc(capX, capY, arcLW * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = c.neon; ctx.fill();
+      }
+
+      // ── Count (large, centered inside ring) ──
+      const countFs2 = clamp(6 * scale, arcR * 0.72, 16 * scale);
+      ctx.font = `700 ${countFs2}px Interroman, Arial`;
+      ctx.fillStyle = key === 'white' ? '#1a1a2e' : '#fff';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(cnt), cx, cy);
+
+      // ── Color label (top-left corner of tile) ──
+      const lblFs2 = clamp(4.5 * scale, tH * 0.12, 8 * scale);
+      ctx.font = `700 ${lblFs2}px Interroman, Arial`;
+      ctx.fillStyle = c.neon + 'cc';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.fillText(key[0].toUpperCase(), tx + tR * 0.6, ty + tR * 0.4);
+
+      // ── Percentage (bottom-right corner) ──
+      const pct2 = Math.round(ratio * 100);
+      ctx.font = `500 ${lblFs2}px Interroman, Arial`;
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+      ctx.fillText(`${pct2}%`, tx + tW - tR * 0.6, ty + tH - tR * 0.4);
+
+      // ── HOT badge (top-right) ──
+      if (isHot) {
+        const badgeFs = clamp(4 * scale, tH * 0.10, 7 * scale);
+        ctx.font = `700 ${badgeFs}px Interroman, Arial`;
+        ctx.fillStyle = '#ffd700';
+        ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+        ctx.fillText('HOT', tx + tW - tR * 0.6, ty + tR * 0.4);
+      }
+    });
+    ctx.restore();
+
+  } else {
+  const roadHdrFs = clamp(5 * scale, scoreBoardA.H * 0.050, 8.5 * scale);
+
   // --- gridA (Big Road) ---
-  // Cols: square cells from height, rounded down to nearest multiple of 3 (for derived road thirds)
-  const cellHA = scoreBoardA.H / 9;
+  const roadALabel = GAME_TYPE === 'gostop' ? 'BIG ROAD' : GAME_TYPE === 'oddeven' ? 'BIG ROAD' : 'BIG ROAD';
+  ctx.font = `500 ${roadHdrFs}px Interroman, Arial`;
+  ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(roadALabel, scoreBoardA.X + 2 * scale, scoreBoardA.Y + 1 * scale);
+  const roadATopPad = roadHdrFs + 2 * scale;
+
+  const cellHA = (scoreBoardA.H - roadATopPad) / 9;
   const colsA = Math.max(3, Math.ceil(scoreBoardA.W / cellHA / 3) * 3);
   ctx.save();
   ctx.beginPath();
-  ctx.rect(scoreBoardA.X, scoreBoardA.Y, scoreBoardA.W, scoreBoardA.H);
+  ctx.rect(scoreBoardA.X, scoreBoardA.Y + roadATopPad, scoreBoardA.W, scoreBoardA.H - roadATopPad);
   ctx.clip();
   ctx.translate(-scrollXA, 0);
-  const gridA = constructGrid(9, colsA, scoreBoardA.X, scoreBoardA.Y, scoreBoardA.H, 1, 3, 6, scoreBoardA.W);
+  const gridA = constructGrid(9, colsA, scoreBoardA.X, scoreBoardA.Y + roadATopPad, scoreBoardA.H - roadATopPad, 1, 3, 6, scoreBoardA.W);
   populateBigRoad(gridA);
   if (GAME_TYPE === 'baccarat') {
     populateBigEye(gridA);
@@ -1929,18 +2875,24 @@ const drawStatistics = (GEOMETRY) => {
   maxScrollXA = Math.max(0, gridA.totalWidth - scoreBoardA.W);
 
   // --- gridE (Bead Road) ---
-  // Cols: square cells from height, enough to fill panel width
-  const cellHE = scoreBoardE.H / 6;
+  const roadELabel = 'BEAD ROAD';
+  ctx.font = `500 ${roadHdrFs}px Interroman, Arial`;
+  ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(roadELabel, scoreBoardE.X + 2 * scale, scoreBoardE.Y + 1 * scale);
+  const roadETopPad = roadHdrFs + 2 * scale;
+
+  const cellHE = (scoreBoardE.H - roadETopPad) / 6;
   const colsE = Math.max(6, Math.ceil(scoreBoardE.W / cellHE));
   ctx.save();
   ctx.beginPath();
-  ctx.rect(scoreBoardE.X, scoreBoardE.Y, scoreBoardE.W, scoreBoardE.H);
+  ctx.rect(scoreBoardE.X, scoreBoardE.Y + roadETopPad, scoreBoardE.W, scoreBoardE.H - roadETopPad);
   ctx.clip();
   ctx.translate(-scrollXE, 0);
-  const gridE = constructGrid(6, colsE, scoreBoardE.X, scoreBoardE.Y, scoreBoardE.H, 1, undefined, undefined, scoreBoardE.W);
+  const gridE = constructGrid(6, colsE, scoreBoardE.X, scoreBoardE.Y + roadETopPad, scoreBoardE.H - roadETopPad, 1, undefined, undefined, scoreBoardE.W);
   populateBeadRoad(gridE);
   ctx.restore();
   maxScrollXE = Math.max(0, gridE.totalWidth - scoreBoardE.W);
+  } // end non-colorgame
   // --- SCROLLABLE END ********************************************************************************
 
 }
@@ -1994,128 +2946,11 @@ const drawMenuBar = (GEOMETRY) => {
 
   // ctx.fill();
 
-  // -- Side buttons: 2 per gap (Chat+Volume left, Layout+Lobby right) --
-  const chipsCtrlX  = main.X + main.W * 0.5 - main.W * 0.325;
-  const chipsCtrlRX = chipsCtrlX + main.W * 0.65;
-  const gapW  = chipsCtrlX - main.X;
-  const btnH  = main.H * 0.75;
-  const btnW  = Math.min(main.H * 0.66, gapW * 0.42);
-  const btnY  = main.Y + (main.H - btnH) * 0.5;
-  const btnPillR  = btnH * 0.14;
-  const btnIconCY = btnY + btnH * 0.38;
-  const btnLabelY = btnY + btnH * 0.82;
-  const btnFont   = `300 ${clamp(6, (btnH / scale) * 0.18, 10) * scale}px Interroman, Arial`;
-  const icoAlpha  = 'rgba(255,255,255,0.85)';
-
-  const drawSideBtn = (cx, isActive) => {
-    const bx = cx - btnW * 0.5;
-    ctx.beginPath();
-    ctx.roundRect(bx, btnY, btnW, btnH, btnPillR);
-    ctx.fillStyle = isActive ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)';
-    ctx.fill();
-    ctx.strokeStyle = isActive ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.18)';
-    ctx.lineWidth = 0.8 * scale;
-    ctx.stroke();
-  };
-
-  const icoSz = btnW * 0.46;
-
-  // -- Chat button (left gap, first slot) --
-  const chatCX = main.X + gapW * 0.28;
-  drawSideBtn(chatCX, isChatOpen);
-  ctx.save();
-  { const bw = icoSz, bh = bw * 0.78, br = bw * 0.22;
-    const bx = chatCX - bw * 0.5, by = btnIconCY - bh * 0.60;
-    ctx.fillStyle = icoAlpha;
-    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, br); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(bx + bw * 0.18, by + bh); ctx.lineTo(bx + bw * 0.06, by + bh + bh * 0.30); ctx.lineTo(bx + bw * 0.40, by + bh); ctx.fill();
-  }
-  ctx.restore();
-  ctx.font = btnFont; ctx.fillStyle = 'rgba(255,255,255,0.70)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('Chat', chatCX, btnLabelY);
-  const chatShape = new Path2D(); chatShape.rect(chatCX - btnW * 0.5, btnY, btnW, btnH);
-  hitRegions.chat = chatShape;
-
-  // -- Volume button (left gap, second slot) --
-  const volumeCX = main.X + gapW * 0.72;
-  drawSideBtn(volumeCX, isMuted);
-  ctx.save();
-  { const sw = icoSz * 0.62, sh = icoSz * 0.78;
-    const sx = volumeCX - sw * 0.68, sy = btnIconCY - sh * 0.5;
-    ctx.fillStyle = icoAlpha;
-    ctx.beginPath(); ctx.moveTo(sx, sy + sh * 0.28); ctx.lineTo(sx, sy + sh * 0.72); ctx.lineTo(sx + sw * 0.42, sy + sh * 0.72); ctx.lineTo(sx + sw * 0.42 + sw * 0.36, sy + sh); ctx.lineTo(sx + sw * 0.42 + sw * 0.36, sy); ctx.lineTo(sx + sw * 0.42, sy + sh * 0.28); ctx.closePath(); ctx.fill();
-    if (!isMuted) {
-      ctx.strokeStyle = icoAlpha; ctx.lineWidth = 1.2 * scale; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.arc(sx + sw * 0.78 + sw * 0.36, btnIconCY, sh * 0.26, -Math.PI * 0.55, Math.PI * 0.55); ctx.stroke();
-      ctx.beginPath(); ctx.arc(sx + sw * 0.78 + sw * 0.36, btnIconCY, sh * 0.44, -Math.PI * 0.45, Math.PI * 0.45); ctx.stroke();
-    } else {
-      const mx = volumeCX + icoSz * 0.12, my = btnIconCY;
-      ctx.strokeStyle = 'rgba(255,80,80,0.90)'; ctx.lineWidth = 1.4 * scale; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(mx - icoSz * 0.12, my - icoSz * 0.18); ctx.lineTo(mx + icoSz * 0.12, my + icoSz * 0.18); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(mx + icoSz * 0.12, my - icoSz * 0.18); ctx.lineTo(mx - icoSz * 0.12, my + icoSz * 0.18); ctx.stroke();
-    }
-  }
-  ctx.restore();
-  ctx.font = btnFont; ctx.fillStyle = 'rgba(255,255,255,0.70)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(isMuted ? 'Muted' : 'Sound', volumeCX, btnLabelY);
-  volumeBounds = { X: volumeCX - btnW * 0.5, Y: btnY, W: btnW, H: btnH };
-
-  // -- Layout button (right gap, first slot) --
-  const layoutCX = chipsCtrlRX + gapW * 0.28;
-  const isMonitor = layoutMode === 'monitoring';
-  drawSideBtn(layoutCX, isMonitor);
-  ctx.save();
-  { const g = icoSz * 0.82, gx = layoutCX - g * 0.5, gy = btnIconCY - g * 0.5;
-    ctx.strokeStyle = icoAlpha; ctx.lineWidth = 1.2 * scale; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    if (isMonitor) {
-      // monitor icon (active)
-      ctx.beginPath(); ctx.roundRect(gx, gy + g * 0.06, g, g * 0.70, 2 * scale); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(layoutCX, gy + g * 0.76); ctx.lineTo(layoutCX, gy + g * 0.94); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(layoutCX - g * 0.22, gy + g * 0.94); ctx.lineTo(layoutCX + g * 0.22, gy + g * 0.94); ctx.stroke();
-    } else {
-      // play / game controller icon
-      ctx.beginPath();
-      ctx.roundRect(gx, gy + g * 0.18, g, g * 0.64, g * 0.18);
-      ctx.stroke();
-      // d-pad cross
-      const cx2 = layoutCX - g * 0.22, cy2 = btnIconCY;
-      ctx.beginPath(); ctx.moveTo(cx2, cy2 - g * 0.14); ctx.lineTo(cx2, cy2 + g * 0.14); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx2 - g * 0.14, cy2); ctx.lineTo(cx2 + g * 0.14, cy2); ctx.stroke();
-      // action buttons (dots)
-      const rx2 = layoutCX + g * 0.22;
-      ctx.beginPath(); ctx.arc(rx2 - g * 0.10, cy2, g * 0.06, 0, Math.PI * 2); ctx.fillStyle = icoAlpha; ctx.fill();
-      ctx.beginPath(); ctx.arc(rx2 + g * 0.10, cy2, g * 0.06, 0, Math.PI * 2); ctx.fill();
-    }
-  }
-  ctx.restore();
-  ctx.font = btnFont; ctx.fillStyle = 'rgba(255,255,255,0.70)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(isMonitor ? 'Monitor' : 'Play', layoutCX, btnLabelY);
-  layoutBounds = { X: layoutCX - btnW * 0.5, Y: btnY, W: btnW, H: btnH };
-
-  // -- Lobby button (right gap, second slot) --
-  const lobbyCX = chipsCtrlRX + gapW * 0.72;
-  drawSideBtn(lobbyCX, false);
-  ctx.save();
-  { const hw = icoSz * 0.78, hh = hw * 0.88;
-    const hx = lobbyCX - hw * 0.5, hy = btnIconCY - hh * 0.54;
-    const rH = hh * 0.42, bH = hh * 0.58;
-    ctx.fillStyle = icoAlpha;
-    ctx.beginPath(); ctx.moveTo(hx + hw * 0.5, hy); ctx.lineTo(hx + hw, hy + rH); ctx.lineTo(hx, hy + rH); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.rect(hx + hw * 0.12, hy + rH, hw * 0.76, bH); ctx.fill();
-    ctx.fillStyle = 'rgba(0,0,0,0.40)';
-    const dw = hw * 0.26, dh = bH * 0.56;
-    ctx.beginPath(); ctx.roundRect(lobbyCX - dw * 0.5, hy + rH + bH - dh, dw, dh, dw * 0.30); ctx.fill();
-  }
-  ctx.restore();
-  ctx.font = btnFont; ctx.fillStyle = 'rgba(255,255,255,0.70)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('Lobby', lobbyCX, btnLabelY);
-  const lobbyShape = new Path2D(); lobbyShape.rect(lobbyCX - btnW * 0.5, btnY, btnW, btnH);
-  hitRegions.lobby = lobbyShape;
-
+  // Chip controller fills the full bottom bar
   const chipsController = {
-    X: chipsCtrlX,
-    Y: main.Y + (main.H - btnH) * 0.5,
-    W: main.W * 0.65,
+    X: main.X + main.W * 0.05,
+    Y: main.Y + main.H * 0.125,
+    W: main.W * 0.90,
     H: main.H * 0.75
   }
 
@@ -2321,23 +3156,71 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.lineWidth = 1 * scale;
   ctx.stroke();
 
-  // Row 2 — stacked-coins icon + balance (left) | total bet (right)
-  const icoCX = wallet.X + wPad + icoR;
-  const icoBaseY = row2CY + icoR * 0.30;
-  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-  ctx.lineWidth = Math.max(0.8 * scale, icoR * 0.12);
-  [-icoR * 0.50, 0, icoR * 0.50].forEach((dy, i) => {
-    ctx.beginPath();
-    ctx.ellipse(icoCX, icoBaseY + dy, icoR, icoR * 0.30, 0, 0, Math.PI * 2);
-    if (i < 2) { ctx.fillStyle = '#1a1a2e'; ctx.fill(); }
+  // Row 2 — enhanced coin-stack icon + balance (left) | total bet (right)
+  const icoCX    = wallet.X + wPad + icoR;
+  const coinRX   = icoR;           // horizontal radius of coin ellipse
+  const coinRY   = icoR * 0.28;   // vertical radius (flat coin look)
+  const coinGap  = coinRY * 1.10; // vertical spacing between coin centres
+  const numCoins = 4;
+  const stackH   = (numCoins - 1) * coinGap;
+  const icoBaseY = row2CY + stackH * 0.5; // bottom coin centre
+
+  ctx.save();
+  // Draw coins bottom → top so top coins render over lower ones
+  for (let i = 0; i < numCoins; i++) {
+    const cy   = icoBaseY - i * coinGap;
+    const isTop = i === numCoins - 1;
+    const t    = performance.now() * 0.0018;
+    const glow = isTop ? (Math.sin(t) * 0.5 + 0.5) : 0;
+
+    // Coin body fill — gradient: gold on top
+    const cg = ctx.createLinearGradient(icoCX - coinRX, cy - coinRY, icoCX + coinRX, cy + coinRY);
+    if (isTop) {
+      cg.addColorStop(0, `rgba(255,220,60,${0.90 + glow * 0.10})`);
+      cg.addColorStop(0.5, `rgba(200,155,20,${0.85})`);
+      cg.addColorStop(1, `rgba(140,95,10,0.80)`);
+    } else {
+      const dim = 0.55 + i * 0.10;
+      cg.addColorStop(0, `rgba(200,160,40,${dim})`);
+      cg.addColorStop(1, `rgba(100,70,10,${dim * 0.75})`);
+    }
+    ctx.beginPath(); ctx.ellipse(icoCX, cy, coinRX, coinRY, 0, 0, Math.PI * 2);
+
+    // Side cylinder fill between this coin and the one below
+    if (i > 0) {
+      const prevCY = icoBaseY - (i - 1) * coinGap;
+      ctx.fillStyle = `rgba(120,80,10,${0.50 + i * 0.06})`;
+      ctx.fillRect(icoCX - coinRX, prevCY, coinRX * 2, cy - prevCY);
+    }
+
+    ctx.fillStyle = cg; ctx.fill();
+
+    // Rim stroke
+    ctx.strokeStyle = isTop
+      ? `rgba(255,240,100,${0.60 + glow * 0.40})`
+      : `rgba(180,130,30,0.45)`;
+    ctx.lineWidth = Math.max(0.6 * scale, coinRY * 0.22);
+    if (isTop && glow > 0.3) { ctx.shadowColor = 'rgba(255,220,60,0.70)'; ctx.shadowBlur = icoR * glow; }
     ctx.stroke();
-  });
+    ctx.shadowBlur = 0;
+
+    // ₱ symbol on top coin only
+    if (isTop) {
+      const symFs = clamp(5 * scale, coinRX * 0.48, 9 * scale);
+      ctx.font = `700 ${symFs}px Interroman, Arial`;
+      ctx.fillStyle = `rgba(255,240,120,${0.80 + glow * 0.20})`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('₱', icoCX, cy);
+    }
+  }
+  ctx.restore();
 
   ctx.font = `600 ${balFs}px Interroman, Arial`;
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'start';
   ctx.textBaseline = 'middle';
   ctx.fillText(fmtCurrency(balance), icoCX + icoR + wPad * 0.6, row2CY);
+  walletChipTarget = { x: icoCX, y: row2CY, r: icoR * 0.70 };
 
   // Total bet badge (right side, only when bets placed)
   const totalBet = Object.values(bets).reduce((s, v) => s + v, 0);
@@ -2810,7 +3693,7 @@ const drawTopNav = () => {
   const navR    = navH * 0.5;
   const navW    = clamp(260*S, containerWidth * 0.88, containerWidth * 0.94);
   const navX    = leftGutter + (containerWidth - navW) * 0.5;
-  const divX    = navX + navW * 0.70;
+  const divX    = navX + navW * 0.56;
   const pad     = 4*S;
   const inBound = (b) => b && _mx >= b.X && _mx <= b.X + b.W && _my >= b.Y && _my <= b.Y + b.H;
 
@@ -2833,125 +3716,181 @@ const drawTopNav = () => {
   ctx.moveTo(divX, navY + navH * 0.15); ctx.lineTo(divX, navY + navH * 0.85);
   ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 0.8*S; ctx.stroke();
 
-  // ── Game tabs ──
+  // ── Game selector — single dropdown button ──
   const gameSectionW = divX - navX;
-  const tabW  = gameSectionW / GAME_NAV.length;
-  const tabFs = clamp(7*S, navH * 0.28, 10*S);
-  const activeId = (window.GAME_CONFIG && window.GAME_CONFIG.gameId) || 'baccarat1';
-  topNavGameHits = [];
+  const tabFs  = clamp(7*S, navH * 0.28, 10*S);
+  const activeId   = (window.GAME_CONFIG && window.GAME_CONFIG.gameId) || 'baccarat1';
+  const activeGame = GAME_NAV.find(g => g.id === activeId) || GAME_NAV[0];
+  topNavGameHits   = [{ id: '__toggle__', X: navX, Y: navY, W: gameSectionW, H: navH }];
 
-  GAME_NAV.forEach((g, i) => {
-    const tx = navX + tabW * i;
-    const cy = navY + navH * 0.5;
-    const isActive = g.id === activeId;
-    const hovered = topNavGameHits.length > i && false; // placeholder
+  // Button highlight when open
+  if (isGameDropOpen) {
+    ctx.beginPath(); ctx.roundRect(navX + pad * 0.5, navY + pad * 0.4, gameSectionW - pad, navH - pad * 0.8, navH * 0.30);
+    ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+  }
 
+  // Current game label
+  ctx.font = `600 ${tabFs}px Interroman, Arial`;
+  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+  ctx.fillText(activeGame.label, navX + pad * 1.8, navY + navH * 0.5);
+
+  // Chevron
+  const chevX = navX + gameSectionW - pad * 2.2, chevY = navY + navH * 0.5, chevSz = navH * 0.17;
+  ctx.strokeStyle = 'rgba(255,255,255,0.65)'; ctx.lineWidth = 1.2*S; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  if (isGameDropOpen) {
+    ctx.moveTo(chevX - chevSz, chevY + chevSz * 0.4); ctx.lineTo(chevX, chevY - chevSz * 0.4); ctx.lineTo(chevX + chevSz, chevY + chevSz * 0.4);
+  } else {
+    ctx.moveTo(chevX - chevSz, chevY - chevSz * 0.4); ctx.lineTo(chevX, chevY + chevSz * 0.4); ctx.lineTo(chevX + chevSz, chevY - chevSz * 0.4);
+  }
+  ctx.stroke();
+
+  // ── Utility slots: Chat | Volume | Video | Layout | Lobby | User ──
+  const utilW = navX + navW - divX;
+  const NUM_UTIL = 6;
+  const slotW = utilW / NUM_UTIL;
+  const icoSz = navH * 0.36;
+  const midY  = navY + navH * 0.5;
+  const uCX   = divX + slotW * 5.5; // slot 5 (User) center — used by dropdown
+
+  const drawNavSlot = (i, isActive, accentColor) => {
+    const cx = divX + slotW * (i + 0.5);
     if (isActive) {
-      ctx.beginPath(); ctx.roundRect(tx + pad * 0.5, navY + pad * 0.4, tabW - pad, navH - pad * 0.8, navH * 0.30);
+      ctx.beginPath(); ctx.roundRect(cx - slotW * 0.46, navY + pad * 0.4, slotW * 0.92, navH - pad * 0.8, navH * 0.28);
       ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.30)'; ctx.lineWidth = 0.7*S; ctx.stroke();
+      if (accentColor) {
+        ctx.beginPath();
+        ctx.moveTo(cx - slotW * 0.28, navY + navH - pad * 0.5);
+        ctx.lineTo(cx + slotW * 0.28, navY + navH - pad * 0.5);
+        ctx.strokeStyle = accentColor; ctx.lineWidth = 1.5*S; ctx.lineCap = 'round'; ctx.stroke();
+      }
     }
+    return cx;
+  };
 
-    ctx.font = `${isActive ? 600 : 400} ${tabFs}px Interroman, Arial`;
-    ctx.fillStyle = isActive ? '#ffffff' : 'rgba(255,255,255,0.50)';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(g.label, tx + tabW * 0.5, cy + (isActive ? -1*S : 0));
+  // Slot 0 — Chat
+  { const cx = drawNavSlot(0, isChatOpen, 'rgba(100,180,255,0.80)');
+    const bw = icoSz, bh = bw * 0.78, br = bw * 0.22;
+    const bx = cx - bw * 0.5, by = midY - bh * 0.60;
+    ctx.fillStyle = isChatOpen ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, br); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(bx+bw*0.18, by+bh); ctx.lineTo(bx+bw*0.06, by+bh+bh*0.28); ctx.lineTo(bx+bw*0.40, by+bh); ctx.fill();
+    const s = new Path2D(); s.rect(cx - slotW * 0.5, navY, slotW, navH); hitRegions.chat = s;
+  }
 
-    if (isActive) {
-      ctx.beginPath(); ctx.arc(tx + tabW * 0.5, navY + navH - pad * 0.55, 2*S, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff'; ctx.fill();
+  // Slot 1 — Volume / Mute
+  { const cx = drawNavSlot(1, isMuted, 'rgba(255,100,100,0.80)');
+    const sw = icoSz * 0.62, sh = icoSz * 0.78, sx = cx - sw * 0.68, sy = midY - sh * 0.5;
+    ctx.fillStyle = 'rgba(255,255,255,0.70)';
+    ctx.beginPath(); ctx.moveTo(sx, sy+sh*0.28); ctx.lineTo(sx, sy+sh*0.72); ctx.lineTo(sx+sw*0.42, sy+sh*0.72); ctx.lineTo(sx+sw*0.42+sw*0.36, sy+sh); ctx.lineTo(sx+sw*0.42+sw*0.36, sy); ctx.lineTo(sx+sw*0.42, sy+sh*0.28); ctx.closePath(); ctx.fill();
+    if (!isMuted) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.70)'; ctx.lineWidth = 1.1*S; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.arc(sx+sw*0.78+sw*0.36, midY, sh*0.26, -Math.PI*0.55, Math.PI*0.55); ctx.stroke();
+      ctx.beginPath(); ctx.arc(sx+sw*0.78+sw*0.36, midY, sh*0.44, -Math.PI*0.45, Math.PI*0.45); ctx.stroke();
+    } else {
+      ctx.strokeStyle = 'rgba(255,80,80,0.90)'; ctx.lineWidth = 1.2*S; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx-icoSz*0.12, midY-icoSz*0.18); ctx.lineTo(cx+icoSz*0.12, midY+icoSz*0.18); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+icoSz*0.12, midY-icoSz*0.18); ctx.lineTo(cx-icoSz*0.12, midY+icoSz*0.18); ctx.stroke();
     }
-
-    topNavGameHits.push({ id: g.id, X: tx, Y: navY, W: tabW, H: navH });
-  });
-
-  // ── Utility slots ──
-  const utilW   = navX + navW - divX;
-  const slotW   = utilW * 0.5;
-  const icoSz   = navH * 0.36;
-  const sCX     = divX + slotW * 0.5;
-  const uCX     = divX + slotW * 1.5;
-  const midY    = navY + navH * 0.5;
-
-  // Settings button highlight
-  if (isSettingsOpen) {
-    ctx.beginPath(); ctx.roundRect(divX + pad * 0.5, navY + pad * 0.4, slotW - pad, navH - pad * 0.8, navH * 0.30);
-    ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+    volumeBounds = { X: cx - slotW * 0.5, Y: navY, W: slotW, H: navH };
   }
-  // Gear icon
-  const gr = icoSz * 0.46, gi = icoSz * 0.20;
-  ctx.strokeStyle = isSettingsOpen ? '#ffffff' : 'rgba(255,255,255,0.70)';
-  ctx.lineWidth = 1.2*S; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.arc(sCX, midY, gi, 0, Math.PI * 2); ctx.stroke();
-  for (let t = 0; t < 6; t++) {
-    const a = (Math.PI * 2 / 6) * t;
-    ctx.beginPath();
-    ctx.moveTo(sCX + Math.cos(a) * (gr * 0.68), midY + Math.sin(a) * (gr * 0.68));
-    ctx.lineTo(sCX + Math.cos(a) * gr,           midY + Math.sin(a) * gr);
-    ctx.stroke();
-  }
-  ctx.beginPath(); ctx.arc(sCX, midY, gr, 0, Math.PI * 2); ctx.stroke();
-  topNavSettingsHit = { X: divX, Y: navY, W: slotW, H: navH };
 
-  // User/Profile button highlight
-  if (isUserPrefOpen) {
-    ctx.beginPath(); ctx.roundRect(divX + slotW + pad * 0.5, navY + pad * 0.4, slotW - pad, navH - pad * 0.8, navH * 0.30);
-    ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+  // Slot 2 — Video toggle
+  { const cx = drawNavSlot(2, !isVideoOn, 'rgba(255,100,100,0.80)');
+    const cw = icoSz * 0.68, ch = cw * 0.64, cx3 = cx - cw*0.5 - cw*0.10, cy3 = midY - ch*0.5;
+    ctx.fillStyle = isVideoOn ? 'rgba(255,255,255,0.70)' : 'rgba(255,255,255,0.35)';
+    ctx.beginPath(); ctx.roundRect(cx3, cy3, cw*0.72, ch, ch*0.18); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx3+cw*0.72, cy3+ch*0.18); ctx.lineTo(cx3+cw, cy3+ch*0.5); ctx.lineTo(cx3+cw*0.72, cy3+ch*0.82); ctx.closePath(); ctx.fill();
+    if (!isVideoOn) {
+      ctx.strokeStyle = 'rgba(255,80,80,0.90)'; ctx.lineWidth = 1.2*S; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx-icoSz*0.28, midY-icoSz*0.22); ctx.lineTo(cx+icoSz*0.28, midY+icoSz*0.22); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+icoSz*0.28, midY-icoSz*0.22); ctx.lineTo(cx-icoSz*0.28, midY+icoSz*0.22); ctx.stroke();
+    }
+    videoBounds = { X: cx - slotW * 0.5, Y: navY, W: slotW, H: navH };
   }
-  // Person icon
-  const ur = icoSz * 0.46;
-  ctx.strokeStyle = isUserPrefOpen ? '#ffffff' : 'rgba(255,255,255,0.70)';
-  ctx.lineWidth = 1.2*S; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.arc(uCX, midY - ur * 0.20, ur * 0.36, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.arc(uCX, midY + ur * 0.68, ur * 0.58, Math.PI * 1.15, Math.PI * 1.85, false); ctx.stroke();
-  topNavUserHit = { X: divX + slotW, Y: navY, W: slotW, H: navH };
 
+  // Slot 3 — Layout toggle
+  { const isMonitor = layoutMode === 'monitoring';
+    const cx = drawNavSlot(3, isMonitor, 'rgba(150,120,255,0.80)');
+    const g = icoSz * 0.82, gx = cx - g*0.5, gy = midY - g*0.5;
+    ctx.strokeStyle = isMonitor ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    ctx.lineWidth = 1.1*S; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (isMonitor) {
+      ctx.beginPath(); ctx.roundRect(gx, gy+g*0.06, g, g*0.70, 2*S); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, gy+g*0.76); ctx.lineTo(cx, gy+g*0.94); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx-g*0.22, gy+g*0.94); ctx.lineTo(cx+g*0.22, gy+g*0.94); ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.roundRect(gx, gy+g*0.18, g, g*0.64, g*0.18); ctx.stroke();
+      const cx2 = cx-g*0.22, cy2 = midY;
+      ctx.beginPath(); ctx.moveTo(cx2, cy2-g*0.14); ctx.lineTo(cx2, cy2+g*0.14); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx2-g*0.14, cy2); ctx.lineTo(cx2+g*0.14, cy2); ctx.stroke();
+      const rx2 = cx+g*0.22;
+      ctx.beginPath(); ctx.arc(rx2-g*0.10, cy2, g*0.06, 0, Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.70)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(rx2+g*0.10, cy2, g*0.06, 0, Math.PI*2); ctx.fill();
+    }
+    layoutBounds = { X: cx - slotW * 0.5, Y: navY, W: slotW, H: navH };
+  }
+
+  // Slot 4 — Lobby
+  { const cx = drawNavSlot(4, false, null);
+    const hw = icoSz * 0.78, hh = hw * 0.88, hx = cx-hw*0.5, hy = midY-hh*0.54;
+    const rH = hh*0.42, bH = hh*0.58;
+    ctx.fillStyle = 'rgba(255,255,255,0.70)';
+    ctx.beginPath(); ctx.moveTo(hx+hw*0.5, hy); ctx.lineTo(hx+hw, hy+rH); ctx.lineTo(hx, hy+rH); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.rect(hx+hw*0.12, hy+rH, hw*0.76, bH); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.40)';
+    const dw = hw*0.26, dh = bH*0.56;
+    ctx.beginPath(); ctx.roundRect(cx-dw*0.5, hy+rH+bH-dh, dw, dh, dw*0.30); ctx.fill();
+    const ls = new Path2D(); ls.rect(cx-slotW*0.5, navY, slotW, navH); hitRegions.lobby = ls;
+  }
+
+  // Slot 5 — User/Profile
+  { const cx = drawNavSlot(5, isUserPrefOpen, null);
+    const ur = icoSz * 0.46;
+    ctx.strokeStyle = isUserPrefOpen ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    ctx.lineWidth = 1.2*S; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(cx, midY-ur*0.20, ur*0.36, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, midY+ur*0.68, ur*0.58, Math.PI*1.15, Math.PI*1.85, false); ctx.stroke();
+    topNavUserHit = { X: cx-slotW*0.5, Y: navY, W: slotW, H: navH };
+  }
+
+  topNavSettingsHit = null;
   ctx.restore(); // end clip
 
-  // ── Settings dropdown ──
-  if (isSettingsOpen) {
-    const dropW = clamp(160*S, navW * 0.38, 240*S);
-    const dropX = Math.min(sCX - dropW * 0.5, navX + navW - dropW - 4*S);
+  // ── Game dropdown list ──
+  if (isGameDropOpen) {
+    const dropW = clamp(100*S, gameSectionW * 0.62, 148*S);
+    const dropX = navX;
     const dropY = navY + navH + 3*S;
-    const rowH  = navH * 0.96;
-    const settingItems = [
-      { key: 'mute',   label: 'Sound',  active: !isMuted },
-      { key: 'layout', label: 'Layout', active: layoutMode === 'playing', valOn: 'Playing', valOff: 'Monitor' },
-    ];
-    const dropH = settingItems.length * rowH + 8*S;
-    topNavSettingHits = [];
+    const itemH = navH * 0.68;
+    const dropH = GAME_NAV.length * itemH + 6*S;
+    const dropR = 6*S;
 
     ctx.save();
-    ctx.beginPath(); ctx.roundRect(dropX, dropY, dropW, dropH, 8*S);
-    ctx.fillStyle = 'rgba(6,7,20,0.96)'; ctx.fill();
+    ctx.beginPath(); ctx.roundRect(dropX, dropY, dropW, dropH, dropR);
+    ctx.fillStyle = 'rgba(6,7,20,0.97)'; ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 0.8*S; ctx.stroke();
 
-    const lFs    = clamp(8*S, rowH * 0.30, 11*S);
-    const tglW   = rowH * 1.52, tglH = rowH * 0.42, tglR = tglH * 0.5;
+    const dFs = clamp(8*S, itemH * 0.30, 11*S);
+    GAME_NAV.forEach((g, i) => {
+      const iy = dropY + 3*S + i * itemH;
+      const isAct = g.id === activeId;
 
-    settingItems.forEach((item, i) => {
-      const ry = dropY + 4*S + rowH * i;
-      ctx.font = `400 ${lFs}px Interroman, Arial`;
-      ctx.fillStyle = 'rgba(255,255,255,0.78)'; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
-      ctx.fillText(item.label, dropX + 12*S, ry + rowH * 0.5);
+      if (isAct) {
+        ctx.beginPath(); ctx.roundRect(dropX + 4*S, iy + 2*S, dropW - 8*S, itemH - 4*S, 5*S);
+        ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill();
+      }
+      ctx.font = `${isAct ? 600 : 400} ${dFs}px Interroman, Arial`;
+      ctx.fillStyle = isAct ? '#ffffff' : 'rgba(255,255,255,0.60)';
+      ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+      ctx.fillText(g.label, dropX + 14*S, iy + itemH * 0.5);
 
-      const tgX = dropX + dropW - 12*S - tglW;
-      const tgY = ry + (rowH - tglH) * 0.5;
-      ctx.beginPath(); ctx.roundRect(tgX, tgY, tglW, tglH, tglR);
-      ctx.fillStyle = item.active ? 'rgba(70,190,110,0.50)' : 'rgba(255,255,255,0.12)'; ctx.fill();
-      ctx.strokeStyle = item.active ? 'rgba(70,190,110,0.80)' : 'rgba(255,255,255,0.20)'; ctx.lineWidth = 0.7*S; ctx.stroke();
-      const knobX = item.active ? tgX + tglW - tglH * 0.5 : tgX + tglH * 0.5;
-      ctx.beginPath(); ctx.arc(knobX, tgY + tglH * 0.5, tglH * 0.38, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff'; ctx.fill();
-
-      const valFs = clamp(6.5*S, rowH * 0.24, 9*S);
-      ctx.font = `500 ${valFs}px Interroman, Arial`;
-      ctx.fillStyle = item.active ? 'rgba(70,210,120,0.90)' : 'rgba(255,255,255,0.35)';
-      ctx.textAlign = 'end'; ctx.textBaseline = 'middle';
-      const valStr = item.active ? (item.valOn || 'On') : (item.valOff || 'Off');
-      ctx.fillText(valStr, tgX - 5*S, ry + rowH * 0.5);
-
-      topNavSettingHits.push({ key: item.key, X: tgX - 6*S, Y: tgY - 4*S, W: tglW + 12*S, H: tglH + 8*S });
+      if (isAct) {
+        ctx.beginPath(); ctx.arc(dropX + dropW - 11*S, iy + itemH * 0.5, 2.5*S, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.80)'; ctx.fill();
+      }
+      // each row is a game hit target
+      topNavGameHits.push({ id: g.id, X: dropX, Y: iy, W: dropW, H: itemH });
     });
     ctx.restore();
   }
@@ -3088,12 +4027,12 @@ canvas.addEventListener('pointerdown', (e) => {
     const inB = (b) => b && x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H;
     const navGame    = topNavGameHits.find(b => inB(b));
     const navSetting = topNavSettingHits.find(b => inB(b));
-    if (navGame)    { pressedRegion = 'nav_game_' + navGame.id;  hoverRegion = pressedRegion; return; }
+    if (navGame)    { pressedRegion = navGame.id === '__toggle__' ? 'nav_game_toggle' : 'nav_game_' + navGame.id; hoverRegion = pressedRegion; return; }
     if (inB(topNavSettingsHit)) { pressedRegion = 'nav_settings'; hoverRegion = pressedRegion; return; }
     if (inB(topNavUserHit))     { pressedRegion = 'nav_user';     hoverRegion = pressedRegion; return; }
     if (navSetting) { pressedRegion = 'nav_setting_' + navSetting.key; hoverRegion = pressedRegion; return; }
     // Dismiss open panels when clicking outside nav area
-    if (isSettingsOpen || isUserPrefOpen) { isSettingsOpen = false; isUserPrefOpen = false; }
+    if (isGameDropOpen || isSettingsOpen || isUserPrefOpen) { isGameDropOpen = false; isSettingsOpen = false; isUserPrefOpen = false; }
   }
 
   let hitBetKey = null;
@@ -3117,6 +4056,8 @@ canvas.addEventListener('pointerdown', (e) => {
     pressedRegion = 'volume';
   } else if (layoutBounds && x >= layoutBounds.X && x <= layoutBounds.X + layoutBounds.W && y >= layoutBounds.Y && y <= layoutBounds.Y + layoutBounds.H) {
     pressedRegion = 'layout';
+  } else if (videoBounds && x >= videoBounds.X && x <= videoBounds.X + videoBounds.W && y >= videoBounds.Y && y <= videoBounds.Y + videoBounds.H) {
+    pressedRegion = 'video';
   } else if (isChatOpen && chatCloseBounds && x >= chatCloseBounds.X && x <= chatCloseBounds.X + chatCloseBounds.W && y >= chatCloseBounds.Y && y <= chatCloseBounds.Y + chatCloseBounds.H) {
     pressedRegion = 'chatClose';
   } else if (isChatOpen && chatSendBounds && x >= chatSendBounds.X && x <= chatSendBounds.X + chatSendBounds.W && y >= chatSendBounds.Y && y <= chatSendBounds.Y + chatSendBounds.H) {
@@ -3133,8 +4074,14 @@ canvas.addEventListener('pointerdown', (e) => {
 
 canvas.addEventListener('pointerup', () => {
   // ── Top-nav actions ──
+  if (pressedRegion === 'nav_game_toggle') {
+    isGameDropOpen = !isGameDropOpen;
+    if (isGameDropOpen) { isUserPrefOpen = false; isSettingsOpen = false; }
+    pressedRegion = null; return;
+  }
   if (pressedRegion && pressedRegion.startsWith('nav_game_')) {
     const gid = pressedRegion.slice(9);
+    isGameDropOpen = false;
     window.location.href = '/pages/game.html?game=' + gid;
     pressedRegion = null; return;
   }
@@ -3149,7 +4096,7 @@ canvas.addEventListener('pointerup', () => {
     pressedRegion = null; return;
   }
   if (pressedRegion === 'nav_setting_mute') {
-    isMuted = !isMuted; videoEl.muted = isMuted;
+    isMuted = !isMuted; videoEl.muted = isMuted; musicEl.muted = isMuted;
     pressedRegion = null; return;
   }
   if (pressedRegion === 'nav_setting_layout') {
@@ -3181,10 +4128,15 @@ canvas.addEventListener('pointerup', () => {
   if (pressedRegion === 'volume') {
     isMuted = !isMuted;
     videoEl.muted = isMuted;
+    musicEl.muted = isMuted;
     pressedRegion = null; return;
   }
   if (pressedRegion === 'layout') {
     layoutMode = layoutMode === 'playing' ? 'monitoring' : 'playing';
+    pressedRegion = null; return;
+  }
+  if (pressedRegion === 'video') {
+    isVideoOn = !isVideoOn;
     pressedRegion = null; return;
   }
 
