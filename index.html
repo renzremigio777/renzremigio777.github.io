@@ -30,86 +30,149 @@
     <aside>
       <a href="#" class="logo"><span>Bet</span>Zone</a>
       <h2 class="logo-narrow"><span>B</span>Z</h2>
+
       <div class="wallet-info">
-        <p class="money"><i class="icon-casino"></i>PHP 34,002</p>
+        <p class="money"><i class="icon-casino"></i>₱34,002</p>
         <p class="users"><i class="icon-user"></i>player58900</p>
       </div>
+
       <nav>
         <ul>
-          <li>
-            <a href="#" class="active">
-              <span class="icons"><i class="icon-home"></i></span>
-              <span>All Games</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <span class="icons"><i class="icon-top"></i></span>
-              <span>Top</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <span class="icons"><i class="icon-new"></i></span>
-              <span>New</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <span class="icons"><i class="icon-popular"></i></span>
-              <span>Popular</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <span class="icons"><i class="icon-slots"></i></span>
-              <span>Slots</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <span class="icons"><i class="icon-ttennis"></i></span>
-              <span>Table Games</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <span class="icons"><i class="icon-jackpot"></i></span>
-              <span>Jackpots</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <span class="icons"><i class="icon-live"></i></span>
-              <span>Live Games</span>
-            </a>
-          </li>
+          <li><a href="#" class="active">
+            <span class="icons"><i class="icon-home"></i></span>
+            <span>All Games</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-top"></i></span>
+            <span>Top</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-new"></i></span>
+            <span>New</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-popular"></i></span>
+            <span>Popular</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-slots"></i></span>
+            <span>Slots</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-ttennis"></i></span>
+            <span>Table Games</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-jackpot"></i></span>
+            <span>Jackpots</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-live"></i></span>
+            <span>Live Games</span>
+          </a></li>
         </ul>
       </nav>
+
       <div class="bz-search">
         <form class="bz-search-input">
           <i class="icon-search"></i>
-          <input type="text" placeholder="Search">
+          <input type="text" placeholder="Search games…">
         </form>
+      </div>
+
+      <!-- Desktop-only user card -->
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">P</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-username">player58900</span>
+          <span class="sidebar-balance"><i class="icon-casino"></i> ₱34,002</span>
+        </div>
       </div>
     </aside>
 
     <main class="main-content">
+
+      <!-- ── Top bar ── -->
       <header class="topbar">
-        <h1>All Games</h1>
+        <h1>Live Casino</h1>
+        <div class="topbar-right">
+          <span class="online-pill"><span class="live-dot"></span>1,358 online</span>
+        </div>
       </header>
 
+      <!-- ── Hero banner ── -->
+      <div class="hero-banner">
+        <div class="hero-bg" style="background-image:url(assets/images/sample-livestream.png)"></div>
+        <div class="hero-scrim"></div>
+        <div class="hero-body">
+          <div class="hero-left">
+            <div class="hero-tag"><span class="live-dot"></span>LIVE NOW</div>
+            <h2 class="hero-title">Speed Baccarat 1</h2>
+            <p class="hero-sub">312 players · Philippines table · Round starts in 00:08</p>
+            <div class="hero-limit"><i class="icon-casino"></i>&nbsp;Table limits: <strong>₱50 – ₱10,000</strong></div>
+            <div class="hero-actions">
+              <a href="pages/game.html?game=baccarat1" class="hero-cta">▶ Play Now</a>
+              <a href="#" class="hero-cta-ghost">View Table</a>
+            </div>
+          </div>
+          <div class="hero-right">
+            <img src="assets/images/game-road.png" alt="" class="hero-road-img">
+            <div class="hero-road-label">Live Road</div>
+          </div>
+        </div>
+        <div class="hero-bottom-glow"></div>
+      </div>
+
+      <!-- ── Stats strip ── -->
+      <div class="stats-strip">
+        <div class="stat-cell">
+          <span class="stat-val">6</span>
+          <span class="stat-lbl">Tables</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-cell">
+          <span class="stat-val" style="color:#4ade80"><span class="live-dot" style="width:6px;height:6px;flex-shrink:0"></span>1,358</span>
+          <span class="stat-lbl">Online</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-cell">
+          <span class="stat-val">₱50</span>
+          <span class="stat-lbl">Min Bet</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-cell">
+          <span class="stat-val">24/7</span>
+          <span class="stat-lbl">Live</span>
+        </div>
+      </div>
+
+      <!-- ── Category filter ── -->
+      <div class="cat-filter">
+        <button class="cat-btn active" data-cat="all">All Games</button>
+        <button class="cat-btn" data-cat="baccarat">Baccarat</button>
+        <button class="cat-btn" data-cat="gostop">Go-Stop</button>
+        <button class="cat-btn" data-cat="oddeven">Odd / Even</button>
+        <button class="cat-btn" data-cat="colorgame">Color Game</button>
+        <button class="cat-btn" data-cat="vip">VIP</button>
+      </div>
+
+      <!-- ── Section header ── -->
       <div class="section-header">
         <h2 class="section-label"><span class="live-dot"></span>Live Casino <span class="section-count">6</span></h2>
         <a href="#" class="see-all">See all</a>
       </div>
 
+      <!-- ── Game grid ── -->
       <section class="grid">
-        <a href="pages/game.html?game=baccarat1" class="grid-item">
+
+        <a href="pages/game.html?game=baccarat1" class="grid-item" data-cat="baccarat">
           <div class="grid-item-media">
             <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="Speed Baccarat 1" loading="lazy">
             <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
             <span class="live-badge">LIVE</span>
+            <div class="grid-hover-overlay">
+              <span class="hover-play-btn">▶ Play Now</span>
+            </div>
           </div>
           <div class="grid-item-info">
             <p class="grid-title">Speed Baccarat 1<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
@@ -120,11 +183,15 @@
           </div>
         </a>
 
-        <a href="pages/game.html?game=baccarat2" class="grid-item">
+        <a href="pages/game.html?game=baccarat2" class="grid-item" data-cat="baccarat">
           <div class="grid-item-media">
             <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Speed Baccarat 2" loading="lazy">
             <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
             <span class="live-badge">LIVE</span>
+            <span class="hot-badge">HOT</span>
+            <div class="grid-hover-overlay">
+              <span class="hover-play-btn">▶ Play Now</span>
+            </div>
           </div>
           <div class="grid-item-info">
             <p class="grid-title">Speed Baccarat 2<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
@@ -135,11 +202,14 @@
           </div>
         </a>
 
-        <a href="pages/game.html?game=baccarat3" class="grid-item">
+        <a href="pages/game.html?game=baccarat3" class="grid-item" data-cat="baccarat vip">
           <div class="grid-item-media">
             <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="VIP Baccarat" loading="lazy">
             <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
             <span class="live-badge vip-badge">VIP</span>
+            <div class="grid-hover-overlay">
+              <span class="hover-play-btn">▶ Play Now</span>
+            </div>
           </div>
           <div class="grid-item-info">
             <p class="grid-title">VIP Baccarat<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
@@ -150,11 +220,14 @@
           </div>
         </a>
 
-        <a href="pages/game.html?game=gostop" class="grid-item">
+        <a href="pages/game.html?game=gostop" class="grid-item" data-cat="gostop">
           <div class="grid-item-media">
             <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Go-Stop" loading="lazy">
             <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
             <span class="live-badge">LIVE</span>
+            <div class="grid-hover-overlay">
+              <span class="hover-play-btn">▶ Play Now</span>
+            </div>
           </div>
           <div class="grid-item-info">
             <p class="grid-title">Go-Stop<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
@@ -165,11 +238,14 @@
           </div>
         </a>
 
-        <a href="pages/game.html?game=oddeven" class="grid-item">
+        <a href="pages/game.html?game=oddeven" class="grid-item" data-cat="oddeven">
           <div class="grid-item-media">
             <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="Odd / Even" loading="lazy">
             <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
             <span class="live-badge">LIVE</span>
+            <div class="grid-hover-overlay">
+              <span class="hover-play-btn">▶ Play Now</span>
+            </div>
           </div>
           <div class="grid-item-info">
             <p class="grid-title">Odd / Even<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
@@ -180,11 +256,15 @@
           </div>
         </a>
 
-        <a href="pages/game.html?game=colorgame" class="grid-item">
+        <a href="pages/game.html?game=colorgame" class="grid-item" data-cat="colorgame">
           <div class="grid-item-media">
             <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Color Game" loading="lazy">
             <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
             <span class="live-badge">LIVE</span>
+            <span class="new-badge">NEW</span>
+            <div class="grid-hover-overlay">
+              <span class="hover-play-btn">▶ Play Now</span>
+            </div>
           </div>
           <div class="grid-item-info">
             <p class="grid-title">Color Game<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
@@ -194,11 +274,40 @@
             </div>
           </div>
         </a>
+
       </section>
 
-      <footer></footer>
+      <!-- ── Footer ── -->
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <span class="footer-logo"><span>Bet</span>Zone</span>
+          <span class="footer-divider">·</span>
+          <span>© 2025 All rights reserved</span>
+          <span class="footer-divider">·</span>
+          <a href="#">Play Responsibly</a>
+          <span class="footer-divider">·</span>
+          <a href="#">18+</a>
+        </div>
+      </footer>
+
     </main>
   </div>
+
   <script src="/assets/js/main.js"></script>
+  <script>
+    // Category filter
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cat = btn.dataset.cat;
+        document.querySelectorAll('.grid-item').forEach(item => {
+          const cats = (item.dataset.cat || '').split(' ');
+          const show = cat === 'all' || cats.includes(cat);
+          item.style.display = show ? '' : 'none';
+        });
+      });
+    });
+  </script>
 </body>
 </html>
