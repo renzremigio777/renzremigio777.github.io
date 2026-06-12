@@ -3694,8 +3694,11 @@ const drawTopNav = () => {
   const navW    = clamp(260*S, containerWidth * 0.88, containerWidth * 0.94);
   const navX    = leftGutter + (containerWidth - navW) * 0.5;
   const divX    = navX + navW * 0.56;
-  const pad     = 4*S;
-  const inBound = (b) => b && _mx >= b.X && _mx <= b.X + b.W && _my >= b.Y && _my <= b.Y + b.H;
+  const pad          = 4*S;
+  const inBound      = (b) => b && _mx >= b.X && _mx <= b.X + b.W && _my >= b.Y && _my <= b.Y + b.H;
+  const gameSectionW = divX - navX;
+  // Wide when each tab has at least 50 CSS-px — otherwise collapse to dropdown
+  const wideMode     = gameSectionW / GAME_NAV.length >= 50 * S;
 
   // ── Panel background ──
   ctx.save();
@@ -3716,34 +3719,52 @@ const drawTopNav = () => {
   ctx.moveTo(divX, navY + navH * 0.15); ctx.lineTo(divX, navY + navH * 0.85);
   ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 0.8*S; ctx.stroke();
 
-  // ── Game selector — single dropdown button ──
-  const gameSectionW = divX - navX;
-  const tabFs  = clamp(7*S, navH * 0.28, 10*S);
-  const activeId   = (window.GAME_CONFIG && window.GAME_CONFIG.gameId) || 'baccarat1';
-  const activeGame = GAME_NAV.find(g => g.id === activeId) || GAME_NAV[0];
-  topNavGameHits   = [{ id: '__toggle__', X: navX, Y: navY, W: gameSectionW, H: navH }];
+  // ── Game selector — row (wide) or dropdown (narrow) ──
+  const tabFs    = clamp(7*S, navH * 0.28, 10*S);
+  const activeId = (window.GAME_CONFIG && window.GAME_CONFIG.gameId) || 'baccarat1';
+  topNavGameHits = [];
 
-  // Button highlight when open
-  if (isGameDropOpen) {
-    ctx.beginPath(); ctx.roundRect(navX + pad * 0.5, navY + pad * 0.4, gameSectionW - pad, navH - pad * 0.8, navH * 0.30);
-    ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
-  }
-
-  // Current game label
-  ctx.font = `600 ${tabFs}px Interroman, Arial`;
-  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
-  ctx.fillText(activeGame.label, navX + pad * 1.8, navY + navH * 0.5);
-
-  // Chevron
-  const chevX = navX + gameSectionW - pad * 2.2, chevY = navY + navH * 0.5, chevSz = navH * 0.17;
-  ctx.strokeStyle = 'rgba(255,255,255,0.65)'; ctx.lineWidth = 1.2*S; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.beginPath();
-  if (isGameDropOpen) {
-    ctx.moveTo(chevX - chevSz, chevY + chevSz * 0.4); ctx.lineTo(chevX, chevY - chevSz * 0.4); ctx.lineTo(chevX + chevSz, chevY + chevSz * 0.4);
+  if (wideMode) {
+    // Horizontal tab row — one pill per game
+    if (isGameDropOpen) isGameDropOpen = false;
+    const tabW = gameSectionW / GAME_NAV.length;
+    GAME_NAV.forEach((g, i) => {
+      const tx = navX + tabW * i, isAct = g.id === activeId;
+      if (isAct) {
+        ctx.beginPath(); ctx.roundRect(tx + pad * 0.5, navY + pad * 0.4, tabW - pad, navH - pad * 0.8, navH * 0.28);
+        ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(tx + tabW * 0.22, navY + navH - pad * 0.5);
+        ctx.lineTo(tx + tabW * 0.78, navY + navH - pad * 0.5);
+        ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.5 * S; ctx.lineCap = 'round'; ctx.stroke();
+      }
+      ctx.font = `${isAct ? 600 : 400} ${tabFs}px Interroman, Arial`;
+      ctx.fillStyle = isAct ? '#ffffff' : 'rgba(255,255,255,0.50)';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(g.label, tx + tabW * 0.5, navY + navH * 0.5);
+      topNavGameHits.push({ id: g.id, X: tx, Y: navY, W: tabW, H: navH });
+    });
   } else {
-    ctx.moveTo(chevX - chevSz, chevY - chevSz * 0.4); ctx.lineTo(chevX, chevY + chevSz * 0.4); ctx.lineTo(chevX + chevSz, chevY - chevSz * 0.4);
+    // Narrow — single toggle button with dropdown
+    const activeGame = GAME_NAV.find(g => g.id === activeId) || GAME_NAV[0];
+    topNavGameHits.push({ id: '__toggle__', X: navX, Y: navY, W: gameSectionW, H: navH });
+    if (isGameDropOpen) {
+      ctx.beginPath(); ctx.roundRect(navX + pad * 0.5, navY + pad * 0.4, gameSectionW - pad, navH - pad * 0.8, navH * 0.30);
+      ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+    }
+    ctx.font = `600 ${tabFs}px Interroman, Arial`;
+    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+    ctx.fillText(activeGame.label, navX + pad * 1.8, navY + navH * 0.5);
+    const chevX = navX + gameSectionW - pad * 2.2, chevY = navY + navH * 0.5, chevSz = navH * 0.17;
+    ctx.strokeStyle = 'rgba(255,255,255,0.65)'; ctx.lineWidth = 1.2 * S; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    if (isGameDropOpen) {
+      ctx.moveTo(chevX - chevSz, chevY + chevSz * 0.4); ctx.lineTo(chevX, chevY - chevSz * 0.4); ctx.lineTo(chevX + chevSz, chevY + chevSz * 0.4);
+    } else {
+      ctx.moveTo(chevX - chevSz, chevY - chevSz * 0.4); ctx.lineTo(chevX, chevY + chevSz * 0.4); ctx.lineTo(chevX + chevSz, chevY - chevSz * 0.4);
+    }
+    ctx.stroke();
   }
-  ctx.stroke();
 
   // ── Utility slots: Chat | Volume | Video | Layout | Lobby | User ──
   const utilW = navX + navW - divX;
@@ -3858,7 +3879,7 @@ const drawTopNav = () => {
   ctx.restore(); // end clip
 
   // ── Game dropdown list ──
-  if (isGameDropOpen) {
+  if (!wideMode && isGameDropOpen) {
     const dropW = clamp(100*S, gameSectionW * 0.62, 148*S);
     const dropX = navX;
     const dropY = navY + navH + 3*S;

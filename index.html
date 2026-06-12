@@ -3,37 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Betzone</title>
+  <meta name="description" content="Betzone – Live Casino Games">
+  <title>Betzone – Live Casino</title>
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="./assets/css/icons.css" />
-  <link rel="stylesheet" href="../assets/css/loader.css" />
+  <link rel="stylesheet" href="./assets/css/loader.css" />
   <link rel="stylesheet" href="./assets/css/styles.css" />
 </head>
 <body>
   <div id="loading-overlay" class="loader">
-      <!-- <div href="#" class="logo">Bet<span>Zone</span></div> -->
-      <svg width="100" height="100">
-        <defs>
-          <lineargradient id="lineargradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#49a1ff"></stop>
-            <stop offset="100%" stop-color="#fff"></stop>
-          </lineargradient>
-        </defs>
-        <g>
-          <text x="0" y="19" font-size="22" font-weight="900" >BET</text>
-          <text x="42" y="19" font-size="22" font-weight="900">ZONE</text>
-        </g>
-        <g>
-          <rect id="progress" x="0" y="21"  width="0" height="3" fill="#49a1ff"/>
-          <text id="progress-text" x="50%" y="50" font-size="12" font-weight="100" text-anchor="middle">0%</text>
-        </g>
-      </svg>
-      
-    </div>
+    <svg width="100" height="70" viewBox="0 0 100 70">
+      <defs>
+        <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#49a1ff"/>
+          <stop offset="100%" stop-color="#ffffff"/>
+        </linearGradient>
+      </defs>
+      <text x="4" y="22" font-size="22" font-weight="900" fill="url(#brandGrad)">BET</text>
+      <text x="46" y="22" font-size="22" font-weight="900" fill="#ffffff">ZONE</text>
+      <rect id="progress" x="0" y="26" width="0" height="3" rx="1.5" fill="#49a1ff"/>
+      <text id="progress-text" x="50%" y="50" font-size="12" font-weight="300" text-anchor="middle" fill="rgba(255,255,255,0.55)">0%</text>
+    </svg>
+  </div>
+
   <div class="layout">
     <aside>
-      <a href="#" class="logo"<span>Bet</span><span>Zone</span></a>
-      <h2 class="logo-narrow"><span>B</span><span>Z</span></h2>
+      <a href="#" class="logo"><span>Bet</span>Zone</a>
+      <h2 class="logo-narrow"><span>B</span>Z</h2>
       <div class="wallet-info">
         <p class="money"><i class="icon-casino"></i>PHP 34,002</p>
         <p class="users"><i class="icon-user"></i>player58900</p>
@@ -41,213 +37,157 @@
       <nav>
         <ul>
           <li>
-            <a href="#"  class="active" >
-              <span class="icons">
-                <i class="icon-home"></i>
-              </span> 
-              <span>
-                All Games
-              </span> 
+            <a href="#" class="active">
+              <span class="icons"><i class="icon-home"></i></span>
+              <span>All Games</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <span class="icons">
-                  <i class="icon-top"></i>
-                </span>
-                <span>
-                  Top
-              </span>
+              <span class="icons"><i class="icon-top"></i></span>
+              <span>Top</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <span class="icons">
-                  <i class="icon-new"></i>
-                </span>
-                <span>
-                  New
-              </span>
+              <span class="icons"><i class="icon-new"></i></span>
+              <span>New</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <span class="icons">
-                  <i class="icon-popular"></i>
-                </span>
-                <span>
-                  Popular
-              </span>
+              <span class="icons"><i class="icon-popular"></i></span>
+              <span>Popular</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <span class="icons">
-                  <i class="icon-slots"></i>
-                </span>
-                <span>
-                  Slots
-              </span>
+              <span class="icons"><i class="icon-slots"></i></span>
+              <span>Slots</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <span class="icons">
-                  <i class="icon-ttennis"></i>
-                </span>
-                <span>
-                  Table Games
-              </span>
+              <span class="icons"><i class="icon-ttennis"></i></span>
+              <span>Table Games</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <span class="icons">
-                  <i class="icon-jackpot"></i>
-                </span>
-                <span>
-                  Jackpots
-              </span>
+              <span class="icons"><i class="icon-jackpot"></i></span>
+              <span>Jackpots</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <span class="icons">
-                  <i class="icon-live"></i>
-                </span>
-                <span>
-                  Live Games
-              </span>
-            </a>
-          </li>
-          <li>
-            <a href="pages/svg.html"  class="" >
-              <span class="icons">
-                <i class="icon-game"></i>
-              </span> 
-              <span>
-                SVG Playground
-              </span> 
-            </a>
-          </li>
-          <li>
-            <a href="pages/hud.html"  class="" >
-              <span class="icons">
-                <i class="icon-star"></i>
-              </span> 
-              <span>
-                Canvas UI
-              </span> 
-            </a>
-          </li>
-          <li>
-            <a href="pages/hud-webgl-point-cloud.html"  class="" >
-              <span class="icons">
-                <i class="icon-new"></i>
-              </span> 
-              <span>
-                Point Cloud 
-              </span> 
-            </a>
-          </li>
-          <li>
-            <a href="pages/hud-webgl-lighting.html"  class="" >
-              <span class="icons">
-                <i class="icon-game"></i>
-              </span> 
-              <span>
-                Lighting 
-              </span> 
+              <span class="icons"><i class="icon-live"></i></span>
+              <span>Live Games</span>
             </a>
           </li>
         </ul>
       </nav>
-       <!-- Search -->
       <div class="bz-search">
         <form class="bz-search-input">
-           <i class="icon-search"></i>
+          <i class="icon-search"></i>
           <input type="text" placeholder="Search">
         </form>
-        <!-- <button type="button" class="bz-btn">Search</button> -->
-      </div>  
+      </div>
     </aside>
+
     <main class="main-content">
       <header class="topbar">
         <h1>All Games</h1>
       </header>
+
+      <div class="section-header">
+        <h2 class="section-label"><span class="live-dot"></span>Live Casino <span class="section-count">6</span></h2>
+        <a href="#" class="see-all">See all</a>
+      </div>
+
       <section class="grid">
         <a href="pages/game.html?game=baccarat1" class="grid-item">
           <div class="grid-item-media">
-            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="">
-            <img class="grid-item-road" src="assets/images/game-road.png" alt="">
+            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="Speed Baccarat 1" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
           </div>
-          <div>
-            <p class="grid-title">Speed Baccarat 1<img src="assets/images/flags/ph.svg" alt=""></p>
+          <div class="grid-item-info">
+            <p class="grid-title">Speed Baccarat 1<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
             <div class="grid-summary">
               <p><i class="icon-user"></i>312</p>
               <p><i class="icon-casino"></i>₱50–10K</p>
             </div>
           </div>
         </a>
+
         <a href="pages/game.html?game=baccarat2" class="grid-item">
           <div class="grid-item-media">
-            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="">
-            <img class="grid-item-road" src="assets/images/game-road.png" alt="">
+            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Speed Baccarat 2" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
           </div>
-          <div>
-            <p class="grid-title">Speed Baccarat 2<img src="assets/images/flags/ph.svg" alt=""></p>
+          <div class="grid-item-info">
+            <p class="grid-title">Speed Baccarat 2<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
             <div class="grid-summary">
               <p><i class="icon-user"></i>420</p>
               <p><i class="icon-casino"></i>₱100–50K</p>
             </div>
           </div>
         </a>
+
         <a href="pages/game.html?game=baccarat3" class="grid-item">
           <div class="grid-item-media">
-            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="">
-            <img class="grid-item-road" src="assets/images/game-road.png" alt="">
+            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="VIP Baccarat" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge vip-badge">VIP</span>
           </div>
-          <div>
-            <p class="grid-title">VIP Baccarat<img src="assets/images/flags/ph.svg" alt=""></p>
+          <div class="grid-item-info">
+            <p class="grid-title">VIP Baccarat<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
             <div class="grid-summary">
               <p><i class="icon-user"></i>88</p>
               <p><i class="icon-casino"></i>₱1K–500K</p>
             </div>
           </div>
         </a>
+
         <a href="pages/game.html?game=gostop" class="grid-item">
           <div class="grid-item-media">
-            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="">
-            <img class="grid-item-road" src="assets/images/game-road.png" alt="">
+            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Go-Stop" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
           </div>
-          <div>
-            <p class="grid-title">Go-Stop<img src="assets/images/flags/ph.svg" alt=""></p>
+          <div class="grid-item-info">
+            <p class="grid-title">Go-Stop<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
             <div class="grid-summary">
               <p><i class="icon-user"></i>156</p>
               <p><i class="icon-casino"></i>₱50–10K</p>
             </div>
           </div>
         </a>
+
         <a href="pages/game.html?game=oddeven" class="grid-item">
           <div class="grid-item-media">
-            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="">
-            <img class="grid-item-road" src="assets/images/game-road.png" alt="">
+            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="Odd / Even" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
           </div>
-          <div>
-            <p class="grid-title">Odd / Even<img src="assets/images/flags/ph.svg" alt=""></p>
+          <div class="grid-item-info">
+            <p class="grid-title">Odd / Even<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
             <div class="grid-summary">
               <p><i class="icon-user"></i>204</p>
               <p><i class="icon-casino"></i>₱50–10K</p>
             </div>
           </div>
         </a>
+
         <a href="pages/game.html?game=colorgame" class="grid-item">
           <div class="grid-item-media">
-            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="">
-            <img class="grid-item-road" src="assets/images/game-road.png" alt="">
+            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Color Game" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
           </div>
-          <div>
-            <p class="grid-title">Color Game<img src="assets/images/flags/ph.svg" alt=""></p>
+          <div class="grid-item-info">
+            <p class="grid-title">Color Game<img src="assets/images/flags/ph.svg" alt="PH" width="18" height="12"></p>
             <div class="grid-summary">
               <p><i class="icon-user"></i>178</p>
               <p><i class="icon-casino"></i>₱50–10K</p>
@@ -255,26 +195,9 @@
           </div>
         </a>
       </section>
-      <!-- <section>
-        <h2 class="section-title">Typography</h2>
-        <a href="pages/baccarat.html" class="typography">
-          <h1><span>&lt;h1&gt;</span> H1 Welcome to Betzone</h1>
-          <h2><span>&lt;h2&gt;</span> Welcome to Betzone</h2>
-          <h3><span>&lt;h3&gt;</span> Welcome to Betzone</h3>
-          <p><span>&lt;h4&gt;</span> Welcome to Betzone</p>
-          <h5><span>&lt;h5&gt;</span> Welcome to Betzone</h5>
-          <h6><span>&lt;h6&gt;</span> Welcome to Betzone</h6>
-          <small>&lt;small&gt; Welcome to Betzone</small><br>
-          <big> &lt;big&gt; Welcome to Betzone</big><br>
-          <b>&lt;b&gt;Welcome to Betzone</b>
-          <p>&lt;p&gt;Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quasi, eum.</p>
-        </a>
-      </section> -->
-      <footer>
-        
-      </footer>
-    </main> 
-    
+
+      <footer></footer>
+    </main>
   </div>
   <script src="/assets/js/main.js"></script>
 </body>
