@@ -102,6 +102,8 @@ let bets = GAME_TYPE === 'gostop'    ? { go: 0, stop: 0 }
          : GAME_TYPE === 'colorgame' ? { red: 0, blue: 0, yellow: 0, green: 0, white: 0, pink: 0 }
          : { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
 let betHistory = [];
+let betLog        = [];  // persistent cross-round feed: { player, amount, region, isYou }
+let _fakeBetTimer = 0;
 let lastBets = {};
 let playerCards = [null, null, null];
 let bankerCards = [null, null, null];
@@ -204,6 +206,7 @@ const containerHeight = canvas.height;
 
 
 const COLOR_GAME_KEYS = ['red', 'blue', 'yellow', 'green', 'white', 'pink'];
+const FAKE_PLAYERS    = ['Ace99','LuckyRex','Gold77','NightOwl','Star88','KingPin','FastCash','WildCard','CoolBet','TopDog','BlueMax','RedFox','SilverX','BetMaster','LionKing','PhilBet'];
 
 const _seedValues = GAME_TYPE === 'gostop'    ? ['G', 'S']
                   : GAME_TYPE === 'oddeven'   ? ['O', 'E']
@@ -369,6 +372,24 @@ const TILE_COLORS = Object.assign({
   white:  { fill: '#484848', stroke: '#c0c8d0', neon: '#ffffff' },
   pink:   { fill: '#5a0840', stroke: '#e020a0', neon: '#ff60cc' },
 }, (window.GAME_CONFIG && window.GAME_CONFIG.tileColors) || {});
+
+const _pushFakeBet = () => {
+  const gameRegions = GAME_TYPE === 'colorgame' ? COLOR_GAME_KEYS
+    : GAME_TYPE === 'gostop'  ? ['go',  'stop']
+    : GAME_TYPE === 'oddeven' ? ['odd', 'even']
+    : ['player', 'banker'];
+  const player = FAKE_PLAYERS[Math.floor(Math.random() * FAKE_PLAYERS.length)]
+               + (Math.floor(Math.random() * 900) + 100);
+  const amounts = [100, 200, 500, 1000, 2000, 5000];
+  betLog.unshift({
+    player,
+    amount: amounts[Math.floor(Math.random() * amounts.length)],
+    region: gameRegions[Math.floor(Math.random() * gameRegions.length)],
+    isYou: false,
+  });
+  if (betLog.length > 80) betLog.length = 80;
+};
+for (let _i = 0; _i < 14; _i++) _pushFakeBet(); // seed initial entries on load
 
 let revealNumber = null; // used by oddeven during result phase
 
@@ -1941,6 +1962,9 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
   }
 
   // ── 6 color tiles ──
+  const totalColorBets = COLOR_GAME_KEYS.reduce((s, k) => s + (bets[k] || 0), 0);
+  const pbH  = clamp(3 * scale, tileH * 0.030, 6 * scale);
+  const pbR2 = pbH * 0.5;
   COLOR_GAME_KEYS.forEach((key, i) => {
     const col = i % COLS;
     const row = Math.floor(i / COLS);
@@ -2012,6 +2036,37 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
       ctx.font      = `300 ${nameFs * 0.62}px Interroman, Arial`;
       ctx.fillStyle = 'rgba(255,255,255,0.50)';
       ctx.fillText('1 : 1', cx, ty + tileH * 0.50);
+
+      // ── Bet share bar + percentage ──
+      { const pbMX   = tileW * 0.11;
+        const pbW    = tileW - pbMX * 2;
+        const pbY    = ty + tileH * 0.600;
+        const pRatio = bets[key] / (totalColorBets || 1);
+
+        // Track
+        ctx.beginPath(); ctx.roundRect(tx + pbMX, pbY, pbW, pbH, pbR2);
+        ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
+
+        // Filled portion
+        if (pRatio > 0) {
+          const fw = Math.max(pbH, pbW * pRatio);
+          const pg = ctx.createLinearGradient(tx + pbMX, pbY, tx + pbMX + fw, pbY);
+          pg.addColorStop(0, color.stroke); pg.addColorStop(1, color.neon);
+          ctx.save();
+          ctx.beginPath(); ctx.roundRect(tx + pbMX, pbY, fw, pbH, pbR2);
+          ctx.fillStyle = pg; ctx.shadowColor = color.neon; ctx.shadowBlur = 6 * scale; ctx.fill();
+          ctx.restore();
+        }
+
+        // Percentage label — right-aligned, inline with bar
+        if (totalColorBets > 0) {
+          const pctFs = clamp(4.5 * scale, tileH * 0.078, 9 * scale);
+          ctx.font      = `600 ${pctFs}px Interroman, Arial`;
+          ctx.fillStyle = pRatio > 0 ? color.neon : 'rgba(255,255,255,0.22)';
+          ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+          ctx.fillText(`${Math.round(pRatio * 100)}%`, tx + tileW - 2 * scale, pbY - 1 * scale);
+        }
+      }
 
       if (gamePhase === 'betting') {
         drawBetChip(cx, ty + tileH * 0.76, chipR, bets[key]);
@@ -2846,6 +2901,83 @@ const drawStatistics = (GEOMETRY) => {
       }
     });
     ctx.restore();
+
+    // ── Bet Log — fills blank scoreBoardA panel ──
+    {
+      // Inject a synthetic bet periodically during betting phase
+      if (gamePhase === 'betting') {
+        const _now = performance.now();
+        if (_now - _fakeBetTimer > 1400) {
+          _fakeBetTimer = _now + Math.random() * 900; // jitter next threshold
+          _pushFakeBet();
+        }
+      }
+
+      const logHdrFs   = clamp(6 * scale, scoreBoardA.H * 0.060, 10 * scale);
+      const logTopPad  = logHdrFs + 4 * scale;
+      const logRowH    = clamp(13 * scale, scoreBoardA.H * 0.065, 19 * scale);
+      const logPx      = clamp(7.5 * scale, scoreBoardA.H * 0.036, 11 * scale);
+      const logPad     = 5 * scale;
+      const logMaxRows = Math.floor((scoreBoardA.H - logTopPad) / logRowH);
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(scoreBoardA.X, scoreBoardA.Y, scoreBoardA.W, scoreBoardA.H); ctx.clip();
+
+      // Header
+      ctx.font = `500 ${logHdrFs}px Interroman, Arial`;
+      ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.fillText('BET LOG', scoreBoardA.X + 2 * scale, scoreBoardA.Y + 1 * scale);
+
+      // Live dot (green pulse during betting)
+      if (gamePhase === 'betting') {
+        const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.005);
+        const ldX = scoreBoardA.X + ctx.measureText('BET LOG').width + logHdrFs * 1.6;
+        const ldY = scoreBoardA.Y + logHdrFs * 0.55;
+        ctx.beginPath(); ctx.arc(ldX, ldY, 2.2 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(60,210,90,${0.55 + pulse * 0.45})`; ctx.fill();
+      }
+
+      // Row list (newest first)
+      betLog.slice(0, logMaxRows).forEach((entry, i) => {
+        const ry  = scoreBoardA.Y + logTopPad + i * logRowH;
+        const tc  = TILE_COLORS[entry.region];
+        const neon = tc ? tc.neon : 'rgba(255,255,255,0.55)';
+
+        // Alternating row tint
+        if (i % 2 === 0) {
+          ctx.fillStyle = 'rgba(255,255,255,0.025)';
+          ctx.fillRect(scoreBoardA.X, ry, scoreBoardA.W, logRowH);
+        }
+
+        // Color dot
+        ctx.beginPath(); ctx.arc(scoreBoardA.X + logPad * 0.9, ry + logRowH * 0.5, logPx * 0.30, 0, Math.PI * 2);
+        ctx.fillStyle = neon; ctx.fill();
+
+        // Player name — clipped to left 42% of the panel
+        ctx.save();
+        ctx.beginPath(); ctx.rect(scoreBoardA.X + logPad * 1.7, ry, scoreBoardA.W * 0.42, logRowH); ctx.clip();
+        ctx.font = `${entry.isYou ? 700 : 500} ${logPx}px Interroman, Arial`;
+        ctx.fillStyle = entry.isYou ? '#ffe060' : 'rgba(255,255,255,0.72)';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.fillText(entry.player, scoreBoardA.X + logPad * 1.7, ry + logRowH * 0.5);
+        ctx.restore();
+
+        // Amount — right-aligned to 78% mark
+        ctx.font = `600 ${logPx}px Interroman, Arial`;
+        ctx.fillStyle = 'rgba(255,255,255,0.82)';
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillText('₱' + entry.amount.toLocaleString(), scoreBoardA.X + scoreBoardA.W * 0.78, ry + logRowH * 0.5);
+
+        // Region label — neon color, right edge
+        const regionLabel = entry.region.charAt(0).toUpperCase() + entry.region.slice(1);
+        ctx.font = `600 ${logPx * 0.86}px Interroman, Arial`;
+        ctx.fillStyle = neon;
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillText(regionLabel, scoreBoardA.X + scoreBoardA.W - logPad * 0.6, ry + logRowH * 0.5);
+      });
+
+      ctx.restore();
+    }
 
   } else {
   const roadHdrFs = clamp(5 * scale, scoreBoardA.H * 0.050, 8.5 * scale);
@@ -4201,6 +4333,8 @@ canvas.addEventListener('pointerup', () => {
       bets[pressedRegion] += amount;
       balance -= amount;
       betHistory.push({ region: pressedRegion, amount });
+      betLog.unshift({ player: 'You', amount, region: pressedRegion, isYou: true });
+      if (betLog.length > 80) betLog.length = 80;
       const dest = betChipPositions[pressedRegion];
       if (dest && chipButtonCenter.r > 0) {
         flyingChips.push({
