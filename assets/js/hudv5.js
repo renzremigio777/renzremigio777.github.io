@@ -160,6 +160,8 @@ let chatSendBounds = null;
 let isSettingsOpen  = false;
 let isUserPrefOpen  = false;
 let isGameDropOpen  = false;
+let isLabelsOn      = false;
+let labelsBounds    = null;
 let topNavGameHits    = [];
 let topNavSettingsHit = null;
 let topNavUserHit     = null;
@@ -853,6 +855,117 @@ const drawUI = () => {
   // colorgame dice live view is rendered inside drawStatistics (gE panel)
 
 }
+
+const _hexToRgba = (hex, a) => {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+};
+
+const drawSectionLabels = (G) => {
+  if (!G) return;
+  const S = scale;
+  const navH_ = clamp(30*S, canvas.height * 0.042, 44*S);
+  const navW_ = clamp(260*S, containerWidth * 0.88, containerWidth * 0.94);
+  const navX_ = leftGutter + (containerWidth - navW_) * 0.5;
+  const sections = [
+    { r: G.video,           label: 'LIVE DEALER FEED',    sub: 'Video stream · dealer camera',     c: '#4499ff' },
+    { r: G.betOptions,      label: 'BETTING ZONE',        sub: 'Place bets · Banker / Player / Tie', c: '#ff9040' },
+    { r: G.statisticsGridE, label: 'BEAD ROAD',           sub: 'Game history · result sequence',   c: '#c060ff' },
+    { r: G.statisticsGridA, label: 'GAME ANALYTICS',      sub: 'Patterns · trends · streaks',      c: '#9060ff' },
+    { r: G.menuBar,         label: 'BET CONTROLS',        sub: 'Chip selector · Undo · Cancel',    c: '#30d890' },
+    { r: { X: navX_, Y: 7*S, W: navW_, H: navH_ },
+                            label: 'NAVIGATION BAR',      sub: 'Game switcher · Volume · Layout',  c: '#ffe040' },
+    ...(G.walletBar ? [{ r: G.walletBar, label: 'WALLET & BALANCE', sub: 'Account balance · session log', c: '#60e0ff' }] : []),
+  ];
+
+  const isOver = (r) => r && _mx >= r.X && _mx <= r.X + r.W && _my >= r.Y && _my <= r.Y + r.H;
+
+  ctx.save();
+  for (const { r, label, sub, c } of sections) {
+    if (!r || r.W <= 0 || r.H <= 0) continue;
+    const hov = isOver(r);
+
+    // ── Tinted fill ──
+    ctx.fillStyle = _hexToRgba(c, hov ? 0.20 : 0.09);
+    ctx.beginPath(); ctx.rect(r.X, r.Y, r.W, r.H); ctx.fill();
+
+    // ── Border ──
+    if (hov) {
+      ctx.shadowColor = c; ctx.shadowBlur = 8*S;
+      ctx.strokeStyle = _hexToRgba(c, 0.95);
+      ctx.lineWidth = 2.0*S; ctx.setLineDash([]);
+    } else {
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = _hexToRgba(c, 0.45);
+      ctx.lineWidth = 1.3*S; ctx.setLineDash([5*S, 3*S]);
+    }
+    ctx.beginPath(); ctx.rect(r.X, r.Y, r.W, r.H); ctx.stroke();
+    ctx.setLineDash([]); ctx.shadowBlur = 0;
+
+    // ── Label badge ──
+    const padX = hov ? 10*S : 8*S, padY = hov ? 5*S : 4*S;
+    const maxBadgeW = r.W - 8*S; // badge must stay inside section
+
+    // Main label: shrink font until text fits within maxBadgeW
+    let fs = clamp(7*S, r.H * 0.18, 13*S);
+    ctx.font = `700 ${fs}px Interroman, Arial`;
+    let tw = ctx.measureText(label).width;
+    const maxTW = maxBadgeW - padX * 2;
+    if (tw > maxTW && maxTW > 0) {
+      fs = Math.max(6*S, fs * (maxTW / tw));
+      ctx.font = `700 ${fs}px Interroman, Arial`;
+      tw = ctx.measureText(label).width;
+    }
+
+    const showSub = r.H > 60*S;
+
+    // Sub-label: also shrink to fit
+    let subFs = clamp(5*S, r.H * 0.12, 10*S);
+    let stw = 0;
+    if (showSub) {
+      ctx.font = `400 ${subFs}px Arial`;
+      stw = ctx.measureText(sub).width;
+      if (stw > maxTW && maxTW > 0) {
+        subFs = Math.max(5*S, subFs * (maxTW / stw));
+        ctx.font = `400 ${subFs}px Arial`;
+        stw = ctx.measureText(sub).width;
+      }
+    }
+
+    const bw = Math.min(Math.max(tw, stw) + padX * 2, maxBadgeW);
+    const bh = showSub ? fs + subFs + padY * 2 + 3*S : fs + padY * 2;
+    const bx = Math.max(r.X + 3*S, r.X + r.W*0.5 - bw*0.5);
+    const by = r.Y + r.H*0.5 - bh*0.5;
+
+    if (hov) { ctx.shadowColor = c; ctx.shadowBlur = 12*S; }
+    ctx.fillStyle = _hexToRgba(c, hov ? 0.96 : 0.80);
+    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, bh*0.42); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Main label text
+    const cx_ = bx + bw * 0.5;
+    const textY = showSub ? by + padY + fs*0.5 : by + bh*0.5;
+    ctx.font = `700 ${fs}px Interroman, Arial`;
+    ctx.fillStyle = '#060710';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, cx_, textY);
+
+    // Sub-label text
+    if (showSub) {
+      ctx.font = `400 ${subFs}px Arial`;
+      ctx.fillStyle = 'rgba(6,7,16,0.68)';
+      ctx.fillText(sub, cx_, by + padY + fs + 3*S + subFs*0.5);
+    }
+
+    // Dimension readout (bottom-right corner)
+    const dFs = clamp(5*S, r.H * 0.11, 8*S);
+    ctx.font = `400 ${dFs}px Arial`;
+    ctx.fillStyle = _hexToRgba(c, hov ? 0.70 : 0.42);
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillText(`${Math.round(r.W/S)} × ${Math.round(r.H/S)} px`, r.X + r.W - 4*S, r.Y + r.H - 3*S);
+  }
+  ctx.restore();
+};
 
 // ── Dispatcher: routes to game-specific bet option renderer ─────────────────
 const drawbetOptions = (GEOMETRY) => {
@@ -3898,13 +4011,13 @@ const drawTopNav = () => {
     ctx.stroke();
   }
 
-  // ── Utility slots: Chat | Volume | Video | Layout | Lobby | User ──
+  // ── Utility slots: Chat | Volume | Video | Layout | Lobby | Labels | User ──
   const utilW = navX + navW - divX;
-  const NUM_UTIL = 6;
+  const NUM_UTIL = 7;
   const slotW = utilW / NUM_UTIL;
   const icoSz = navH * 0.36;
   const midY  = navY + navH * 0.5;
-  const uCX   = divX + slotW * 5.5; // slot 5 (User) center — used by dropdown
+  const uCX   = divX + slotW * 6.5; // slot 6 (User) center — used by dropdown
 
   const drawNavSlot = (i, isActive, accentColor) => {
     const cx = divX + slotW * (i + 0.5);
@@ -3997,8 +4110,22 @@ const drawTopNav = () => {
     const ls = new Path2D(); ls.rect(cx-slotW*0.5, navY, slotW, navH); hitRegions.lobby = ls;
   }
 
-  // Slot 5 — User/Profile
-  { const cx = drawNavSlot(5, isUserPrefOpen, null);
+  // Slot 5 — Section Labels toggle
+  { const cx = drawNavSlot(5, isLabelsOn, 'rgba(80,230,160,0.80)');
+    const iw = icoSz * 0.80, ih = icoSz * 0.80;
+    const ix = cx - iw*0.5, iy = midY - ih*0.5;
+    ctx.strokeStyle = isLabelsOn ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    ctx.lineWidth = 1.0*S; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.roundRect(ix, iy, iw, ih, iw*0.12); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ix, iy+ih*0.30); ctx.lineTo(ix+iw, iy+ih*0.30); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ix+iw*0.5, iy+ih*0.30); ctx.lineTo(ix+iw*0.5, iy+ih); ctx.stroke();
+    ctx.fillStyle = isLabelsOn ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    ctx.beginPath(); ctx.arc(ix+iw*0.5, iy+ih*0.15, iw*0.07, 0, Math.PI*2); ctx.fill();
+    labelsBounds = { X: cx - slotW*0.5, Y: navY, W: slotW, H: navH };
+  }
+
+  // Slot 6 — User/Profile
+  { const cx = drawNavSlot(6, isUserPrefOpen, null);
     const ur = icoSz * 0.46;
     ctx.strokeStyle = isUserPrefOpen ? '#ffffff' : 'rgba(255,255,255,0.70)';
     ctx.lineWidth = 1.2*S; ctx.lineCap = 'round';
@@ -4114,6 +4241,7 @@ const loop = () => {
   // drawLayout();
   drawUI();
   drawTopNav();
+  if (isLabelsOn) drawSectionLabels(lastGEOMETRY);
   drawPopup();
   drawFlyingChips();
   drawPhaseBanner();
@@ -4211,6 +4339,8 @@ canvas.addEventListener('pointerdown', (e) => {
     pressedRegion = 'layout';
   } else if (videoBounds && x >= videoBounds.X && x <= videoBounds.X + videoBounds.W && y >= videoBounds.Y && y <= videoBounds.Y + videoBounds.H) {
     pressedRegion = 'video';
+  } else if (labelsBounds && x >= labelsBounds.X && x <= labelsBounds.X + labelsBounds.W && y >= labelsBounds.Y && y <= labelsBounds.Y + labelsBounds.H) {
+    pressedRegion = 'labels';
   } else if (isChatOpen && chatCloseBounds && x >= chatCloseBounds.X && x <= chatCloseBounds.X + chatCloseBounds.W && y >= chatCloseBounds.Y && y <= chatCloseBounds.Y + chatCloseBounds.H) {
     pressedRegion = 'chatClose';
   } else if (isChatOpen && chatSendBounds && x >= chatSendBounds.X && x <= chatSendBounds.X + chatSendBounds.W && y >= chatSendBounds.Y && y <= chatSendBounds.Y + chatSendBounds.H) {
@@ -4290,6 +4420,10 @@ canvas.addEventListener('pointerup', () => {
   }
   if (pressedRegion === 'video') {
     isVideoOn = !isVideoOn;
+    pressedRegion = null; return;
+  }
+  if (pressedRegion === 'labels') {
+    isLabelsOn = !isLabelsOn;
     pressedRegion = null; return;
   }
 
