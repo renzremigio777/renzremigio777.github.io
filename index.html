@@ -12,18 +12,37 @@
 </head>
 <body>
   <div id="loading-overlay" class="loader">
-    <svg width="100" height="70" viewBox="0 0 100 70">
-      <defs>
-        <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#49a1ff"/>
-          <stop offset="100%" stop-color="#ffffff"/>
-        </linearGradient>
-      </defs>
-      <text x="4" y="22" font-size="22" font-weight="900" fill="url(#brandGrad)">BET</text>
-      <text x="46" y="22" font-size="22" font-weight="900" fill="#ffffff">ZONE</text>
-      <rect id="progress" x="0" y="26" width="0" height="3" rx="1.5" fill="#49a1ff"/>
-      <text id="progress-text" x="50%" y="50" font-size="12" font-weight="300" text-anchor="middle" fill="rgba(255,255,255,0.55)">0%</text>
-    </svg>
+    <div class="loader-orb loader-orb-1"></div>
+    <div class="loader-orb loader-orb-2"></div>
+
+    <div class="loader-content">
+      <div class="loader-brand">
+        <span class="loader-brand-bet">BET</span><span class="loader-brand-zone">ZONE</span>
+      </div>
+      <p class="loader-tagline">Live Casino &nbsp;·&nbsp; Real-time Tables</p>
+
+      <div class="loader-spinner-wrap">
+        <svg class="loader-ring-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,0.07)" stroke-width="2.5"/>
+          <circle class="loader-ring-arc" cx="28" cy="28" r="22"
+            stroke="#49a1ff" stroke-width="2.5" stroke-linecap="round"
+            pathLength="100" stroke-dasharray="22 78"/>
+        </svg>
+      </div>
+
+      <div class="loader-bar-outer">
+        <div class="loader-bar-inner" id="loader-bar-inner"></div>
+      </div>
+
+      <div class="loader-status-row">
+        <span class="loader-status-msg" id="loader-status-msg">Connecting to tables…</span>
+        <span class="loader-pct" id="progress-text">0%</span>
+      </div>
+    </div>
+
+    <div class="loader-live-badge">
+      <span class="loader-live-dot"></span>LIVE
+    </div>
   </div>
 
   <div class="layout">
