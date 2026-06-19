@@ -1139,8 +1139,12 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
     const sX     = player.X + betOptionsGap;
     const sW     = player.TW - player.R - betOptionsGap * 2;
     const cnt    = betHistory.filter(b => b.region === 'player').length;
-    ctx.fillStyle = COLORS.STROKEBLUE;
+    ctx.save();
+    ctx.fillStyle   = COLORS.STROKEBLUE;
+    ctx.shadowColor = COLORS.NEONBLUE;
+    ctx.shadowBlur  = 5 * scale;
     ctx.beginPath(); ctx.arc(sX + dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
     ctx.font = `600 ${sFS}px Interroman, Arial`; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
     ctx.fillStyle = 'rgba(255,255,255,0.72)';
     ctx.fillText(`${cnt} bet${cnt !== 1 ? 's' : ''}`, sX + dotR * 2.6, statsY);
@@ -1161,7 +1165,16 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
       const pg = ctx.createLinearGradient(pBarX, pbY, pBarX + fw, pbY);
       pg.addColorStop(0, COLORS.STROKEBLUE); pg.addColorStop(1, COLORS.NEONBLUE);
       ctx.save(); ctx.beginPath(); ctx.roundRect(pBarX, pbY, fw, pbH, pbR);
-      ctx.fillStyle = pg; ctx.shadowColor = COLORS.NEONBLUE; ctx.shadowBlur = 8 * scale; ctx.fill(); ctx.restore();
+      ctx.fillStyle = pg; ctx.shadowColor = COLORS.NEONBLUE; ctx.shadowBlur = 8 * scale; ctx.fill();
+      const shine = ctx.createLinearGradient(pBarX, pbY, pBarX, pbY + pbH);
+      shine.addColorStop(0, 'rgba(255,255,255,0.30)'); shine.addColorStop(0.5, 'rgba(255,255,255,0.00)');
+      ctx.shadowBlur = 0; ctx.fillStyle = shine; ctx.fill(); ctx.restore();
+      if (pRatio < 0.99) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(pBarX + fw, pbY + pbH * 0.5, pbH * 0.75, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS.NEONBLUE; ctx.shadowColor = COLORS.NEONBLUE; ctx.shadowBlur = 10 * scale; ctx.fill();
+        ctx.restore();
+      }
     }
   }
 
@@ -1266,8 +1279,12 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
     ctx.fillText(fmtCurrency(bets.banker), sX, statsY);
     ctx.fillStyle = 'rgba(255,255,255,0.72)'; ctx.textAlign = 'end';
     ctx.fillText(`${cnt} bet${cnt !== 1 ? 's' : ''}`, sRX - dotR * 2.6, statsY);
-    ctx.fillStyle = COLORS.STROKERED;
+    ctx.save();
+    ctx.fillStyle   = COLORS.STROKERED;
+    ctx.shadowColor = COLORS.NEONRED;
+    ctx.shadowBlur  = 5 * scale;
     ctx.beginPath(); ctx.arc(sRX - dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
   }
 
   // -- Progress Bar (banker — fills right→left) --
@@ -1285,7 +1302,16 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
       const bg = ctx.createLinearGradient(bBarRX, pbY, fx, pbY);
       bg.addColorStop(0, COLORS.STROKERED); bg.addColorStop(1, COLORS.NEONRED);
       ctx.save(); ctx.beginPath(); ctx.roundRect(fx, pbY, fw, pbH, pbR);
-      ctx.fillStyle = bg; ctx.shadowColor = COLORS.NEONRED; ctx.shadowBlur = 8 * scale; ctx.fill(); ctx.restore();
+      ctx.fillStyle = bg; ctx.shadowColor = COLORS.NEONRED; ctx.shadowBlur = 8 * scale; ctx.fill();
+      const shine = ctx.createLinearGradient(fx, pbY, fx, pbY + pbH);
+      shine.addColorStop(0, 'rgba(255,255,255,0.30)'); shine.addColorStop(0.5, 'rgba(255,255,255,0.00)');
+      ctx.shadowBlur = 0; ctx.fillStyle = shine; ctx.fill(); ctx.restore();
+      if (bRatio < 0.99) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(fx, pbY + pbH * 0.5, pbH * 0.75, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS.NEONRED; ctx.shadowColor = COLORS.NEONRED; ctx.shadowBlur = 10 * scale; ctx.fill();
+        ctx.restore();
+      }
     }
   }
 
@@ -1345,8 +1371,12 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
     const sFS    = clamp(8 * scale, tie.R * 0.22, 11 * scale);
     const dotR   = sFS * 0.34;
     const cnt    = betHistory.filter(b => b.region === 'tie').length;
-    ctx.fillStyle = COLORS.STROKEGREEN;
+    ctx.save();
+    ctx.fillStyle   = COLORS.STROKEGREEN;
+    ctx.shadowColor = COLORS.NEONGREEN;
+    ctx.shadowBlur  = 5 * scale;
     ctx.beginPath(); ctx.arc(tBarX + dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
     ctx.font = `600 ${sFS}px Interroman, Arial`; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
     ctx.fillStyle = 'rgba(255,255,255,0.72)';
     ctx.fillText(`${cnt} bet${cnt !== 1 ? 's' : ''}`, tBarX + dotR * 2.6, statsY);
@@ -1367,7 +1397,16 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
       const tg = ctx.createLinearGradient(tBarX, pbY, tBarX + fw, pbY);
       tg.addColorStop(0, COLORS.STROKEGREEN); tg.addColorStop(1, COLORS.NEONGREEN);
       ctx.save(); ctx.beginPath(); ctx.roundRect(tBarX, pbY, fw, pbH, pbR);
-      ctx.fillStyle = tg; ctx.shadowColor = COLORS.NEONGREEN; ctx.shadowBlur = 8 * scale; ctx.fill(); ctx.restore();
+      ctx.fillStyle = tg; ctx.shadowColor = COLORS.NEONGREEN; ctx.shadowBlur = 8 * scale; ctx.fill();
+      const shine = ctx.createLinearGradient(tBarX, pbY, tBarX, pbY + pbH);
+      shine.addColorStop(0, 'rgba(255,255,255,0.30)'); shine.addColorStop(0.5, 'rgba(255,255,255,0.00)');
+      ctx.shadowBlur = 0; ctx.fillStyle = shine; ctx.fill(); ctx.restore();
+      if (tRatio < 0.99) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(tBarX + fw, pbY + pbH * 0.5, pbH * 0.75, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS.NEONGREEN; ctx.shadowColor = COLORS.NEONGREEN; ctx.shadowBlur = 10 * scale; ctx.fill();
+        ctx.restore();
+      }
     }
   }
 
@@ -1621,12 +1660,16 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
   betChipPositions[keyA] = { x: tA.X + tA.TW * 0.35, y: tA.Y + tA.LH * 0.55, r: betChipR };
 
   // Stats A
-  { const statsY = tA.CY - tA.R * 0.26;
+  { const statsY = bO.Y + bO.H * 0.74;
     const sFS = clamp(8*scale, tA.R * 0.22, 11*scale), dotR = sFS * 0.34;
     const sX = tA.X + betOptionsGap, sW = tA.TW - tA.R - betOptionsGap * 2;
     const cnt = betHistory.filter(b => b.region === keyA).length;
-    ctx.fillStyle = colorA.stroke;
+    ctx.save();
+    ctx.fillStyle   = colorA.stroke;
+    ctx.shadowColor = colorA.neon;
+    ctx.shadowBlur  = 5 * scale;
     ctx.beginPath(); ctx.arc(sX + dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
     ctx.font = `600 ${sFS}px Interroman, Arial`; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
     ctx.fillStyle = 'rgba(255,255,255,0.72)';
     ctx.fillText(`${cnt} bet${cnt !== 1 ? 's' : ''}`, sX + dotR * 2.6, statsY);
@@ -1635,7 +1678,7 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
   }
   // Progress bar A (left→right)
   { const pBarX = tA.X + betOptionsGap, pBarW = tA.TW - tA.R - betOptionsGap * 2;
-    const pbY = tA.CY - tA.R * 0.06;
+    const pbY = bO.Y + bO.H * 0.84;
     const pRatio = bets[keyA] / ((bets[keyA] + bets[keyB]) || 1);
     ctx.beginPath(); ctx.roundRect(pBarX, pbY, pBarW, pbH, pbR);
     ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
@@ -1644,7 +1687,16 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
       const pg = ctx.createLinearGradient(pBarX, pbY, pBarX + fw, pbY);
       pg.addColorStop(0, colorA.stroke); pg.addColorStop(1, colorA.neon);
       ctx.save(); ctx.beginPath(); ctx.roundRect(pBarX, pbY, fw, pbH, pbR);
-      ctx.fillStyle = pg; ctx.shadowColor = colorA.neon; ctx.shadowBlur = 8*scale; ctx.fill(); ctx.restore();
+      ctx.fillStyle = pg; ctx.shadowColor = colorA.neon; ctx.shadowBlur = 8*scale; ctx.fill();
+      const shine = ctx.createLinearGradient(pBarX, pbY, pBarX, pbY + pbH);
+      shine.addColorStop(0, 'rgba(255,255,255,0.30)'); shine.addColorStop(0.5, 'rgba(255,255,255,0.00)');
+      ctx.shadowBlur = 0; ctx.fillStyle = shine; ctx.fill(); ctx.restore();
+      if (pRatio < 0.99) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(pBarX + fw, pbY + pbH * 0.5, pbH * 0.75, 0, Math.PI * 2);
+        ctx.fillStyle = colorA.neon; ctx.shadowColor = colorA.neon; ctx.shadowBlur = 10*scale; ctx.fill();
+        ctx.restore();
+      }
     }
   }
 
@@ -1695,7 +1747,7 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
   betChipPositions[keyB] = { x: tB.X + tB.TW * 0.65, y: tB.Y + tB.LH * 0.55, r: betChipR };
 
   // Stats B (mirrored)
-  { const statsY = tB.CY - tB.R * 0.26;
+  { const statsY = bO.Y + bO.H * 0.74;
     const sFS = clamp(8*scale, tB.R * 0.22, 11*scale), dotR = sFS * 0.34;
     const sRX = tB.X + tB.TW - betOptionsGap, sW = tB.TW - tB.R - betOptionsGap * 2;
     const sX  = sRX - sW;
@@ -1705,12 +1757,16 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
     ctx.fillText(fmtCurrency(bets[keyB]), sX, statsY);
     ctx.fillStyle = 'rgba(255,255,255,0.72)'; ctx.textAlign = 'end';
     ctx.fillText(`${cnt} bet${cnt !== 1 ? 's' : ''}`, sRX - dotR * 2.6, statsY);
-    ctx.fillStyle = colorB.stroke;
+    ctx.save();
+    ctx.fillStyle   = colorB.stroke;
+    ctx.shadowColor = colorB.neon;
+    ctx.shadowBlur  = 5 * scale;
     ctx.beginPath(); ctx.arc(sRX - dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
   }
   // Progress bar B (right→left)
   { const bBarRX = tB.X + tB.TW - betOptionsGap, bBarW = tB.TW - tB.R - betOptionsGap * 2;
-    const bBarX = bBarRX - bBarW, pbY = tB.CY - tB.R * 0.06;
+    const bBarX = bBarRX - bBarW, pbY = bO.Y + bO.H * 0.84;
     const bRatio = bets[keyB] / ((bets[keyA] + bets[keyB]) || 1);
     ctx.beginPath(); ctx.roundRect(bBarX, pbY, bBarW, pbH, pbR);
     ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
@@ -1719,7 +1775,16 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
       const bg = ctx.createLinearGradient(bBarRX, pbY, fx, pbY);
       bg.addColorStop(0, colorB.stroke); bg.addColorStop(1, colorB.neon);
       ctx.save(); ctx.beginPath(); ctx.roundRect(fx, pbY, fw, pbH, pbR);
-      ctx.fillStyle = bg; ctx.shadowColor = colorB.neon; ctx.shadowBlur = 8*scale; ctx.fill(); ctx.restore();
+      ctx.fillStyle = bg; ctx.shadowColor = colorB.neon; ctx.shadowBlur = 8*scale; ctx.fill();
+      const shine = ctx.createLinearGradient(fx, pbY, fx, pbY + pbH);
+      shine.addColorStop(0, 'rgba(255,255,255,0.30)'); shine.addColorStop(0.5, 'rgba(255,255,255,0.00)');
+      ctx.shadowBlur = 0; ctx.fillStyle = shine; ctx.fill(); ctx.restore();
+      if (bRatio < 0.99) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(fx, pbY + pbH * 0.5, pbH * 0.75, 0, Math.PI * 2);
+        ctx.fillStyle = colorB.neon; ctx.shadowColor = colorB.neon; ctx.shadowBlur = 10*scale; ctx.fill();
+        ctx.restore();
+      }
     }
   }
 
@@ -2141,51 +2206,88 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
 
     // ── Labels — only during betting/dealing ──
     if (gamePhase !== 'result') {
-      const nameFs = clamp(9 * scale, tileH * 0.21, 22 * scale);
-      ctx.font      = `700 ${nameFs}px Interroman, Arial`;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(key.toUpperCase(), cx, ty + tileH * 0.30);
+      const nameFs = clamp(9 * scale, tileH * 0.20, 22 * scale);
+      const pbMX   = tileW * 0.09;
+      const pbW    = tileW - pbMX * 2;
+      const chipCY = ty + tileH * 0.44;
+      const statsY = ty + tileH * 0.74;
+      const barY   = ty + tileH * 0.86;
+      const pRatio = bets[key] / (totalColorBets || 1);
+      const betCnt = betLog.filter(b => b.region === key).length;
 
-      ctx.font      = `300 ${nameFs * 0.62}px Interroman, Arial`;
-      ctx.fillStyle = 'rgba(255,255,255,0.50)';
-      ctx.fillText('1 : 1', cx, ty + tileH * 0.50);
+      // ── Color name ──
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font         = `700 ${nameFs}px Interroman, Arial`;
+      ctx.fillStyle    = '#ffffff';
+      ctx.fillText(key.toUpperCase(), cx, ty + tileH * 0.21);
 
-      // ── Bet share bar + percentage ──
-      { const pbMX   = tileW * 0.11;
-        const pbW    = tileW - pbMX * 2;
-        const pbY    = ty + tileH * 0.600;
-        const pRatio = bets[key] / (totalColorBets || 1);
+      // ── Stats row: [● N bets]  [₱amount] ──
+      {
+        const sFS  = clamp(5.5 * scale, tileH * 0.058, 9 * scale);
+        const dotR = sFS * 0.36;
+        // Glowing colored dot
+        ctx.save();
+        ctx.fillStyle   = color.stroke;
+        ctx.shadowColor = color.neon;
+        ctx.shadowBlur  = 5 * scale;
+        ctx.beginPath(); ctx.arc(tx + pbMX + dotR, statsY, dotR, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        // Bet count
+        ctx.font         = `600 ${sFS}px Interroman, Arial`;
+        ctx.textAlign    = 'start';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle    = 'rgba(255,255,255,0.62)';
+        ctx.fillText(`${betCnt} bet${betCnt !== 1 ? 's' : ''}`, tx + pbMX + dotR * 2.8, statsY);
+        // Amount (right-aligned, neon when bet placed)
+        ctx.textAlign = 'end';
+        ctx.fillStyle = bets[key] > 0 ? color.neon : 'rgba(255,255,255,0.22)';
+        ctx.fillText(bets[key] > 0 ? fmtCurrency(bets[key]) : '· · ·', tx + tileW - pbMX, statsY);
+      }
 
-        // Track
-        ctx.beginPath(); ctx.roundRect(tx + pbMX, pbY, pbW, pbH, pbR2);
-        ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
+      // ── Bar track ──
+      ctx.beginPath(); ctx.roundRect(tx + pbMX, barY, pbW, pbH, pbR2);
+      ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill();
 
-        // Filled portion
-        if (pRatio > 0) {
-          const fw = Math.max(pbH, pbW * pRatio);
-          const pg = ctx.createLinearGradient(tx + pbMX, pbY, tx + pbMX + fw, pbY);
-          pg.addColorStop(0, color.stroke); pg.addColorStop(1, color.neon);
+      // ── Filled portion: gradient + glow + shine overlay + glowing endcap ──
+      if (pRatio > 0) {
+        const fw = Math.max(pbH, pbW * pRatio);
+        const pg = ctx.createLinearGradient(tx + pbMX, barY, tx + pbMX + fw, barY);
+        pg.addColorStop(0, color.stroke);
+        pg.addColorStop(1, color.neon);
+        ctx.save();
+        ctx.beginPath(); ctx.roundRect(tx + pbMX, barY, fw, pbH, pbR2);
+        ctx.fillStyle   = pg;
+        ctx.shadowColor = color.neon;
+        ctx.shadowBlur  = 8 * scale;
+        ctx.fill();
+        // Shine highlight on top half of fill
+        const shine = ctx.createLinearGradient(tx + pbMX, barY, tx + pbMX, barY + pbH);
+        shine.addColorStop(0,   'rgba(255,255,255,0.30)');
+        shine.addColorStop(0.5, 'rgba(255,255,255,0.00)');
+        ctx.shadowBlur = 0;
+        ctx.fillStyle  = shine;
+        ctx.fill();
+        ctx.restore();
+        // Glowing endcap at fill tip
+        if (pRatio < 0.99) {
+          const tipX = tx + pbMX + fw;
           ctx.save();
-          ctx.beginPath(); ctx.roundRect(tx + pbMX, pbY, fw, pbH, pbR2);
-          ctx.fillStyle = pg; ctx.shadowColor = color.neon; ctx.shadowBlur = 6 * scale; ctx.fill();
+          ctx.beginPath(); ctx.arc(tipX, barY + pbH * 0.5, pbH * 0.75, 0, Math.PI * 2);
+          ctx.fillStyle   = color.neon;
+          ctx.shadowColor = color.neon;
+          ctx.shadowBlur  = 10 * scale;
+          ctx.fill();
           ctx.restore();
         }
-
-        // Percentage label — right-aligned, inline with bar
-        if (totalColorBets > 0) {
-          const pctFs = clamp(4.5 * scale, tileH * 0.078, 9 * scale);
-          ctx.font      = `600 ${pctFs}px Interroman, Arial`;
-          ctx.fillStyle = pRatio > 0 ? color.neon : 'rgba(255,255,255,0.22)';
-          ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-          ctx.fillText(`${Math.round(pRatio * 100)}%`, tx + tileW - 2 * scale, pbY - 1 * scale);
-        }
       }
 
+      // ── Chip ──
       if (gamePhase === 'betting') {
-        drawBetChip(cx, ty + tileH * 0.76, chipR, bets[key]);
+        drawBetChip(cx, chipCY, chipR, bets[key]);
       }
     }
-    betChipPositions[key] = { x: cx, y: ty + tileH * 0.76, r: chipR };
+    betChipPositions[key] = { x: cx, y: ty + tileH * 0.44, r: chipR };
 
     // ── WIN result overlay on each winning tile ──
     if (isWin) {
