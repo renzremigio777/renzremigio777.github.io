@@ -4,7 +4,7 @@ window.GAME_CONFIG = {
   gameType: 'colorgame',
   title:    'Color Game Live',
   limits:   '₱50–10,000',
-  videoSrc: '/assets/videos/bacarrat-stream.mp4',
+  videoSrc: 'https://platform.jrta.online/play?stream=testiligan',
 };
 
 const _s = document.createElement('script');

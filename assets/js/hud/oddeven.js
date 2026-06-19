@@ -4,7 +4,7 @@ window.GAME_CONFIG = {
   gameType: 'oddeven',
   title:    'Odd / Even',
   limits:   '₱50–10,000',
-  videoSrc: '/assets/videos/bacarrat-stream.mp4',
+  videoSrc: 'https://platform.jrta.online/play?stream=testiligan',
   tileColors: {
     odd:  { fill: '#120430', stroke: '#b040ff', neon: '#cc77ff' },
     even: { fill: '#03180a', stroke: '#10c060', neon: '#30e880' },

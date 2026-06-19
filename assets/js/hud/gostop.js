@@ -4,7 +4,7 @@ window.GAME_CONFIG = {
   gameType: 'gostop',
   title:    'Go-Stop Live',
   limits:   '₱50–10,000',
-  videoSrc: '/assets/videos/bacarrat-stream.mp4',
+  videoSrc: 'https://platform.jrta.online/play?stream=testiligan',
   tileColors: {
     go:   { fill: '#1a0808', stroke: '#ff4040', neon: '#ff7070' },
     stop: { fill: '#080e1a', stroke: '#4080ff', neon: '#6699ff' },

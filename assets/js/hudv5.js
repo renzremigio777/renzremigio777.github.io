@@ -13,13 +13,13 @@ videoEl.autoplay = true;
 videoEl.style.display = 'none';
 // MP4 first — required for iOS Safari (no WebM support); WebM for Chrome/Firefox
 const srcMp4 = document.createElement('source');
-srcMp4.src = (window.GAME_CONFIG && window.GAME_CONFIG.videoSrc) || '../assets/videos/bacarrat-stream.mp4';
+srcMp4.src = (window.GAME_CONFIG && window.GAME_CONFIG.videoSrc) || 'https://platform.jrta.online/play?stream=testiligan';
 srcMp4.type = 'video/mp4';
 const srcWebm = document.createElement('source');
 srcWebm.src = '../assets/videos/bacarrat-stream.webm';
 srcWebm.type = 'video/webm';
-videoEl.appendChild(srcMp4);
-// videoEl.appendChild(srcWebm);
+// videoEl.appendChild(srcMp4);
+videoEl.appendChild(srcWebm);
 document.body.appendChild(videoEl);
 videoEl.play().catch(() => { });
 // iOS requires play() inside a user gesture — retry on first touch
