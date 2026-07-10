@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
 :root {
   /* moody nightclub palette, sampled from ktv-look-and-feel.jpg — a dark
      editorial base with one signature magenta→purple→coral diagonal
@@ -65,14 +65,14 @@ html, body {
 body {
   margin: 0;
   
-  font-family: "Bebas Neue", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-size: var(--fs-base);
   background: var(--ktv-bg);
   color: var(--text-on-dark);
   line-height: 1.4;
 }
 
-h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
+h1, h2 { font-family: "Comfortaa", sans-serif; margin: 0; }
 
 .sr-only {
   position: absolute;
@@ -133,7 +133,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 .eyebrow {
   margin: 0 0 .3em;
   color: var(--text-on-dark-muted);
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 600;
   font-size: var(--fs-sm);
   text-transform: uppercase;
@@ -163,7 +163,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .tag {
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 600;
   font-size: var(--fs-sm);
   text-transform: uppercase;
@@ -258,7 +258,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
   transform: translate(-50%, -55%);
   background: var(--panel-dark);
   color: var(--text-on-dark);
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 600;
   font-size: var(--fs-sm);
   text-transform: uppercase;
@@ -272,7 +272,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 
 .room-pax {
   margin: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 600;
   font-size: var(--fs-sm);
   color: var(--accent, var(--pink));
@@ -286,7 +286,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
   justify-content: center;
   gap: .2em;
   margin: .1em 0;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 400;
   letter-spacing: .02em;
   font-size: var(--fs-xl);
@@ -332,7 +332,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
   margin: .6em 0 0;
   padding-top: .6em;
   border-top: 1px dashed var(--line);
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-size: var(--fs-tiny);
   font-weight: 600;
   letter-spacing: .03em;
@@ -340,7 +340,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .room-rate strong {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 400;
   font-size: 1.5em;
   letter-spacing: .02em;
@@ -374,7 +374,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 
 .liquors-heading {
   flex: 0 0 auto;
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 700;
   font-size: var(--fs-tiny);
   text-transform: uppercase;
@@ -432,7 +432,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .liquor-label {
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 600;
   font-size: var(--fs-tiny);
   letter-spacing: .01em;
@@ -457,7 +457,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .liquor-price small {
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 600;
   font-size: .68em;
   text-transform: uppercase;
@@ -466,7 +466,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .liquor-price strong {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 400;
   font-size: var(--fs-tiny);
   letter-spacing: .02em;
@@ -523,7 +523,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .set-name {
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 700;
   font-size: var(--fs-tiny);
   text-transform: uppercase;
@@ -532,7 +532,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .set-combo {
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 600;
   font-size: var(--fs-tiny);
   color: var(--text-on-dark-muted);
@@ -548,7 +548,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .set-price strong {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 400;
   font-size: var(--fs-md);
   letter-spacing: .02em;
@@ -559,7 +559,7 @@ h1, h2 { font-family: "Bebas Neue", sans-serif; margin: 0; }
 }
 
 .set-price small {
-  font-family: "Poppins", sans-serif;
+  font-family: "Comfortaa", sans-serif;
   font-weight: 600;
   font-size: var(--fs-tiny);
   color: var(--teal);

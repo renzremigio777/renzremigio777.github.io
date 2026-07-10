@@ -1,0 +1,587 @@
+/* ============================================================
+   ROOMS & RATES — 3D CAROUSEL (index.html)
+   A dedicated stylesheet — kept separate from css/style.css so the
+   grid-menu.html poster is never touched by this page's rules.
+   Reuses the tokens/fonts declared in style.css's :root (loaded
+   first). Sharp corners throughout (no border-radius anywhere).
+   Card navigation/fullscreen state is driven by js/home.js via the
+   data-pos attribute and .is-fullscreen/.has-fullscreen classes —
+   CSS only renders whatever state JS sets, it doesn't decide it.
+   Branch/view-mode switching stays plain radio+CSS (flat controls,
+   no 3D hit-testing concerns there).
+   ============================================================ */
+
+:root {
+  /* single solid brand red — replaces the multi-color gradient on
+     interactive controls (tabs, arrows, links, focus states). */
+  --primary: #fc0c15;
+  --primary-dark: #c40910;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+}
+
+body {
+  font-family: "Comfortaa", sans-serif;
+  background: var(--ktv-bg);
+  color: var(--text-on-dark);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.carousel-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(252, 12, 21, .08), transparent 55%),
+    var(--ktv-bg);
+}
+
+.page-logo {
+  flex: 0 0 auto;
+  width: clamp(10rem, 17vw, 15rem);
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, .5));
+}
+
+/* CONTROLS: branch switcher + view switcher */
+.controls-bar {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 72rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.branch-switcher,
+.view-switcher {
+  display: flex;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .02);
+}
+
+.switch-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  padding: .65em 1.2em;
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-on-dark-muted);
+  cursor: pointer;
+  border-right: 1px solid var(--line);
+  transition: color .2s ease, background-color .2s ease;
+}
+
+.branch-switcher .switch-tab:last-child,
+.view-switcher .switch-tab:last-child {
+  border-right: none;
+}
+
+.switch-tab:hover {
+  color: var(--text-on-dark);
+}
+
+main:has(#branch-main:checked) label[for="branch-main"],
+main:has(#branch-laspinas:checked) label[for="branch-laspinas"],
+main:has(#view-carousel:checked) label[for="view-carousel"],
+main:has(#view-grid:checked) label[for="view-grid"] {
+  color: #fff;
+  background: var(--primary);
+}
+
+/* BRANCH VIEWS (visibility toggled by js/home.js via the `hidden`
+   attribute rather than CSS, since switching branches also needs to
+   reset carousel/fullscreen state in JS anyway). */
+.branch-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+}
+
+/* [hidden] has the same specificity as .branch-view above and loads
+   later, so without this it would silently win and the hidden branch
+   would keep rendering (and being hit-testable) underneath the visible
+   one. */
+.branch-view[hidden] {
+  display: none;
+}
+
+/* CAROUSEL STAGE */
+.carousel-stage {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  perspective: 1800px;
+}
+
+.carousel-arrow {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text-on-dark-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color .2s ease, border-color .2s ease, background-color .2s ease;
+}
+
+.carousel-arrow:hover {
+  color: #fff;
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.carousel-track {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  max-height: 42rem;
+}
+
+.carousel-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(16rem, 25vw, 22rem);
+  aspect-ratio: 3 / 4;
+  display: block;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--panel-dark);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  transform: translate(-50%, -50%) scale(.78);
+  filter: brightness(.5) saturate(.9);
+  transition: transform .5s cubic-bezier(.2, .8, .2, 1), filter .5s ease, width .5s ease, box-shadow .3s ease;
+  z-index: 1;
+}
+
+.carousel-card[data-pos="active"] {
+  width: clamp(19rem, 30vw, 27rem);
+  transform: translate(-50%, -50%) translateZ(50px) scale(1.12);
+  filter: brightness(1) saturate(1.05);
+  border-color: var(--accent, var(--primary));
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .04) inset;
+  z-index: 3;
+}
+
+.carousel-card[data-pos="next"] {
+  transform: translate(-50%, -50%) translateX(72%) translateZ(-40px) rotateY(-14deg) scale(.8);
+  z-index: 2;
+}
+
+.carousel-card[data-pos="prev"] {
+  transform: translate(-50%, -50%) translateX(-72%) translateZ(-40px) rotateY(14deg) scale(.8);
+  z-index: 2;
+}
+
+.carousel-card:hover {
+  filter: brightness(.7) saturate(1);
+}
+
+.carousel-card[data-pos="active"]:hover {
+  filter: brightness(1) saturate(1.05);
+}
+
+.carousel-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.card-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* status badge — only shown on the active card, so growing the card
+   also reveals more information, not just size */
+.card-status {
+  position: absolute;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  z-index: 2;
+  display: none;
+  align-items: center;
+  gap: .45em;
+  padding: .4em .8em;
+  background: rgba(6, 4, 8, .85);
+  border: 1px solid var(--line);
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-on-dark);
+}
+
+.status-dot {
+  width: .6em;
+  height: .6em;
+  flex: 0 0 auto;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+}
+
+.card-status.is-available .status-dot {
+  background: #34d17a;
+  box-shadow: 0 0 8px #34d17a;
+}
+
+.carousel-card[data-pos="active"] .card-status {
+  display: flex;
+}
+
+.card-expand-hint {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  z-index: 2;
+  display: none;
+  padding: .35em .7em;
+  background: rgba(6, 4, 8, .7);
+  border: 1px solid var(--line);
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-on-dark-muted);
+}
+
+.carousel-card[data-pos="active"] .card-expand-hint {
+  display: block;
+}
+
+.card-close {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  z-index: 4;
+  display: none;
+  align-items: center;
+  gap: .4em;
+  padding: .6em 1em;
+  background: rgba(6, 4, 8, .8);
+  border: 1px solid var(--line);
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #fff;
+}
+
+.card-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: var(--sp-3) var(--sp-3) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: .25em;
+  background: linear-gradient(180deg, transparent, rgba(6, 4, 8, .65) 40%, rgba(6, 4, 8, .95));
+}
+
+.card-name {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  letter-spacing: .01em;
+  color: #fff;
+}
+
+.card-pax,
+.card-rate {
+  display: none;
+  font-family: "Comfortaa", sans-serif;
+  font-size: var(--fs-tiny);
+  color: var(--text-on-dark-muted);
+}
+
+.card-pax {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.card-price {
+  display: flex;
+  align-items: baseline;
+  gap: .3em;
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  font-size: var(--fs-md);
+  color: #fff;
+}
+
+.card-price .check {
+  align-self: center;
+  font-size: .55em;
+  color: var(--accent, var(--primary));
+  border: 2px solid var(--accent, var(--primary));
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: .15em;
+}
+
+.card-price small {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  font-size: .4em;
+  text-transform: uppercase;
+  color: var(--text-on-dark-muted);
+}
+
+.card-rate {
+  margin-top: .3em;
+  padding-top: .5em;
+  border-top: 1px dashed var(--line);
+}
+
+.card-rate strong {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  color: var(--accent, var(--primary));
+  font-size: 1.1em;
+}
+
+.carousel-card[data-pos="active"] .card-pax,
+.carousel-card[data-pos="active"] .card-rate {
+  display: block;
+}
+
+/* FULLSCREEN — tapping the active card expands it to fill the
+   viewport; tapping again (or Escape) minimizes it back. */
+.carousel-card.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  aspect-ratio: auto;
+  transform: none;
+  filter: none;
+  border: none;
+  z-index: 999;
+  box-shadow: none;
+}
+
+.carousel-card.is-fullscreen .card-status,
+.carousel-card.is-fullscreen .card-pax,
+.carousel-card.is-fullscreen .card-rate {
+  display: flex;
+}
+
+.carousel-card.is-fullscreen .card-pax {
+  display: block;
+}
+
+.carousel-card.is-fullscreen .card-expand-hint {
+  display: none;
+}
+
+.carousel-card.is-fullscreen .card-close {
+  display: flex;
+}
+
+.carousel-card.is-fullscreen .card-info {
+  padding: var(--sp-5) var(--sp-5) var(--sp-5);
+}
+
+.carousel-card.is-fullscreen .card-name {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+.carousel-card.is-fullscreen .card-price {
+  font-size: clamp(1.5rem, 3.4vw, 2.2rem);
+}
+
+.page-link {
+  flex: 0 0 auto;
+  padding: .65em 1.2em;
+  border: 1px solid var(--line);
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-on-dark);
+  text-decoration: none;
+  transition: border-color .2s ease, color .2s ease;
+}
+
+.page-link:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* GRID VIEW — flattens the 3D carousel into a plain, evenly sized row of
+   cards with everything visible at once (no single "focused" card). */
+main:has(#view-grid:checked) .carousel-stage {
+  perspective: none;
+}
+
+main:has(#view-grid:checked) .carousel-arrow {
+  display: none;
+}
+
+main:has(#view-grid:checked) .carousel-track {
+  display: flex;
+  gap: var(--sp-3);
+  max-height: none;
+  position: static;
+}
+
+main:has(#view-grid:checked) .carousel-card:not(.is-fullscreen) {
+  position: static;
+  flex: 1 1 0;
+  width: auto;
+  transform: none !important;
+  filter: brightness(.85) saturate(1) !important;
+  z-index: auto !important;
+}
+
+main:has(#view-grid:checked) .carousel-card[data-pos="active"]:not(.is-fullscreen) {
+  filter: brightness(1) saturate(1.05) !important;
+}
+
+main:has(#view-grid:checked) .card-status,
+main:has(#view-grid:checked) .card-rate {
+  display: flex !important;
+}
+
+main:has(#view-grid:checked) .card-pax {
+  display: block !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-card {
+    transition: none;
+  }
+}
+
+/* Below this, the fixed no-scroll stage stops having enough room; fall
+   back to a normal, scrollable, single-column stack. */
+@media (max-width: 760px), (max-height: 640px) {
+  html, body {
+    height: auto;
+    overflow: visible;
+  }
+
+  .carousel-page {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .carousel-stage {
+    perspective: none;
+  }
+
+  .carousel-arrow {
+    display: none;
+  }
+
+  .carousel-track {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+    max-height: none;
+  }
+
+  .carousel-card:not(.is-fullscreen) {
+    position: static;
+    width: 100%;
+    max-width: 22rem;
+    transform: none !important;
+    filter: brightness(.85) saturate(1) !important;
+  }
+
+  .carousel-card[data-pos="active"]:not(.is-fullscreen) {
+    width: 100%;
+    max-width: 24rem;
+    filter: brightness(1) saturate(1.05) !important;
+  }
+
+  .card-status,
+  .card-rate {
+    display: flex !important;
+  }
+
+  .card-pax {
+    display: block !important;
+  }
+
+  /* the status badge and expand hint can collide on narrow cards —
+     give each a hard cap and let the status badge truncate instead of
+     overlapping the hint. */
+  .card-status {
+    max-width: 62%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .card-expand-hint {
+    font-size: .58rem;
+    padding: .3em .55em;
+  }
+
+  .controls-bar {
+    justify-content: center;
+  }
+}
