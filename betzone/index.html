@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Betzone – Live Casino Games">
+  <title>Betzone – Live Casino</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="./assets/css/icons.css" />
+  <link rel="stylesheet" href="./assets/css/loader.css" />
+  <link rel="stylesheet" href="./assets/css/styles.css" />
+</head>
+<body>
+  <div id="loading-overlay" class="loader">
+    <div class="loader-orb loader-orb-1"></div>
+    <div class="loader-orb loader-orb-2"></div>
+
+    <div class="loader-content">
+      <div class="loader-brand">
+        <span class="loader-brand-bet">BET</span><span class="loader-brand-zone">ZONE</span>
+      </div>
+      <p class="loader-tagline">Live Casino &nbsp;·&nbsp; Real-time Tables</p>
+
+      <div class="loader-spinner-wrap">
+        <svg class="loader-ring-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,0.07)" stroke-width="2.5"/>
+          <circle class="loader-ring-arc" cx="28" cy="28" r="22"
+            stroke="#49a1ff" stroke-width="2.5" stroke-linecap="round"
+            pathLength="100" stroke-dasharray="22 78"/>
+        </svg>
+      </div>
+
+      <div class="loader-bar-outer">
+        <div class="loader-bar-inner" id="loader-bar-inner"></div>
+      </div>
+
+      <div class="loader-status-row">
+        <span class="loader-status-msg" id="loader-status-msg">Connecting to tables…</span>
+        <span class="loader-pct" id="progress-text">0%</span>
+      </div>
+    </div>
+
+    <div class="loader-live-badge">
+      <span class="loader-live-dot"></span>LIVE
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside>
+      <a href="#" class="logo"><span>Bet</span>Zone</a>
+      <h2 class="logo-narrow"><span>B</span>Z</h2>
+
+      <div class="wallet-info">
+        <p class="money"><i class="icon-casino"></i>₱34,002</p>
+        <p class="users"><i class="icon-user"></i>player58900</p>
+      </div>
+
+      <nav>
+        <ul>
+          <li><a href="#" class="active">
+            <span class="icons"><i class="icon-home"></i></span>
+            <span>All Games</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-top"></i></span>
+            <span>Top</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-new"></i></span>
+            <span>New</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-popular"></i></span>
+            <span>Popular</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-slots"></i></span>
+            <span>Slots</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-ttennis"></i></span>
+            <span>Table Games</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-jackpot"></i></span>
+            <span>Jackpots</span>
+          </a></li>
+          <li><a href="#">
+            <span class="icons"><i class="icon-live"></i></span>
+            <span>Live Games</span>
+          </a></li>
+        </ul>
+      </nav>
+
+      <div class="bz-search">
+        <form class="bz-search-input">
+          <i class="icon-search"></i>
+          <input type="text" placeholder="Search games…">
+        </form>
+      </div>
+
+      <!-- Desktop-only user card -->
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">P</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-username">player58900</span>
+          <span class="sidebar-balance"><i class="icon-casino"></i> ₱34,002</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+
+      <!-- ── Top bar ── -->
+      <header class="topbar">
+        <h1>Live Casino</h1>
+        <div class="topbar-right">
+          <span class="online-pill"><span class="live-dot"></span>1,358 online</span>
+        </div>
+      </header>
+
+      <!-- ── Hero banner ── -->
+      <div class="hero-banner">
+        <div class="hero-bg" style="background-image:url(assets/images/sample-livestream.png)"></div>
+        <div class="hero-scrim"></div>
+        <div class="hero-body">
+          <div class="hero-left">
+            <div class="hero-tag"><span class="live-dot"></span>LIVE NOW</div>
+            <h2 class="hero-title">Speed Baccarat 1</h2>
+            <p class="hero-sub">312 players · Philippines table · Round starts in 00:08</p>
+            <div class="hero-limit"><i class="icon-casino"></i>&nbsp;Table limits: <strong>₱50 – ₱10,000</strong></div>
+            <div class="hero-actions">
+              <a href="pages/game.html?game=baccarat1" class="hero-cta">▶ Play Now</a>
+              <a href="#" class="hero-cta-ghost">View Table</a>
+            </div>
+          </div>
+          <div class="hero-right">
+            <svg class="hero-road-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 200">
+              <!-- Header -->
+              <text x="8" y="13" font-size="8" fill="rgba(255,255,255,0.30)" font-family="Arial" font-weight="700" letter-spacing="1">BIG ROAD</text>
+              <text x="152" y="13" font-size="7" fill="rgba(255,255,255,0.18)" font-family="Arial" text-anchor="end">45 rounds</text>
+              <!-- Grid lines — 8 cols × 6 rows, area y=18–188 -->
+              <!-- Vertical lines at x=20,40,60,80,100,120,140 -->
+              <line x1="20"  y1="18" x2="20"  y2="188" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="40"  y1="18" x2="40"  y2="188" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="60"  y1="18" x2="60"  y2="188" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="80"  y1="18" x2="80"  y2="188" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="100" y1="18" x2="100" y2="188" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="120" y1="18" x2="120" y2="188" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="140" y1="18" x2="140" y2="188" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <!-- Horizontal lines: 6 rows × 28.33px, at y=18+28.33=46.3, 74.7, 103, 131.3, 159.7 -->
+              <line x1="0" y1="46.3"  x2="160" y2="46.3"  stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="0" y1="74.7"  x2="160" y2="74.7"  stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="0" y1="103"   x2="160" y2="103"   stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="0" y1="131.3" x2="160" y2="131.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <line x1="0" y1="159.7" x2="160" y2="159.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.6"/>
+              <!-- Border -->
+              <rect x="0" y="18" width="160" height="170" rx="4" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+              <!-- Col x-centers: 10,30,50,70,90,110,130,150 | Row y-centers: 32.2,60.5,88.8,117.2,145.5,173.8 | r=8 -->
+              <!-- Col 0: B B B P P B -->
+              <circle cx="10" cy="32.2"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="10" cy="60.5"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="10" cy="88.8"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="10" cy="117.2" r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="10" cy="145.5" r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="10" cy="173.8" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <!-- Col 1: B B P B T B -->
+              <circle cx="30" cy="32.2"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="30" cy="60.5"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="30" cy="88.8"  r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="30" cy="117.2" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="30" cy="145.5" r="8" fill="#28a060" stroke="#70e0a0" stroke-width="1"/>
+              <circle cx="30" cy="173.8" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <!-- Col 2: P B B B P B -->
+              <circle cx="50" cy="32.2"  r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="50" cy="60.5"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="50" cy="88.8"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="50" cy="117.2" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="50" cy="145.5" r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="50" cy="173.8" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <!-- Col 3: B P B T B P -->
+              <circle cx="70" cy="32.2"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="70" cy="60.5"  r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="70" cy="88.8"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="70" cy="117.2" r="8" fill="#28a060" stroke="#70e0a0" stroke-width="1"/>
+              <circle cx="70" cy="145.5" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="70" cy="173.8" r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <!-- Col 4: B B P B B B -->
+              <circle cx="90" cy="32.2"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="90" cy="60.5"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="90" cy="88.8"  r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="90" cy="117.2" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="90" cy="145.5" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="90" cy="173.8" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <!-- Col 5: P B B P B B -->
+              <circle cx="110" cy="32.2"  r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="110" cy="60.5"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="110" cy="88.8"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="110" cy="117.2" r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="110" cy="145.5" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="110" cy="173.8" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <!-- Col 6: B B B P B B -->
+              <circle cx="130" cy="32.2"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="130" cy="60.5"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="130" cy="88.8"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="130" cy="117.2" r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="130" cy="145.5" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="130" cy="173.8" r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <!-- Col 7: B P B (partial — latest 3) -->
+              <circle cx="150" cy="32.2"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <circle cx="150" cy="60.5"  r="8" fill="#4060e0" stroke="#99aaff" stroke-width="1"/>
+              <circle cx="150" cy="88.8"  r="8" fill="#d03838" stroke="#ff9090" stroke-width="1"/>
+              <!-- latest result glow -->
+              <circle cx="150" cy="88.8" r="10" fill="none" stroke="#d03838" stroke-width="0.8" opacity="0.35"/>
+              <!-- Stats row -->
+              <line x1="0" y1="190" x2="160" y2="190" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+              <circle cx="12" cy="196" r="4" fill="#d03838"/>
+              <text x="18" y="199" font-size="7" fill="#ff8080" font-family="Arial" font-weight="700">31</text>
+              <text x="28" y="199" font-size="5.5" fill="rgba(255,255,255,0.22)" font-family="Arial">BANK</text>
+              <circle cx="68" cy="196" r="4" fill="#4060e0"/>
+              <text x="74" y="199" font-size="7" fill="#8899ff" font-family="Arial" font-weight="700">12</text>
+              <text x="84" y="199" font-size="5.5" fill="rgba(255,255,255,0.22)" font-family="Arial">PLAY</text>
+              <circle cx="120" cy="196" r="4" fill="#28a060"/>
+              <text x="126" y="199" font-size="7" fill="#60d890" font-family="Arial" font-weight="700">2</text>
+              <text x="136" y="199" font-size="5.5" fill="rgba(255,255,255,0.22)" font-family="Arial">TIE</text>
+            </svg>
+            <div class="hero-road-label">Live Road</div>
+          </div>
+        </div>
+        <div class="hero-bottom-glow"></div>
+      </div>
+
+      <!-- ── Stats strip ── -->
+      <div class="stats-strip">
+        <div class="stat-cell">
+          <span class="stat-val">6</span>
+          <span class="stat-lbl">Tables</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-cell">
+          <span class="stat-val" style="color:#4ade80"><span class="live-dot" style="width:6px;height:6px;flex-shrink:0"></span>1,358</span>
+          <span class="stat-lbl">Online</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-cell">
+          <span class="stat-val">₱50</span>
+          <span class="stat-lbl">Min Bet</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-cell">
+          <span class="stat-val">24/7</span>
+          <span class="stat-lbl">Live</span>
+        </div>
+      </div>
+
+      <!-- ── Category filter ── -->
+      <div class="cat-filter">
+        <button class="cat-btn active" data-cat="all">All Games</button>
+        <button class="cat-btn" data-cat="baccarat">Baccarat</button>
+        <button class="cat-btn" data-cat="gostop">Go-Stop</button>
+        <button class="cat-btn" data-cat="oddeven">Odd / Even</button>
+        <button class="cat-btn" data-cat="colorgame">Color Game</button>
+        <button class="cat-btn" data-cat="vip">VIP</button>
+      </div>
+
+      <!-- ── Section header ── -->
+      <div class="section-header">
+        <h2 class="section-label"><span class="live-dot"></span>Live Casino <span class="section-count">6</span></h2>
+        <a href="#" class="see-all">See all</a>
+      </div>
+
+      <!-- ── Game grid ── -->
+      <section class="grid">
+
+        <!-- Speed Baccarat 1 -->
+        <a href="pages/game.html?game=baccarat1" class="grid-item" data-cat="baccarat">
+          <div class="grid-item-media">
+            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="Speed Baccarat 1" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
+            <div class="grid-hover-overlay"><span class="hover-play-btn">▶ Play Now</span></div>
+          </div>
+          <div class="grid-item-info">
+            <p class="grid-title">Speed Baccarat 1 <img src="assets/images/flags/ph.svg" alt="PH" width="16" height="11"></p>
+            <div class="grid-meta">
+              <span class="grid-status betting"><span class="live-dot"></span>BETTING</span>
+              <span class="grid-players-count"><i class="icon-user"></i>312</span>
+            </div>
+            <div class="grid-limits"><i class="icon-casino"></i>₱50 – ₱10,000</div>
+            <div class="card-analytics">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 90">
+                <!-- Stats: B=12 P=9 T=2 · 23 rds -->
+                <circle cx="5" cy="7" r="3" fill="#d03838"/><text x="10" y="10.5" font-size="6.5" fill="#ff8080" font-family="Arial" font-weight="700">12</text><text x="10" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">BANK</text>
+                <circle cx="42" cy="7" r="3" fill="#4060e0"/><text x="47" y="10.5" font-size="6.5" fill="#8899ff" font-family="Arial" font-weight="700">9</text><text x="47" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">PLAY</text>
+                <circle cx="70" cy="7" r="3" fill="#28a060"/><text x="75" y="10.5" font-size="6.5" fill="#60d890" font-family="Arial" font-weight="700">2</text><text x="75" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">TIE</text>
+                <text x="108" y="10.5" font-size="4.5" fill="rgba(255,255,255,0.18)" font-family="Arial" text-anchor="end">23 rds</text>
+                <rect x="0" y="17" width="56" height="3" fill="#d03838" rx="1"/><text x="28" y="20.2" font-size="3" fill="rgba(255,255,255,0.65)" font-family="Arial" text-anchor="middle" font-weight="700">52%</text><rect x="56" y="17" width="42" height="3" fill="#4060e0"/><text x="77" y="20.2" font-size="3" fill="rgba(255,255,255,0.65)" font-family="Arial" text-anchor="middle" font-weight="700">39%</text><rect x="98" y="17" width="10" height="3" fill="#28a060"/>
+                <line x1="0" y1="22" x2="108" y2="22" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <rect x="0" y="23" width="108" height="56" fill="rgba(255,255,255,0.025)"/><line x1="18" y1="23" x2="18" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="36" y1="23" x2="36" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="54" y1="23" x2="54" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="72" y1="23" x2="72" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="90" y1="23" x2="90" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="32.3" x2="108" y2="32.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="41.7" x2="108" y2="41.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="51.0" x2="108" y2="51.0" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="60.3" x2="108" y2="60.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="69.7" x2="108" y2="69.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+                <circle cx="9" cy="27.7" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="9" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="9" cy="37.0" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="9" cy="46.3" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="9" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="9" cy="55.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="9" cy="65.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="9" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="9" cy="74.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text>
+                <circle cx="27" cy="27.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="27" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="27" cy="37.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="27" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="27" cy="46.3" r="4.2" fill="#28a060" stroke="#60d890" stroke-width="0.7"/><text x="27" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">T</text><circle cx="27" cy="55.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="27" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="27" cy="65.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="27" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="27" cy="74.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="27" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text>
+                <circle cx="45" cy="27.7" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="45" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="45" cy="37.0" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="45" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="45" cy="46.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="45" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="45" cy="55.7" r="4.2" fill="#28a060" stroke="#60d890" stroke-width="0.7"/><text x="45" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">T</text><circle cx="45" cy="65.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="45" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="45" cy="74.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="45" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text>
+                <circle cx="63" cy="27.7" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="63" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="63" cy="37.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="63" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="63" cy="46.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="63" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="63" cy="55.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="63" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="63" cy="65.0" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="63" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text>
+                <line x1="0" y1="80" x2="108" y2="80" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <text x="0" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.22)" font-family="Arial">STREAK</text><circle cx="27" cy="84.5" r="2.6" fill="#d03838"/><text x="32" y="87.5" font-size="5" fill="#ff8080" font-family="Arial" font-weight="700">B ×3</text><text x="108" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.13)" font-family="Arial" text-anchor="end">Bead Road</text>
+              </svg>
+            </div>
+            <div class="grid-play-row">
+              <span class="grid-game-type">Live Baccarat</span>
+              <span class="grid-play-arrow">Play →</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Speed Baccarat 2 -->
+        <a href="pages/game.html?game=baccarat2" class="grid-item" data-cat="baccarat">
+          <div class="grid-item-media">
+            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Speed Baccarat 2" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
+            <span class="hot-badge">HOT</span>
+            <div class="grid-hover-overlay"><span class="hover-play-btn">▶ Play Now</span></div>
+          </div>
+          <div class="grid-item-info">
+            <p class="grid-title">Speed Baccarat 2 <img src="assets/images/flags/ph.svg" alt="PH" width="16" height="11"></p>
+            <div class="grid-meta">
+              <span class="grid-status dealing"><span class="live-dot" style="background:#49a1ff;box-shadow:0 0 6px rgba(73,161,255,0.70)"></span>DEALING</span>
+              <span class="grid-players-count"><i class="icon-user"></i>420</span>
+            </div>
+            <div class="grid-limits"><i class="icon-casino"></i>₱100 – ₱50,000</div>
+            <div class="card-analytics">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 90">
+                <!-- Stats: B=17 P=6 T=1 · 24 rds (HOT — banker dominant) -->
+                <circle cx="5" cy="7" r="3" fill="#d03838"/><text x="10" y="10.5" font-size="6.5" fill="#ff8080" font-family="Arial" font-weight="700">17</text><text x="10" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">BANK</text>
+                <circle cx="42" cy="7" r="3" fill="#4060e0"/><text x="47" y="10.5" font-size="6.5" fill="#8899ff" font-family="Arial" font-weight="700">6</text><text x="47" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">PLAY</text>
+                <circle cx="70" cy="7" r="3" fill="#28a060"/><text x="75" y="10.5" font-size="6.5" fill="#60d890" font-family="Arial" font-weight="700">1</text><text x="75" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">TIE</text>
+                <text x="108" y="10.5" font-size="4.5" fill="rgba(255,255,255,0.18)" font-family="Arial" text-anchor="end">24 rds</text>
+                <rect x="0" y="17" width="77" height="3" fill="#d03838" rx="1"/><text x="38" y="20.2" font-size="3" fill="rgba(255,255,255,0.65)" font-family="Arial" text-anchor="middle" font-weight="700">71%</text><rect x="77" y="17" width="27" height="3" fill="#4060e0"/><text x="90" y="20.2" font-size="3" fill="rgba(255,255,255,0.65)" font-family="Arial" text-anchor="middle" font-weight="700">25%</text><rect x="104" y="17" width="4" height="3" fill="#28a060"/>
+                <line x1="0" y1="22" x2="108" y2="22" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <rect x="0" y="23" width="108" height="56" fill="rgba(255,255,255,0.025)"/><line x1="18" y1="23" x2="18" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="36" y1="23" x2="36" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="54" y1="23" x2="54" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="72" y1="23" x2="72" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="90" y1="23" x2="90" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="32.3" x2="108" y2="32.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="41.7" x2="108" y2="41.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="51.0" x2="108" y2="51.0" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="60.3" x2="108" y2="60.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="69.7" x2="108" y2="69.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+                <circle cx="9" cy="27.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="9" cy="37.0" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="9" cy="46.3" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="9" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="9" cy="55.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="9" cy="65.0" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="9" cy="74.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text>
+                <circle cx="27" cy="27.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="27" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="27" cy="37.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="27" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="27" cy="46.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="27" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="27" cy="55.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="27" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="27" cy="65.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="27" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="27" cy="74.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="27" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text>
+                <circle cx="45" cy="27.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="45" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="45" cy="37.0" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="45" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="45" cy="46.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="45" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="45" cy="55.7" r="4.2" fill="#28a060" stroke="#60d890" stroke-width="0.7"/><text x="45" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">T</text><circle cx="45" cy="65.0" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="45" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="45" cy="74.3" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="45" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text>
+                <circle cx="63" cy="27.7" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="63" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="63" cy="37.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="63" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="63" cy="46.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="63" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="63" cy="55.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="63" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="63" cy="65.0" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="63" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="63" cy="74.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="63" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text>
+                <line x1="0" y1="80" x2="108" y2="80" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <text x="0" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.22)" font-family="Arial">STREAK</text><circle cx="27" cy="84.5" r="2.6" fill="#d03838"/><text x="32" y="87.5" font-size="5" fill="#ff4040" font-family="Arial" font-weight="700">B ×4</text><text x="108" y="87.5" font-size="3.8" fill="rgba(255,80,40,0.55)" font-family="Arial" text-anchor="end" font-weight="700">HOT</text>
+              </svg>
+            </div>
+            <div class="grid-play-row">
+              <span class="grid-game-type">Live Baccarat</span>
+              <span class="grid-play-arrow">Play →</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- VIP Baccarat -->
+        <a href="pages/game.html?game=baccarat3" class="grid-item" data-cat="baccarat vip">
+          <div class="grid-item-media">
+            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="VIP Baccarat" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge vip-badge">VIP</span>
+            <div class="grid-hover-overlay"><span class="hover-play-btn">▶ Play Now</span></div>
+          </div>
+          <div class="grid-item-info">
+            <p class="grid-title">VIP Baccarat <img src="assets/images/flags/ph.svg" alt="PH" width="16" height="11"></p>
+            <div class="grid-meta">
+              <span class="grid-status waiting">WAITING</span>
+              <span class="grid-players-count"><i class="icon-user"></i>88</span>
+            </div>
+            <div class="grid-limits"><i class="icon-casino"></i>₱1,000 – ₱500,000</div>
+            <div class="card-analytics">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 90">
+                <!-- Stats: B=4 P=4 T=1 · 9 rds (VIP — waiting) -->
+                <circle cx="5" cy="7" r="3" fill="#d03838"/><text x="10" y="10.5" font-size="6.5" fill="#ff8080" font-family="Arial" font-weight="700">4</text><text x="10" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">BANK</text>
+                <circle cx="42" cy="7" r="3" fill="#4060e0"/><text x="47" y="10.5" font-size="6.5" fill="#8899ff" font-family="Arial" font-weight="700">4</text><text x="47" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">PLAY</text>
+                <circle cx="70" cy="7" r="3" fill="#28a060"/><text x="75" y="10.5" font-size="6.5" fill="#60d890" font-family="Arial" font-weight="700">1</text><text x="75" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">TIE</text>
+                <text x="108" y="10.5" font-size="4.5" fill="rgba(255,255,255,0.18)" font-family="Arial" text-anchor="end">9 rds</text>
+                <rect x="0" y="17" width="48" height="3" fill="#d03838" rx="1"/><text x="24" y="20.2" font-size="3" fill="rgba(255,255,255,0.65)" font-family="Arial" text-anchor="middle" font-weight="700">44%</text><rect x="48" y="17" width="48" height="3" fill="#4060e0"/><text x="72" y="20.2" font-size="3" fill="rgba(255,255,255,0.65)" font-family="Arial" text-anchor="middle" font-weight="700">44%</text><rect x="96" y="17" width="12" height="3" fill="#28a060"/>
+                <line x1="0" y1="22" x2="108" y2="22" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <rect x="0" y="23" width="108" height="56" fill="rgba(255,255,255,0.025)"/><line x1="18" y1="23" x2="18" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="36" y1="23" x2="36" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="54" y1="23" x2="54" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="72" y1="23" x2="72" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="90" y1="23" x2="90" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="32.3" x2="108" y2="32.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="41.7" x2="108" y2="41.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="51.0" x2="108" y2="51.0" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="60.3" x2="108" y2="60.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="69.7" x2="108" y2="69.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+                <circle cx="9" cy="27.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="9" cy="37.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="9" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="9" cy="46.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="9" cy="55.7" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="9" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="9" cy="65.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="9" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="9" cy="74.3" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="9" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text>
+                <circle cx="27" cy="27.7" r="4.2" fill="#d03838" stroke="#ff8080" stroke-width="0.7"/><text x="27" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">B</text><circle cx="27" cy="37.0" r="4.2" fill="#4060e0" stroke="#8899ff" stroke-width="0.7"/><text x="27" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">P</text><circle cx="27" cy="46.3" r="4.2" fill="#28a060" stroke="#60d890" stroke-width="0.7"/><text x="27" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">T</text>
+                <line x1="0" y1="80" x2="108" y2="80" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <text x="0" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.22)" font-family="Arial">STREAK</text><circle cx="27" cy="84.5" r="2.6" fill="#28a060"/><text x="32" y="87.5" font-size="5" fill="#60d890" font-family="Arial" font-weight="700">T ×1</text><text x="108" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.13)" font-family="Arial" text-anchor="end">Bead Road</text>
+              </svg>
+            </div>
+            <div class="grid-play-row">
+              <span class="grid-game-type">VIP Baccarat</span>
+              <span class="grid-play-arrow">Play →</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Go-Stop -->
+        <a href="pages/game.html?game=gostop" class="grid-item" data-cat="gostop">
+          <div class="grid-item-media">
+            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Go-Stop" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
+            <div class="grid-hover-overlay"><span class="hover-play-btn">▶ Play Now</span></div>
+          </div>
+          <div class="grid-item-info">
+            <p class="grid-title">Go-Stop <img src="assets/images/flags/ph.svg" alt="PH" width="16" height="11"></p>
+            <div class="grid-meta">
+              <span class="grid-status betting"><span class="live-dot"></span>BETTING</span>
+              <span class="grid-players-count"><i class="icon-user"></i>156</span>
+            </div>
+            <div class="grid-limits"><i class="icon-casino"></i>₱50 – ₱10,000</div>
+            <div class="card-analytics">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 90">
+                <!-- Stats: G=13 S=3 · 16 rds -->
+                <circle cx="5" cy="7" r="3" fill="#c83030"/><text x="10" y="10.5" font-size="6.5" fill="#ff5555" font-family="Arial" font-weight="700">13</text><text x="10" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">GO</text>
+                <circle cx="42" cy="7" r="3" fill="#3060d0"/><text x="47" y="10.5" font-size="6.5" fill="#6090ff" font-family="Arial" font-weight="700">3</text><text x="47" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">STOP</text>
+                <text x="108" y="10.5" font-size="4.5" fill="rgba(255,255,255,0.18)" font-family="Arial" text-anchor="end">16 rds</text>
+                <rect x="0" y="17" width="88" height="3" fill="#c83030" rx="1"/><text x="44" y="20.2" font-size="3" fill="rgba(255,255,255,0.65)" font-family="Arial" text-anchor="middle" font-weight="700">81%</text><rect x="88" y="17" width="20" height="3" fill="#3060d0"/>
+                <line x1="0" y1="22" x2="108" y2="22" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <rect x="0" y="23" width="108" height="56" fill="rgba(255,255,255,0.025)"/><line x1="18" y1="23" x2="18" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="36" y1="23" x2="36" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="54" y1="23" x2="54" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="72" y1="23" x2="72" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="90" y1="23" x2="90" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="32.3" x2="108" y2="32.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="41.7" x2="108" y2="41.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="51.0" x2="108" y2="51.0" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="60.3" x2="108" y2="60.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="69.7" x2="108" y2="69.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+                <circle cx="9" cy="27.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="9" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="9" cy="37.0" r="4.2" fill="#3060d0" stroke="#6090ff" stroke-width="0.7"/><text x="9" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">S</text><circle cx="9" cy="46.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="9" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="9" cy="55.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="9" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="9" cy="65.0" r="4.2" fill="#3060d0" stroke="#6090ff" stroke-width="0.7"/><text x="9" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">S</text><circle cx="9" cy="74.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="9" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text>
+                <circle cx="27" cy="27.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="27" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="27" cy="37.0" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="27" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="27" cy="46.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="27" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="27" cy="55.7" r="4.2" fill="#3060d0" stroke="#6090ff" stroke-width="0.7"/><text x="27" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">S</text><circle cx="27" cy="65.0" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="27" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="27" cy="74.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="27" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text>
+                <circle cx="45" cy="27.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="45" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="45" cy="37.0" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="45" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="45" cy="46.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="45" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text><circle cx="45" cy="55.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><text x="45" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">G</text>
+                <line x1="0" y1="80" x2="108" y2="80" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <text x="0" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.22)" font-family="Arial">STREAK</text><circle cx="27" cy="84.5" r="2.6" fill="#c83030"/><text x="32" y="87.5" font-size="5" fill="#ff4040" font-family="Arial" font-weight="700">G ×6</text><text x="108" y="87.5" font-size="3.8" fill="rgba(255,80,40,0.55)" font-family="Arial" text-anchor="end" font-weight="700">HOT</text>
+              </svg>
+            </div>
+            <div class="grid-play-row">
+              <span class="grid-game-type">Live Go-Stop</span>
+              <span class="grid-play-arrow">Play →</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Odd / Even -->
+        <a href="pages/game.html?game=oddeven" class="grid-item" data-cat="oddeven">
+          <div class="grid-item-media">
+            <img class="grid-item-thumbnail" src="assets/images/sample-livestream.png" alt="Odd / Even" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
+            <div class="grid-hover-overlay"><span class="hover-play-btn">▶ Play Now</span></div>
+          </div>
+          <div class="grid-item-info">
+            <p class="grid-title">Odd / Even <img src="assets/images/flags/ph.svg" alt="PH" width="16" height="11"></p>
+            <div class="grid-meta">
+              <span class="grid-status dealing"><span class="live-dot" style="background:#49a1ff;box-shadow:0 0 6px rgba(73,161,255,0.70)"></span>DEALING</span>
+              <span class="grid-players-count"><i class="icon-user"></i>204</span>
+            </div>
+            <div class="grid-limits"><i class="icon-casino"></i>₱50 – ₱10,000</div>
+            <div class="card-analytics">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 90">
+                <!-- Stats: O=11 E=5 · 16 rds -->
+                <circle cx="5" cy="7" r="3" fill="#8030c0"/><text x="10" y="10.5" font-size="6.5" fill="#b050e8" font-family="Arial" font-weight="700">11</text><text x="10" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">ODD</text>
+                <circle cx="42" cy="7" r="3" fill="#20a858"/><text x="47" y="10.5" font-size="6.5" fill="#50d880" font-family="Arial" font-weight="700">5</text><text x="47" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">EVEN</text>
+                <text x="108" y="10.5" font-size="4.5" fill="rgba(255,255,255,0.18)" font-family="Arial" text-anchor="end">16 rds</text>
+                <rect x="0" y="17" width="74" height="3" fill="#8030c0" rx="1"/><text x="37" y="20.2" font-size="3" fill="rgba(255,255,255,0.65)" font-family="Arial" text-anchor="middle" font-weight="700">69%</text><rect x="74" y="17" width="34" height="3" fill="#20a858"/>
+                <line x1="0" y1="22" x2="108" y2="22" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <rect x="0" y="23" width="108" height="56" fill="rgba(255,255,255,0.025)"/><line x1="18" y1="23" x2="18" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="36" y1="23" x2="36" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="54" y1="23" x2="54" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="72" y1="23" x2="72" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="90" y1="23" x2="90" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="32.3" x2="108" y2="32.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="41.7" x2="108" y2="41.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="51.0" x2="108" y2="51.0" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="60.3" x2="108" y2="60.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="69.7" x2="108" y2="69.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+                <circle cx="9" cy="27.7" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="9" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="9" cy="37.0" r="4.2" fill="#20a858" stroke="#50d880" stroke-width="0.7"/><text x="9" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">E</text><circle cx="9" cy="46.3" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="9" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="9" cy="55.7" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="9" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="9" cy="65.0" r="4.2" fill="#20a858" stroke="#50d880" stroke-width="0.7"/><text x="9" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">E</text><circle cx="9" cy="74.3" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="9" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text>
+                <circle cx="27" cy="27.7" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="27" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="27" cy="37.0" r="4.2" fill="#20a858" stroke="#50d880" stroke-width="0.7"/><text x="27" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">E</text><circle cx="27" cy="46.3" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="27" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="27" cy="55.7" r="4.2" fill="#20a858" stroke="#50d880" stroke-width="0.7"/><text x="27" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">E</text><circle cx="27" cy="65.0" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="27" y="65.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="27" cy="74.3" r="4.2" fill="#20a858" stroke="#50d880" stroke-width="0.7"/><text x="27" y="74.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">E</text>
+                <circle cx="45" cy="27.7" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="45" y="27.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="45" cy="37.0" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="45" y="37.0" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="45" cy="46.3" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="45" y="46.3" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text><circle cx="45" cy="55.7" r="4.2" fill="#8030c0" stroke="#b050e8" stroke-width="0.7"/><text x="45" y="55.7" font-size="4" fill="#fff" font-family="Arial" font-weight="700" text-anchor="middle" dominant-baseline="central">O</text>
+                <line x1="0" y1="80" x2="108" y2="80" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <text x="0" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.22)" font-family="Arial">STREAK</text><circle cx="27" cy="84.5" r="2.6" fill="#8030c0"/><text x="32" y="87.5" font-size="5" fill="#b050e8" font-family="Arial" font-weight="700">O ×4</text><text x="108" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.13)" font-family="Arial" text-anchor="end">Bead Road</text>
+              </svg>
+            </div>
+            <div class="grid-play-row">
+              <span class="grid-game-type">Live Odd/Even</span>
+              <span class="grid-play-arrow">Play →</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Color Game -->
+        <a href="pages/game.html?game=colorgame" class="grid-item" data-cat="colorgame">
+          <div class="grid-item-media">
+            <img class="grid-item-thumbnail" src="assets/images/game-thumbnail.jpg" alt="Color Game" loading="lazy">
+            <img class="grid-item-road" src="assets/images/game-road.png" alt="" loading="lazy">
+            <span class="live-badge">LIVE</span>
+            <span class="new-badge">NEW</span>
+            <div class="grid-hover-overlay"><span class="hover-play-btn">▶ Play Now</span></div>
+          </div>
+          <div class="grid-item-info">
+            <p class="grid-title">Color Game <img src="assets/images/flags/ph.svg" alt="PH" width="16" height="11"></p>
+            <div class="grid-meta">
+              <span class="grid-status betting"><span class="live-dot"></span>BETTING</span>
+              <span class="grid-players-count"><i class="icon-user"></i>178</span>
+            </div>
+            <div class="grid-limits"><i class="icon-casino"></i>₱50 – ₱10,000</div>
+            <div class="card-analytics">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 90">
+                <circle cx="5" cy="7" r="3" fill="#c83030"/><text x="10" y="10.5" font-size="6" fill="#ff5555" font-family="Arial" font-weight="700">14</text><text x="10" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">RED</text>
+                <circle cx="31" cy="7" r="3" fill="#2858c0"/><text x="36" y="10.5" font-size="6" fill="#6090ff" font-family="Arial" font-weight="700">5</text><text x="36" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">BLU</text>
+                <circle cx="52" cy="7" r="3" fill="#906010"/><text x="57" y="10.5" font-size="6" fill="#c0a000" font-family="Arial" font-weight="700">6</text><text x="57" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.28)" font-family="Arial">YEL</text>
+                <circle cx="73" cy="7" r="3" fill="#186830"/><text x="78" y="10.5" font-size="6" fill="#30b050" font-family="Arial" font-weight="700">1</text><circle cx="91" cy="7" r="3" fill="#666666"/><text x="96" y="10.5" font-size="6" fill="#aaaaaa" font-family="Arial" font-weight="700">3</text>
+                <text x="108" y="15.2" font-size="3.5" fill="rgba(255,255,255,0.18)" font-family="Arial" text-anchor="end">30 rds</text>
+                <rect x="0" y="17" width="50" height="3" fill="#c83030" rx="1"/><rect x="50" y="17" width="22" height="3" fill="#906010"/><rect x="72" y="17" width="18" height="3" fill="#2858c0"/><rect x="90" y="17" width="11" height="3" fill="#666666"/><rect x="101" y="17" width="4" height="3" fill="#186830"/><rect x="105" y="17" width="3" height="3" fill="#9c2470"/>
+                <line x1="0" y1="22" x2="108" y2="22" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <rect x="0" y="23" width="108" height="56" fill="rgba(255,255,255,0.025)"/><line x1="18" y1="23" x2="18" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="36" y1="23" x2="36" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="54" y1="23" x2="54" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="72" y1="23" x2="72" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="90" y1="23" x2="90" y2="79" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="32.3" x2="108" y2="32.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="41.7" x2="108" y2="41.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="51.0" x2="108" y2="51.0" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="60.3" x2="108" y2="60.3" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><line x1="0" y1="69.7" x2="108" y2="69.7" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+                <circle cx="9" cy="27.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="9" cy="37.0" r="4.2" fill="#2858c0" stroke="#6090ff" stroke-width="0.7"/><circle cx="9" cy="46.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="9" cy="55.7" r="4.2" fill="#906010" stroke="#c0a000" stroke-width="0.7"/><circle cx="9" cy="65.0" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="9" cy="74.3" r="4.2" fill="#186830" stroke="#30b050" stroke-width="0.7"/>
+                <circle cx="27" cy="27.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="27" cy="37.0" r="4.2" fill="#906010" stroke="#c0a000" stroke-width="0.7"/><circle cx="27" cy="46.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="27" cy="55.7" r="4.2" fill="#666666" stroke="#999999" stroke-width="0.7"/><circle cx="27" cy="65.0" r="4.2" fill="#2858c0" stroke="#6090ff" stroke-width="0.7"/><circle cx="27" cy="74.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/>
+                <circle cx="45" cy="27.7" r="4.2" fill="#906010" stroke="#c0a000" stroke-width="0.7"/><circle cx="45" cy="37.0" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="45" cy="46.3" r="4.2" fill="#9c2470" stroke="#cc50a0" stroke-width="0.7"/><circle cx="45" cy="55.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="45" cy="65.0" r="4.2" fill="#2858c0" stroke="#6090ff" stroke-width="0.7"/><circle cx="45" cy="74.3" r="4.2" fill="#906010" stroke="#c0a000" stroke-width="0.7"/>
+                <circle cx="63" cy="27.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="63" cy="37.0" r="4.2" fill="#906010" stroke="#c0a000" stroke-width="0.7"/><circle cx="63" cy="46.3" r="4.2" fill="#666666" stroke="#999999" stroke-width="0.7"/><circle cx="63" cy="55.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="63" cy="65.0" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="63" cy="74.3" r="4.2" fill="#2858c0" stroke="#6090ff" stroke-width="0.7"/>
+                <circle cx="81" cy="27.7" r="4.2" fill="#906010" stroke="#c0a000" stroke-width="0.7"/><circle cx="81" cy="37.0" r="4.2" fill="#2858c0" stroke="#6090ff" stroke-width="0.7"/><circle cx="81" cy="46.3" r="4.2" fill="#666666" stroke="#999999" stroke-width="0.7"/><circle cx="81" cy="55.7" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="81" cy="65.0" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/><circle cx="81" cy="74.3" r="4.2" fill="#c83030" stroke="#ff5555" stroke-width="0.7"/>
+                <line x1="0" y1="80" x2="108" y2="80" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>
+                <text x="0" y="87.5" font-size="3.8" fill="rgba(255,255,255,0.22)" font-family="Arial">STREAK</text><circle cx="27" cy="84.5" r="2.6" fill="#c83030"/><text x="32" y="87.5" font-size="5" fill="#ff4040" font-family="Arial" font-weight="700">R ×3</text><text x="108" y="87.5" font-size="3.8" fill="rgba(255,80,40,0.55)" font-family="Arial" text-anchor="end" font-weight="700">HOT</text>
+              </svg>
+            </div>
+            <div class="grid-play-row">
+              <span class="grid-game-type">Live Color Game</span>
+              <span class="grid-play-arrow">Play →</span>
+            </div>
+          </div>
+        </a>
+
+      </section>
+
+      <!-- ── Footer ── -->
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <span class="footer-logo"><span>Bet</span>Zone</span>
+          <span class="footer-divider">·</span>
+          <span>© 2025 All rights reserved</span>
+          <span class="footer-divider">·</span>
+          <a href="#">Play Responsibly</a>
+          <span class="footer-divider">·</span>
+          <a href="#">18+</a>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    // Category filter
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cat = btn.dataset.cat;
+        document.querySelectorAll('.grid-item').forEach(item => {
+          const cats = (item.dataset.cat || '').split(' ');
+          const show = cat === 'all' || cats.includes(cat);
+          item.style.display = show ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

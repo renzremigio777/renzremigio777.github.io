@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>.ARA — Casino Solutions</title>
+  <meta name="description" content=".ARA is a premium casino solutions provider delivering cutting-edge gaming technology, compliance, and analytics worldwide.">
+  <meta name="keywords" content=".ARA, casino solutions, gaming technology, casino management, gaming analytics, compliance">
+  <meta name="author" content=".ARA">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content=".ARA — Casino Solutions">
+  <meta property="og:description" content=".ARA is a premium casino solutions provider.">
+  <meta property="og:url" content="https://dotara.com">
+  <link rel="canonical" href="https://dotara.com">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="robots" content="index, follow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Must run synchronously before first paint to prevent theme flash -->
+  <script>
+    (function () {
+      var t = localStorage.getItem('ara-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+
+  <header role="banner">
+    <a href="#hero" class="logo-link" aria-label=".ARA — Home">
+      <img src="img/dotara-dark.png"  alt=".ARA Casino Solutions" class="logo-img logo-dark">
+      <img src="img/dotara-light.png" alt=".ARA Casino Solutions" class="logo-img logo-light">
+    </a>
+    <nav role="navigation" aria-label="Main navigation">
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#portfolio">Portfolio</a></li>
+        <li><a href="#contact" class="cta-link">Contact</a></li>
+      </ul>
+      <button id="theme-toggle" class="theme-btn" aria-label="Toggle theme">
+        <!-- Sun: shown in dark mode → click to go light -->
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/>
+          <line x1="12" y1="2"  x2="12" y2="4"/>
+          <line x1="12" y1="20" x2="12" y2="22"/>
+          <line x1="2"  y1="12" x2="4"  y2="12"/>
+          <line x1="20" y1="12" x2="22" y2="12"/>
+          <line x1="4.93"  y1="4.93"  x2="6.34"  y2="6.34"/>
+          <line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/>
+          <line x1="4.93"  y1="19.07" x2="6.34"  y2="17.66"/>
+          <line x1="17.66" y1="6.34"  x2="19.07" y2="4.93"/>
+        </svg>
+        <!-- Moon: shown in light mode → click to go dark -->
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <main role="main">
+
+    <!-- Hero -->
+    <section id="hero" aria-labelledby="hero-title">
+      <p class="hero-eye">Established &middot; Excellence &middot; Precision</p>
+      <div id="hero-title" class="hero-logo-wrap" role="img" aria-label=".ARA Casino Solutions">
+        <img src="img/dotara-dark.png"  alt="" class="hero-logo logo-dark">
+        <img src="img/dotara-light.png" alt="" class="hero-logo logo-light">
+      </div>
+      <p class="hero-sub">Premium Casino Solutions Provider</p>
+      <div class="hero-vline"></div>
+      <div class="hero-stats">
+        <div>
+          <span class="stat-num">15+</span>
+          <span class="stat-lbl">Years Experience</span>
+        </div>
+        <div>
+          <span class="stat-num">80+</span>
+          <span class="stat-lbl">Casino Partners</span>
+        </div>
+        <div>
+          <span class="stat-num">40+</span>
+          <span class="stat-lbl">Countries</span>
+        </div>
+        <div>
+          <span class="stat-num">99.9%</span>
+          <span class="stat-lbl">Uptime SLA</span>
+        </div>
+      </div>
+      <div class="hero-btns">
+        <a href="#services" class="btn-p">Our Solutions</a>
+        <a href="#contact" class="btn-s">Get in Touch</a>
+      </div>
+      <div class="scroll-hint" aria-hidden="true">
+        <span></span>
+        Scroll
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" aria-labelledby="about-title">
+      <div class="inner">
+        <div class="about-grid">
+          <div>
+            <span class="label">Who We Are</span>
+            <h2 id="about-title" class="about-h">
+              Redefining the<br>casino <em>experience</em>
+            </h2>
+            <span class="gold-bar"></span>
+            <p class="about-p">
+              .ARA is a premier end-to-end casino solutions provider with a global footprint spanning four continents. We engineer the infrastructure that powers world-class gaming operations — from floor management systems to regulatory compliance frameworks.
+            </p>
+            <p class="about-p">
+              Our team of gaming technologists, compliance experts, and data scientists work in lockstep with operators to deliver outcomes that are measurable, scalable, and built to last. We don't just implement systems — we become strategic partners in your operation's long-term success.
+            </p>
+          </div>
+          <div class="pillars">
+            <div class="pillar">
+              <h4>Our Mission</h4>
+              <p>To empower casino operators worldwide with technology, insight, and expertise that elevates player experience, strengthens compliance posture, and maximizes operational efficiency.</p>
+            </div>
+            <div class="pillar">
+              <h4>Our Approach</h4>
+              <p>We take a consultative, data-first approach to every engagement. Each solution we deliver is purpose-built for your market, your regulatory environment, and your players.</p>
+            </div>
+            <div class="pillar">
+              <h4>Our Promise</h4>
+              <p>Absolute reliability. Every platform we deploy carries a 99.9% uptime SLA backed by 24/7 operations support and dedicated account management.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services" aria-labelledby="services-title">
+      <div class="inner">
+        <div class="services-hdr">
+          <span class="label">What We Offer</span>
+          <h2 id="services-title">Comprehensive Casino Solutions</h2>
+          <p>End-to-end capabilities across technology, compliance, analytics, and operations — built for the modern gaming floor.</p>
+        </div>
+        <div class="services-grid">
+          <div class="svc">
+            <span class="svc-n">01</span>
+            <h3>Casino Management Systems</h3>
+            <p>Fully integrated CMS platforms that unify slot management, table games, player tracking, cage operations, and marketing — all in real time from a single command center.</p>
+          </div>
+          <div class="svc">
+            <span class="svc-n">02</span>
+            <h3>Gaming Analytics &amp; BI</h3>
+            <p>Advanced business intelligence dashboards and predictive analytics surfacing actionable insights from your floor data — player behavior, game performance, revenue optimization, and churn prediction.</p>
+          </div>
+          <div class="svc">
+            <span class="svc-n">03</span>
+            <h3>Regulatory Compliance</h3>
+            <p>End-to-end compliance management covering AML, KYC, responsible gaming mandates, and jurisdiction-specific reporting — automated and audit-ready at all times.</p>
+          </div>
+          <div class="svc">
+            <span class="svc-n">04</span>
+            <h3>Payment &amp; Cage Integration</h3>
+            <p>Seamless multi-currency payment infrastructure connecting cage operations, digital wallets, loyalty redemption, and financial reporting into a single reconciled ledger.</p>
+          </div>
+          <div class="svc">
+            <span class="svc-n">05</span>
+            <h3>Player Loyalty &amp; CRM</h3>
+            <p>Dynamic loyalty programs powered by behavioral segmentation and real-time offer engines — designed to deepen engagement, increase visit frequency, and grow wallet share.</p>
+          </div>
+          <div class="svc">
+            <span class="svc-n">06</span>
+            <h3>Security &amp; Surveillance</h3>
+            <p>AI-assisted surveillance integration with incident logging, exception-based reporting, and behavioral anomaly detection — purpose-built for the gaming environment.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Portfolio -->
+    <section id="portfolio" aria-labelledby="portfolio-title">
+      <div class="inner">
+        <div class="port-hdr">
+          <div>
+            <span class="label">Case Studies</span>
+            <h2 id="portfolio-title">Selected Work</h2>
+          </div>
+          <p class="port-intro">
+            A curated selection of deployments across integrated resorts, regional casinos, and digital gaming operators worldwide.
+          </p>
+        </div>
+        <div class="port-list">
+          <div class="port-item">
+            <span class="port-n">001</span>
+            <div class="port-info">
+              <h3>Integrated Resort CMS Overhaul</h3>
+              <p>Southeast Asia &mdash; 2,400 Gaming Positions</p>
+            </div>
+            <div class="tags">
+              <span class="tag">CMS</span>
+              <span class="tag">Analytics</span>
+              <span class="tag">Loyalty</span>
+            </div>
+          </div>
+          <div class="port-item">
+            <span class="port-n">002</span>
+            <div class="port-info">
+              <h3>AML Compliance Platform Deployment</h3>
+              <p>Europe &mdash; Multi-Jurisdiction Operator</p>
+            </div>
+            <div class="tags">
+              <span class="tag">Compliance</span>
+              <span class="tag">KYC</span>
+              <span class="tag">AML</span>
+            </div>
+          </div>
+          <div class="port-item">
+            <span class="port-n">003</span>
+            <div class="port-info">
+              <h3>Real-Time BI Dashboard Rollout</h3>
+              <p>North America &mdash; Regional Casino Group</p>
+            </div>
+            <div class="tags">
+              <span class="tag">Analytics</span>
+              <span class="tag">BI</span>
+            </div>
+          </div>
+          <div class="port-item">
+            <span class="port-n">004</span>
+            <div class="port-info">
+              <h3>Omnichannel Loyalty Program</h3>
+              <p>Middle East &mdash; Luxury Integrated Resort</p>
+            </div>
+            <div class="tags">
+              <span class="tag">CRM</span>
+              <span class="tag">Loyalty</span>
+              <span class="tag">Payment</span>
+            </div>
+          </div>
+          <div class="port-item">
+            <span class="port-n">005</span>
+            <div class="port-info">
+              <h3>AI Surveillance &amp; Exception Reporting</h3>
+              <p>Latin America &mdash; National Gaming Authority</p>
+            </div>
+            <div class="tags">
+              <span class="tag">Security</span>
+              <span class="tag">AI</span>
+              <span class="tag">Compliance</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" aria-labelledby="contact-title">
+      <div class="inner">
+        <div class="contact-grid">
+          <div>
+            <span class="label">Get In Touch</span>
+            <h2 id="contact-title" class="contact-h">
+              Let's build something<br><em>exceptional</em>
+            </h2>
+            <p class="contact-body">
+              Whether you're launching a new property, modernizing an existing operation, or navigating a complex regulatory environment — .ARA has the expertise to move you forward.
+            </p>
+            <div class="contact-details">
+              <div>
+                <span class="cd-lbl">Email</span>
+                <a href="mailto:hello@dotara.com" class="cd-val">hello@dotara.com</a>
+              </div>
+              <div>
+                <span class="cd-lbl">Phone</span>
+                <a href="tel:+1234567890" class="cd-val">+1 (234) 567-890</a>
+              </div>
+              <div>
+                <span class="cd-lbl">Offices</span>
+                <span class="cd-val">Singapore &mdash; London &mdash; Las Vegas</span>
+              </div>
+            </div>
+          </div>
+          <form class="contact-form" action="#" method="post" novalidate>
+            <div class="fr">
+              <div class="fg">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="John Smith" required>
+              </div>
+              <div class="fg">
+                <label for="company">Company</label>
+                <input type="text" id="company" name="company" placeholder="Casino Group">
+              </div>
+            </div>
+            <div class="fg">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" placeholder="john@casino.com" required>
+            </div>
+            <div class="fg">
+              <label for="service">Area of Interest</label>
+              <select id="service" name="service">
+                <option value="" disabled selected>Select a solution</option>
+                <option value="cms">Casino Management Systems</option>
+                <option value="analytics">Gaming Analytics &amp; BI</option>
+                <option value="compliance">Regulatory Compliance</option>
+                <option value="payment">Payment &amp; Cage Integration</option>
+                <option value="loyalty">Player Loyalty &amp; CRM</option>
+                <option value="security">Security &amp; Surveillance</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Tell us about your operation and what you're looking to achieve..."></textarea>
+            </div>
+            <button type="submit" class="btn-form">Send Enquiry</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer role="contentinfo">
+    <p class="ft-copy">&copy; 2026 .ARA. All rights reserved.</p>
+    <nav aria-label="Footer navigation">
+      <ul>
+        <li><a href="#privacy">Privacy Policy</a></li>
+        <li><a href="#terms">Terms of Service</a></li>
+        <li><a href="#sitemap">Sitemap</a></li>
+      </ul>
+    </nav>
+  </footer>
+
+  <script src="js/main.js"></script>
+
+</body>
+</html>

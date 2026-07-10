@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Dandelion Gourmet is the home of Ramen Young Wasabi and Fajardo's Family KTV, serving Cavite and Las Piñas with authentic Japanese ramen and family KTV entertainment.">
+  <title>Dandelion Gourmet</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="logo-wrapper">
+        <a href="#top" aria-label="Dandelion Gourmet home">
+          <!-- DEFAULT -->
+          <img id="dg-logo" class="logo-image invert state-default" src="img/dg-horizontal.png" alt="Dandelion Gourmet">
+
+          <!-- IF body.ryw -->
+          <img id="ryw-logo" class="logo-image state-ryw" src="img/ryw-logo-v2.png" alt="Ramen Young Wasabi">
+
+          <!-- IF body.ktv -->
+          <img id="ktv-logo" class="logo-image state-ktv" src="img/ktv-logo.png" alt="Fajardo's Family KTV">
+        </a>
+      </div>
+      <div class="header-action">
+        <!-- DEFAULT -->
+        <nav class="state-default">
+          <input type="checkbox" id="menu-toggle" class="menu-toggle">
+          <label for="menu-toggle" class="menu-icon" aria-label="Open navigation menu">&#9776;</label>
+          <label for="menu-toggle" class="nav-backdrop" aria-hidden="true"></label>
+          <div class="nav-drawer">
+            <div class="nav-drawer-head">
+              <label for="menu-toggle" class="nav-close" aria-label="Close navigation menu">&times;</label>
+            </div>
+            <ul class="nav-links">
+              <li><a href="#about">About Us</a></li>
+              <li><a href="#ramenyoungwasabi">Restaurant</a></li>
+              <li><a href="#fajardosfamilyktv">Family KTV</a></li>
+              <li><a href="#inquiries">Inquiries</a></li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- IF body.ryw -->
+        <a href="/ramenyoungwasabi/grid-menu.html" target="_blank" class="btn btn-primary state-ryw">Open Menu</a>
+
+        <!-- IF body.ktv -->
+        <a href="/fajardosfamilyktv/grid-menu.html" target="_blank" class="btn btn-primary state-ktv">Open Menu</a>
+      </div>
+    </div>
+  </header>
+  <div class="header-spacer" aria-hidden="true"></div>
+  <main>
+    <section id="top" class="hero" aria-label="Hero Section">
+      <div class="hero-bg" aria-hidden="true">
+        <div class="hero-bg-slide" style="background-image: url(img/restaurant.jpg);"></div>
+        <div class="hero-bg-slide" style="background-image: url(img/slider/ramen3.jpg);"></div>
+        <div class="hero-bg-slide" style="background-image: url(img/family.jpg);"></div>
+      </div>
+      <div class="hero-scrim" aria-hidden="true"></div>
+      <div class="container hero-content">
+        <h1 class="sr-only">Dandelion Gourmet</h1>
+        <img class="hero-logo invert hero-anim" src="img/dg-vertical.png" alt="Dandelion Gourmet">
+        <p class="hero-tagline hero-anim">Two brands, one gourmet family — crafting memorable dining and entertainment
+          experiences across Cavite and Las Piñas.</p>
+        <div class="hero-actions hero-anim">
+          <a href="#ramenyoungwasabi" class="btn btn-primary">Discover Our Menu</a>
+          <a href="#fajardosfamilyktv" class="btn btn-secondary">Explore KTV Rooms</a>
+        </div>
+        <div class="hero-meta hero-anim">
+          <span class="hero-meta-item">📍 Dasmariñas &middot; Bacoor &middot; Las Piñas</span>
+          <span class="hero-meta-divider" aria-hidden="true"></span>
+          <a class="hero-meta-item hero-meta-link" href="#inquiries">Book a Table &rarr;</a>
+        </div>
+      </div>
+      <!-- <div class="container stores">
+        <a class="store-item" href="#ramenyoungwasabi">
+          <img class="store-image" src="img/restaurant.jpg" alt="Ramen Young Wasabi restaurant interior">
+          <span class="store-overlay"></span>
+          <div class="store-details">
+            <span class="store-eyebrow">Japanese Restaurant</span>
+            <p>Ramen Young Wasabi</p>
+            <span class="store-cta">View Branches &rarr;</span>
+          </div>
+        </a>
+        <a class="store-item" href="#fajardosfamilyktv">
+          <img class="store-image" src="img/ktv.jpg" alt="Fajardo's Family KTV room">
+          <span class="store-overlay"></span>
+          <div class="store-details">
+            <span class="store-eyebrow">Family KTV Bar</span>
+            <p>Fajardo's Family KTV</p>
+            <span class="store-cta">View Branches &rarr;</span>
+          </div>
+        </a>
+      </div> -->
+    </section>
+
+    <section id="about" class="about" aria-label="About Us">
+      <div class="container about-copy">
+        <span class="section-eyebrow">Our Story</span>
+        <h2>About Us</h2>
+        <p>Dandelion Gourmet is a proudly Filipino food and beverage company committed to bringing people together
+          through exceptional dining and entertainment experiences.</p>
+        <p>Our family of brands includes Ramen Young Wasabi, a Japanese-Filipino inspired restaurant known for its
+          signature ramen and flavorful dishes, and Fajardo's Family KTV, a family-friendly karaoke destination
+          offering private KTV rooms, delicious food, and a fun atmosphere for all occasions.</p>
+        <p>Today, Ramen Young Wasabi proudly serves guests across three branches in Dasmariñas, Bacoor (Main Square
+          Molino), and Las Piñas, while Fajardo's Family KTV welcomes families and friends at its two branches in
+          Dasmariñas and Las Piñas.</p>
+        <p>At Dandelion Gourmet, our mission is simple: to create memorable moments by combining great food, warm
+          hospitality, and enjoyable experiences for every guest.</p>
+        <div class="about-stats">
+          <div class="stat">
+            <span class="stat-number">2</span>
+            <span class="stat-label">Signature Brands</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">5</span>
+            <span class="stat-label">Branches</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">3</span>
+            <span class="stat-label">Cities Served</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-slider container">
+        <div class="about-slider-track">
+          <div class="about-slide">
+            <img src="img/slider/ramen.jpg" alt="Assorted signature ramen bowls" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Signature Ramen</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/ramen2.jpg" alt="Ramen set with gyoza and karaage" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Ramen Feast</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/ramen3.jpg" alt="Shoyu ramen bowl with chashu and egg" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Shoyu Ramen</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/ramen4.jpg" alt="Ramen bowl with corn and chashu" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Rich Ramen Broth</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/takoyaki.jpg" alt="Takoyaki and Japanese appetizers" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Takoyaki</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/gyudon.jpg" alt="Gyudon beef rice bowl" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Gyudon</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/yakinikudon.jpg" alt="Yakiniku don with kimchi" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Yakiniku Don</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/tonkatsu.jpg" alt="Crispy tonkatsu with cabbage" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Tonkatsu</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/dinakdakan.jpg" alt="Dinakdakan Filipino appetizer" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Dinakdakan</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/comingsoon.jpg" alt="New Ramen Young Wasabi branch opening soon" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">New Branch Coming Soon</span>
+          </div>
+          <div class="about-slide-dup" aria-hidden="true">
+          <div class="about-slide">
+            <img src="img/slider/ramen.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Signature Ramen</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/ramen2.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Ramen Feast</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/ramen3.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Shoyu Ramen</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/ramen4.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Rich Ramen Broth</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/takoyaki.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Takoyaki</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/gyudon.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Gyudon</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/yakinikudon.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Yakiniku Don</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/tonkatsu.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Tonkatsu</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/dinakdakan.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">Dinakdakan</span>
+          </div>
+          <div class="about-slide">
+            <img src="img/slider/comingsoon.jpg" alt="" loading="lazy">
+            <div class="about-slide-overlay"></div>
+            <span class="about-slide-caption">New Branch Coming Soon</span>
+          </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ramenyoungwasabi" class="restaurant brand-section" aria-label="Ramen Young Wasabi">
+      <div class="container">
+        <div class="brand-header">
+          <span class="section-eyebrow">Japanese Restaurant</span>
+          <h2>Ramen Young Wasabi</h2>
+          <p>Experience the perfect blend of traditional ramen and the bold flavors of fresh wasabi at Ramen Young
+            Wasabi.</p>
+          <!-- <a href="/ramenyoungwasabi/grid-menu.html" target="_blank" class="btn btn-primary">View Full Screen</a> -->
+        </div>
+        <div class="img-placeholder  brand-banner" role="img"
+          aria-label="Placeholder banner photo for Ramen Young Wasabi">
+          <iframe class="brand-banner-image" src="/ramenyoungwasabi/grid-menu.html" title="Ramen Young Wasabi Menu"
+            frameborder="0"></iframe>
+        </div>
+        <ul class="branches">
+          <li class="branch">
+            <h4>Main Branch</h4>
+            <dl>
+              <dt>Business Hours</dt>
+              <dd>10:00 AM – 2:00 AM</dd>
+
+              <dt>Phone</dt>
+              <dd>+63 912 345 6789</dd>
+
+              <dt>Address</dt>
+              <dd>Arkansas st Manuelaville Subd Burol, Main Dr, Dasmariñas, 4114 Cavite</dd>
+            </dl>
+          </li>
+          <li class="branch">
+            <h4>Main Square Molino</h4>
+            <dl>
+              <dt>Business Hours</dt>
+              <dd>10:00 AM – 10:00 PM</dd>
+
+              <dt>Phone</dt>
+              <dd>+63 921 855 7454</dd>
+
+              <dt>Address</dt>
+              <dd>126, Main square mall, Bayanan, Bacoor, 4102 Cavite</dd>
+            </dl>
+          </li>
+          <li class="branch">
+            <h4>Robinson's Las Pinas</h4>
+            <dl>
+              <dt>Business Hours</dt>
+              <dd>10:00 AM – 2:00 AM</dd>
+
+              <dt>Phone</dt>
+              <dd>+63 969 122 9234</dd>
+
+              <dt>Address</dt>
+              <dd>Robinsons Place Alabang Zapote Road Talon I, Las Piñas, Philippines, 1747</dd>
+            </dl>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="fajardosfamilyktv" class="ktv brand-section" aria-label="Fajardo's Family KTV">
+      <div class="container">
+        <div class="brand-header">
+          <span class="section-eyebrow">Family KTV Bar</span>
+          <h2>Fajardo's Family KTV</h2>
+          <p>Enjoy a unique entertainment experience with our family-friendly KTV atmosphere and delicious cuisine.
+          </p>
+          <!-- <a href="/fajardosfamilyktv/grid-menu.html" target="_blank" class="btn btn-primary">View Full Screen</a> -->
+        </div>
+        <div class="img-placeholder  brand-banner" role="img"
+          aria-label="Placeholder banner photo for Fajardo's Family KTV">
+          <iframe class="brand-banner-image" src="/fajardosfamilyktv/grid-menu.html" title="Fajardo's Family KTV Menu"
+            frameborder="0"></iframe>
+            
+        </div>
+        <ul class="branches">
+          <li class="branch">
+            <h4>Main Branch</h4>
+            <dl>
+              <dt>Business Hours</dt>
+              <dd>10:00 AM – 2:00 AM</dd>
+
+              <dt>Phone</dt>
+              <dd>+63 912 345 6789</dd>
+
+              <dt>Address</dt>
+              <dd>Arkansas st Manuelaville Subd Burol, Main Dr, Dasmariñas, 4114 Cavite</dd>
+            </dl>
+          </li>
+          <li class="branch">
+            <h4>Robinson's Las Pinas</h4>
+            <dl>
+              <dt>Business Hours</dt>
+              <dd>10:00 AM – 2:00 AM</dd>
+
+              <dt>Phone</dt>
+              <dd>+63 921 855 7454</dd>
+
+              <dt>Address</dt>
+              <dd>Robinsons Place Alabang Zapote Road Talon I, Las Piñas, Philippines, 1747</dd>
+            </dl>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="inquiries" class="inquiries" aria-label="Inquiries">
+      <div class="container inquiries-grid">
+        <div class="inquiries-copy">
+          <span class="section-eyebrow">Get In Touch</span>
+          <h2>Send Us an Inquiry</h2>
+          <p>Have a question about reservations, private events, or franchising opportunities? Send us a message and
+            our team will get back to you by email.</p>
+        </div>
+        <form class="inquiry-form" id="inquiry-form" novalidate>
+          <div class="form-row">
+            <label for="inquiry-name">Full Name</label>
+            <input type="text" id="inquiry-name" name="name" autocomplete="name" required>
+          </div>
+          <div class="form-row">
+            <label for="inquiry-email">Email Address</label>
+            <input type="email" id="inquiry-email" name="email" autocomplete="email" required>
+          </div>
+          <div class="form-row">
+            <label for="inquiry-subject">Subject</label>
+            <input type="text" id="inquiry-subject" name="subject" required>
+          </div>
+          <div class="form-row">
+            <label for="inquiry-message">Message</label>
+            <textarea id="inquiry-message" name="message" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Inquiry</button>
+          <p class="form-status" id="inquiry-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img class="footer-logo invert" src="img/dg-horizontal.png" alt="Dandelion Gourmet">
+        <p>Crafting gourmet dining and entertainment experiences across Cavite and Las Piñas.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Explore</h5>
+        <ul>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#ramenyoungwasabi">Ramen Young Wasabi</a></li>
+          <li><a href="#fajardosfamilyktv">Fajardo's Family KTV</a></li>
+          <li><a href="#inquiries">Inquiries</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Connect</h5>
+        <ul>
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#inquiries">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Dandelion Gourmet. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="js/main.js" defer></script>
+</body>
+
+</html>

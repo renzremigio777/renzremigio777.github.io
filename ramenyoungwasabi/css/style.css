@@ -1,0 +1,627 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Open+Sans:wght@400;600;700;800&display=swap');
+
+:root {
+  /* brand colors, sampled from ryw-logo-v2.png */
+  --cream: #fffaf2;
+  --cream-alt: #f6ead2;
+  --panel-dark: #17110f;
+  --panel-dark-alt: #2a1e17;
+  --maroon: #7a1730;
+  --maroon-dark: #5a1023;
+  --gold: #e2a83c;
+  --gold-light: #f3c96f;
+  --pink: #e8738f;
+  --teal: #2f9e8f;
+  --text-on-dark: #f6e6c8;
+  --text-on-dark-muted: rgba(246, 230, 200, .72);
+  --text-dark: #3a2a1c;
+  --text-muted: #8a7860;
+  --shadow-d: rgba(43, 25, 10, .2);
+  --shadow-l: rgba(255, 255, 255, .9);
+
+  /* spacing — fluid steps between consecutive Fibonacci numbers (5,8,13,21,34,55px) */
+  --sp-1: clamp(0.3125rem, 0.9vh, 0.5rem);
+  --sp-2: clamp(0.5rem, 1.3vh, 0.8125rem);
+  --sp-3: clamp(0.8125rem, 1.9vh, 1.3125rem);
+  --sp-4: clamp(1.3125rem, 2.8vh, 2.125rem);
+  --sp-5: clamp(2.125rem, 4vh, 3.4375rem);
+
+  /* radii — fixed Fibonacci steps (8, 13, 21px) */
+  --r-1: 0.5rem;
+  --r-2: 0.8125rem;
+  --r-3: 1.3125rem;
+  --r-pill: 999px;
+
+  /* type — golden-ratio derived scale (base 1rem, step √φ ≈ 1.272). The
+     fluid middle term uses vmin (the smaller of viewport width/height) so
+     type scales down on BOTH a narrow-but-tall viewport and a wide-but-
+     short one, not just when height shrinks. */
+  --fs-tiny: clamp(0.75rem, 1.4vmin, 0.875rem);
+  --fs-sm: clamp(0.8125rem, 1.6vmin, 0.9375rem);
+  --fs-base: clamp(0.9375rem, 2vmin, 1.05rem);
+  --fs-md: clamp(0.975rem, 2.3vmin, 1.15rem);
+  --fs-lg: clamp(1.1rem, 3vmin, 1.4rem);
+  --fs-xl: clamp(1.4rem, 3.8vmin, 1.75rem);
+}
+
+* { 
+  box-sizing: border-box;
+  font-family: "Baloo 2","Open Sans", sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+ }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  font-size: var(--fs-base);
+  background: var(--cream);
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+h1, h2, h3 { font-family: "Baloo 2", "Open Sans", sans-serif; margin: 0; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* POSTER LAYOUT (mirrors ryw-banner.jpg composition) — every row/column
+   is a flexible (1fr) share of exactly 100vh, and every panel below
+   flexes its own children to fill that share, so there is never leftover
+   dead space and never anything to scroll. */
+.poster {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1.9fr 1.15fr .95fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "left mid side"
+    "addons addons addons";
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+/* DARK FOOD PANELS */
+.panel-left, .panel-mid {
+  grid-area: left;
+  background: radial-gradient(circle at 18% 12%, var(--panel-dark-alt), var(--panel-dark) 72%);
+  border-radius: var(--r-3);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.panel-mid {
+  grid-area: mid;
+  position: relative;
+  gap: var(--sp-2);
+}
+
+.quad {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+/* ITEM CARDS (on dark panels) */
+.item {
+  position: relative;
+  min-height: 4.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, .045);
+  border: 2px solid transparent;
+  border-radius: var(--r-2);
+  padding: var(--sp-2);
+  cursor: pointer;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.item:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, .09);
+  border-color: var(--accent, var(--gold));
+  box-shadow: 0 10px 18px rgba(0, 0, 0, .3);
+}
+
+.item:active { transform: translateY(0) scale(.98); }
+
+.item.selected {
+  border-color: var(--accent, var(--gold));
+  background: rgba(255, 255, 255, .13);
+}
+
+/* Name, price and broth choice are the content that matters — they never
+   shrink. The photo is decorative, so it's the only thing allowed to give
+   up space (down to nothing) when a box gets tight. */
+.item .row-top,
+.item h3,
+.item .sub,
+.item .broth-row {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Grows to fill whatever room is left in the card (desktop/tablet only
+   have a definite-height ancestor chain, so this actually scales the
+   photo up on big screens instead of capping at a fixed size — see the
+   ≤560px override below for why mobile needs a fixed height instead). */
+.item-visual {
+      position: relative;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-1) 0;
+}
+
+.item-visual::before {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .09), transparent 70%);
+  border-radius: 50%;
+}
+
+.item-photo {
+  position: relative;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 150%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .5));
+  position: relative;
+}
+
+.item .price-tag {
+  background: var(--gold);
+  color: var(--panel-dark);
+  font-weight: 800;
+  font-size: var(--fs-tiny);
+  padding: .3em .65em;
+  border-radius: var(--r-1);
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .35);
+}
+
+.item .price-tag small { font-size: .75em; opacity: .85; }
+
+.item h3 {
+  color: var(--text-on-dark);
+  font-weight: 700;
+  line-height: 1.2;
+  font-size: var(--fs-md);
+  margin-top: var(--sp-1);
+  position: relative;
+  text-shadow: 0px 0 3px #000000;
+}
+
+.item .sub {
+  margin: .15em 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-on-dark-muted);
+  font-weight: 600;
+  position: relative;
+  text-shadow: 0px 0 5px #000000;
+}
+
+/* BROTH SELECTOR (radio group styled as pills) */
+.broth-row {
+  border: 0;
+  margin: 0 0 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.chip input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.chip span {
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  padding: .35em .75em;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .06);
+  color: var(--text-on-dark-muted);
+  transition: background .18s ease, color .18s ease, transform .12s ease, border-color .18s ease;
+}
+
+.chip:hover span {
+  border-color: var(--accent, var(--gold));
+  color: var(--text-on-dark);
+  transform: translateY(-1px);
+}
+
+.chip input:checked + span {
+  background: var(--accent, var(--gold));
+  border-color: transparent;
+  color: var(--panel-dark);
+}
+
+.chip input:focus-visible + span {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 2px;
+}
+
+.chip input:active + span { transform: translateY(0) scale(.95); }
+
+/* FEATURE ITEMS (Karaage / Takoyaki) — flex-shrink:0 so the card is never
+   squeezed smaller than its own (non-shrinking) content needs. If
+   panel-mid ever runs out of room, its own overflow:hidden clips the
+   bottom of the last card cleanly instead of the card's chips spilling
+   into the upgrade strip below it. */
+.item-feature { flex: 1 0 auto; min-height: 5.5rem; }
+.item-feature h3 { font-size: var(--fs-lg); }
+.item-feature .sub { font-size: var(--fs-base); }
+
+/* UPGRADE STICKER — a single die-cut badge slapped diagonally across the
+   seam between the two feature cards, like a promo sticker on a physical
+   menu poster, instead of taking its own row in the stack. */
+.upgrade-strip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 5;
+  transform: translate(-50%, -50%) rotate(-6deg);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  max-width: calc(100% - 2 * var(--sp-3));
+  background: linear-gradient(135deg, var(--pink), var(--teal));
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-2);
+  border: 3px dashed rgba(255, 255, 255, .7);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, .55), 0 2px 0 rgba(255, 255, 255, .18) inset;
+  /* decorative overlay only — clicks/hovers reach the card underneath */
+  pointer-events: none;
+}
+
+.burst {
+  flex: 0 0 auto;
+  margin: 0;
+  color: #fff;
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 800;
+  font-size: var(--fs-sm);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.add-mini {
+  flex: 0 0 auto;
+  list-style: none;
+  margin: 0;
+  padding-left: var(--sp-2);
+  border-left: 1px dashed rgba(255, 255, 255, .55);
+  display: flex;
+  flex-direction: column;
+  gap: .2em;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.add-mini strong { color: var(--gold-light); }
+
+/* SIDE PANEL */
+.panel-side {
+  grid-area: side;
+  background: var(--cream-alt);
+  border-radius: var(--r-3);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(122, 23, 48, .08), 0 8px 18px rgba(0, 0, 0, .08);
+}
+
+.side-logo { flex: 0 0 auto; text-align: center; }
+
+.logo-image {
+  display: block;
+  width: 100%;
+  max-width: 16rem;
+  height: auto;
+  margin: 0 auto;
+}
+
+.side-logo .tagline {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.savers {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--cream);
+  border-radius: var(--r-2);
+  padding: var(--sp-2) var(--sp-3);
+  box-shadow: inset 3px 3px 8px var(--shadow-d), inset -3px -3px 8px var(--shadow-l);
+}
+
+.savers-badge {
+  flex: 0 0 auto;
+  text-align: center;
+  transform: rotate(-3deg);
+  font-weight: 800;
+  font-size: var(--fs-lg);
+  color: var(--pink);
+  -webkit-text-stroke: 1px #fff;
+  paint-order: stroke fill;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, .12);
+}
+
+.savers-note {
+  flex: 0 0 auto;
+  text-align: center;
+  margin: .2em 0 var(--sp-2);
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-muted);
+}
+
+.savers-list {
+  flex: 1;
+  min-height: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.savers-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+  font: inherit;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-bottom: 1px dashed #e6d7b8;
+  border-radius: var(--r-1);
+  padding: var(--sp-1) var(--sp-1);
+  cursor: pointer;
+  transition: background .15s ease;
+}
+
+.savers-list li:last-child .savers-row { border-bottom: none; }
+.savers-row:hover, .savers-row:focus-visible { background: rgba(226, 168, 60, .14); }
+.savers-row.selected { background: rgba(226, 168, 60, .24); }
+.savers-row .price { color: var(--maroon); }
+
+.drinkbar {
+  text-align: center;
+  margin: 0;
+  background: linear-gradient(120deg, var(--teal), #257c70);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  padding: var(--sp-2);
+  border-radius: var(--r-2);
+  box-shadow: 0 6px 14px rgba(47, 158, 143, .35);
+}
+
+/* ADD-ONS STRIP */
+.addons {
+  grid-area: addons;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  background: var(--cream-alt);
+  border-radius: var(--r-3);
+  padding: var(--sp-2) var(--sp-3);
+  box-shadow: inset 0 0 0 1px rgba(122, 23, 48, .08);
+}
+
+.addons-label {
+  flex: 0 0 auto;
+  font-weight: 800;
+  font-size: var(--fs-lg);
+  color: var(--maroon);
+  text-transform: uppercase;
+}
+
+.addons-list {
+  flex: 1;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.addons-list li { flex: 1; min-width: 0; }
+
+.addon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 100%;
+  text-align: center;
+  font: inherit;
+  color: inherit;
+  background: var(--cream);
+  border: 0;
+  border-radius: var(--r-1);
+  padding: var(--sp-2) var(--sp-1);
+  box-shadow: 3px 3px 7px var(--shadow-d), -3px -3px 7px var(--shadow-l);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.addon:hover, .addon:focus-visible { transform: translateY(-3px); box-shadow: 5px 5px 10px var(--shadow-d), -4px -4px 9px var(--shadow-l); }
+.addon:active { transform: translateY(0) scale(.96); }
+.addon.selected { box-shadow: inset 2px 2px 5px var(--shadow-d), inset -2px -2px 5px var(--shadow-l); }
+
+.addon .ic {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: clamp(1.4rem, 5vmin, 2.5rem);
+  object-fit: contain;
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+.addon .name {
+  flex-shrink: 0;
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.addon .price {
+  flex-shrink: 0;
+  font-size: var(--fs-sm);
+  color: var(--maroon);
+  font-weight: 800;
+}
+
+/* RESPONSIVE OVERRIDES — declared last so they win over the base rules above.
+   Desktop and tablet stay locked to 100vh with no scroll. Small screens
+   (≤560px) trade that off deliberately: everything sizes to its natural,
+   readable height and the PAGE scrolls instead of squeezing photos to
+   nothing or clipping text — see the ≤560px block below. */
+@media (max-width: 860px) {
+  .poster {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-areas:
+      "left side"
+      "mid  side"
+      "addons addons";
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --fs-tiny: clamp(0.75rem, 1.7vmin, 0.8125rem);
+    --fs-sm: clamp(0.8125rem, 1.9vmin, 0.9375rem);
+    --fs-base: clamp(0.875rem, 2.1vmin, 0.9375rem);
+    --fs-md: clamp(0.9375rem, 2.3vmin, 1rem);
+    --fs-lg: clamp(1.0625rem, 2.8vmin, 1.15rem);
+  }
+
+  html, body {
+    height: auto;
+    overflow: visible;
+  }
+
+  .poster {
+    height: auto;
+    min-height: 100vh;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      "side"
+      "left"
+      "mid"
+      "addons";
+  }
+
+  .quad {
+    grid-template-rows: auto auto;
+  }
+
+  .item, .item-feature {
+    min-height: 0;
+  }
+
+  /* The card and its ancestors are auto-height here (the page scrolls
+     instead of forcing 100vh), so item-visual's flex-basis never resolves
+     to a definite size — a percentage height on the photo can't compute
+     against that. Give it a real fixed height instead. */
+  .item-visual {
+    flex: 0 0 auto;
+  }
+
+  .item-photo {
+    height: clamp(2.5rem, 12vmin, 6rem);
+  }
+
+  .item-feature .item-photo {
+    height: clamp(3.5rem, 16vmin, 8rem);
+  }
+
+  .addons {
+    flex-wrap: wrap;
+  }
+
+  .addons-label { width: 100%; }
+
+  .addons-list {
+    flex-wrap: wrap;
+  }
+
+  .addons-list li {
+    flex: 1 1 calc(50% - .5rem);
+  }
+}
