@@ -52,7 +52,7 @@
       const key = entry.target === sections.ryw ? 'ryw' : 'ktv';
       ratios[key] = entry.isIntersecting ? entry.intersectionRatio : 0;
     });
-    applyBodyState();
+    // applyBodyState();
   }, {
     threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
   });
