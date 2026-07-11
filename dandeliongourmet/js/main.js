@@ -33,6 +33,35 @@
   observer.observe(sections.ryw);
   observer.observe(sections.ktv);
 
+  // When a user scrolls inside an iframe and hits the top/bottom boundary,
+  // forward the remaining finger movement to the parent page so the page
+  // keeps scrolling naturally on mobile.
+  function bridgeIframeScroll(iframe) {
+    const attach = () => {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        let lastY = 0;
+        doc.addEventListener('touchstart', (e) => {
+          lastY = e.touches[0].clientY;
+        }, { passive: true });
+        doc.addEventListener('touchmove', (e) => {
+          const scroller = doc.scrollingElement || doc.documentElement;
+          const currentY = e.touches[0].clientY;
+          const dy = lastY - currentY; // positive = finger moved up = scroll down
+          lastY = currentY;
+          const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2;
+          const atTop = scroller.scrollTop <= 0;
+          if ((dy > 0 && atBottom) || (dy < 0 && atTop)) {
+            window.scrollBy(0, dy);
+          }
+        }, { passive: true });
+      } catch (_) {}
+    };
+    const loaded = iframe.contentDocument && iframe.contentDocument.readyState === 'complete';
+    if (loaded) { attach(); } else { iframe.addEventListener('load', attach); }
+  }
+  [sections.ryw, sections.ktv].forEach(bridgeIframeScroll);
+
   // Minimize the header once the hero section is scrolled out of view
   // (i.e. as soon as the About section is reached), and restore it when
   // the hero comes back into view. A single stable boundary (instead of
