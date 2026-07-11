@@ -72,7 +72,7 @@ button {
 .stage {
   height: 100dvh;
   display: flex;
-  align-items: center;
+  /* align-items: center; */
   justify-content: center;
   padding: var(--sp-3) var(--sp-4);
 }
@@ -83,7 +83,7 @@ button {
   /* Capped closer to the (now 2-row, no dock) content's own natural
      height, so tall/wide screens don't center a small composition inside
      a lot of leftover empty frame. */
-  height: min(100%, 34rem);
+  /* height: min(100%, 34rem); */
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: var(--sp-3);
@@ -94,6 +94,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 120px;
 }
 
 .brand {
@@ -122,14 +123,32 @@ button {
   border-radius: 50%;
   border: 1px solid var(--line);
   background: #fff;
-  font-size: 1.05rem;
+  color: var(--text-dark);
   cursor: pointer;
-  transition: box-shadow .18s ease, transform .18s ease;
+  transition: box-shadow .18s ease, transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.icon-btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .icon-btn:hover {
+  background: var(--cream-alt);
+  border-color: var(--gold);
+  color: var(--maroon);
   box-shadow: 0 6px 14px var(--shadow);
   transform: translateY(-1px);
+}
+
+.icon-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.icon-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 /* MAIN — the wheel and hero text sit centered as one compact unit. */
