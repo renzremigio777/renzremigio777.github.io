@@ -4,19 +4,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ramen Young Wasabi</title>
+  <title>Ramen Young Wasabi — Japanese-Filipino Ramen in Cavite &amp; Las Piñas</title>
+  <meta name="description"
+    content="Ramen Young Wasabi serves Japanese-Filipino inspired ramen, rich tonkotsu broth, and signature add-ons across branches in Dasmariñas, Bacoor, and Las Piñas.">
+  <meta name="keywords" content="Ramen Young Wasabi, ramen, Japanese restaurant, Cavite, Las Piñas, Dasmariñas, Bacoor, tonkotsu ramen">
+  <link rel="canonical" href="https://www.dandeliongourmet.com/ramenyoungwasabi/">
+
+  <meta property="og:type" content="restaurant.menu">
+  <meta property="og:title" content="Ramen Young Wasabi — Japanese-Filipino Ramen">
+  <meta property="og:description"
+    content="Rich tonkotsu broth, hand-pulled noodles, and signature add-ons — Ramen Young Wasabi, a Dandelion Gourmet brand.">
+  <meta property="og:image" content="img/ramen/sample.png">
+  <meta property="og:url" content="https://www.dandeliongourmet.com/ramenyoungwasabi/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ramen Young Wasabi — Japanese-Filipino Ramen">
+  <meta name="twitter:description" content="Rich tonkotsu broth, hand-pulled noodles, and signature add-ons across Cavite &amp; Las Piñas.">
+  <meta name="twitter:image" content="img/ramen/sample.png">
+  <meta name="theme-color" content="#7a1730">
+
+  <link rel="stylesheet" href="css/app.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "name": "Ramen Young Wasabi",
+    "servesCuisine": ["Japanese", "Filipino", "Ramen"],
+    "image": "img/ramen/sample.png",
+    "brand": { "@type": "Brand", "name": "Dandelion Gourmet" },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Arkansas St, Manuelaville Subd, Burol, Main Dr",
+      "addressLocality": "Dasmariñas",
+      "addressRegion": "Cavite",
+      "postalCode": "4114",
+      "addressCountry": "PH"
+    },
+    "telephone": "+63-912-345-6789"
+  }
+  </script>
 </head>
 
 <body>
-  <header>
-    <h1>Ramen Young Wasabi</h1>
-  </header>
-  <main>
-    <h2>Welcome to Ramen Young Wasabi!</h2>
-  </main>
-  <footer>
-    <p>&copy; 2026 Dandelion Gourmet. All rights reserved.</p>
-  </footer>
+  <div class="stage">
+    <div class="app-frame">
+      <header class="topbar">
+        <a href="#top" class="brand" aria-label="Ramen Young Wasabi home">
+          <img class="brand-logo" src="img/ryw-logo-text.png" alt="Ramen Young Wasabi" width="802" height="311">
+        </a>
+        <div class="topbar-icons">
+          <button type="button" class="icon-btn" aria-label="Search">&#128269;</button>
+          <a href="grid-menu.html" target="_blank" class="icon-btn" aria-label="Open full menu">&#9776;</a>
+        </div>
+      </header>
+
+      <main id="top" class="main-row">
+        <section class="hero-visual" aria-live="polite" aria-atomic="true">
+          <div class="wheel-column">
+            <div class="wheel-window">
+              <div class="wheel-stop">
+              <ul class="wheel" id="wheel">
+                <li>
+                  <button type="button" class="wheel-item active" id="wheel-item-0" aria-current="true"
+                    data-eyebrow="#1 Bestselling Bowl" data-title1="Signature Broth" data-title2="SS Gyoza Ramen Tei"
+                    data-meta="&#8369;375.00 &middot; 3pcs Gyoza" data-alt="SS Gyoza Ramen Tei bowl">
+                    <img src="img/ramen/sample.png" alt="">
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="wheel-item" id="wheel-item-1" data-eyebrow="Rich &amp; Spicy"
+                    data-title1="Amakara Broth" data-title2="SS Ebi Tempura Ramen Tei"
+                    data-meta="&#8369;395.00 &middot; 2pcs Tempura" data-alt="SS Ebi Tempura Ramen Tei bowl">
+                    <img src="img/ramen/sample.png" alt="">
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="wheel-item" id="wheel-item-2" data-eyebrow="Customer Favorite"
+                    data-title1="Hearty Broth" data-title2="SS Honetsuki Ramen Tei"
+                    data-meta="&#8369;389.00 &middot; 3pcs Wings" data-alt="SS Honetsuki Ramen Tei bowl">
+                    <img src="img/ramen/sample.png" alt="">
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="wheel-item" id="wheel-item-3" data-eyebrow="Chef's Special"
+                    data-title1="Golden Broth" data-title2="SS Kakiage Ramen Tei"
+                    data-meta="&#8369;350.00 &middot; 2pcs Kakiage" data-alt="SS Kakiage Ramen Tei bowl">
+                    <img src="img/ramen/sample.png" alt="">
+                  </button>
+                </li>
+              </ul>
+              </div>
+            </div>
+
+            <div class="wheel-controls">
+              <button type="button" class="wheel-arrow" data-dir="-1" aria-label="Show previous dish">&#8249;</button>
+              <ul class="wheel-dots" aria-hidden="true">
+                <li><button type="button" class="wheel-dot active" data-index="0" tabindex="-1"></button></li>
+                <li><button type="button" class="wheel-dot" data-index="1" tabindex="-1"></button></li>
+                <li><button type="button" class="wheel-dot" data-index="2" tabindex="-1"></button></li>
+                <li><button type="button" class="wheel-dot" data-index="3" tabindex="-1"></button></li>
+              </ul>
+              <button type="button" class="wheel-arrow" data-dir="1" aria-label="Show next dish">&#8250;</button>
+            </div>
+          </div>
+
+          <div class="hero-text">
+            <span class="hero-eyebrow" id="hero-eyebrow">#1 Bestselling Bowl</span>
+            <h1 class="hero-title" id="hero-title">Signature Broth<br><strong id="hero-title-strong">SS Gyoza Ramen
+                Tei</strong></h1>
+            <div class="hero-links">
+              <span class="hero-meta" id="hero-meta">&#8369;375.00 &middot; 3pcs Gyoza</span>
+              <a href="grid-menu.html" target="_blank" class="hero-order">&#127858; Order Food</a>
+            </div>
+
+            <hr class="hero-divider">
+
+            <p class="hero-rating"><span aria-hidden="true">&#9733;</span> 4.9 &middot; Rich &amp; creamy pork-bone
+              broth</p>
+            <p class="hero-desc">Hand-pulled noodles in slow-simmered broth, topped with tender chashu, ajitama egg,
+              menma, nori, and scallions — one of Ramen Young Wasabi's most-ordered bowls.</p>
+            <div class="hero-feedback">
+              <button type="button" class="feedback-btn">&#128077; 312</button>
+              <button type="button" class="feedback-btn">&#128078; 4</button>
+            </div>
+
+            <hr class="hero-divider">
+
+            <p class="hero-ingredients"><span class="hero-detail-label">Ingredients</span> Pork-bone broth &middot;
+              Ramen noodles &middot; Chashu pork &middot; Ajitama egg &middot; Menma &middot; Scallions &middot;
+              Nori</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/app.js" defer></script>
 </body>
 
 </html>
