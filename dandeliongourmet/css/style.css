@@ -809,30 +809,35 @@ section.hero {
   margin-top: 1rem;
 }
 
+/* Brand banner iframes are rendered at a fixed "desktop" design size
+   (see js/main.js) and scaled down with CSS transform as the container
+   shrinks, so the embed keeps the exact same desktop layout/aspect ratio
+   at every screen size instead of reflowing to the embedded page's own
+   mobile breakpoints. */
 .brand-banner {
   margin: 2.5rem 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  aspect-ratio: var(--banner-w) / var(--banner-h);
 }
+
 .brand-banner-image {
   display: block;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
 }
 
 iframe.brand-banner-image {
   border: none;
-  border-radius: 4px;
 }
 
-/* Ramen Young Wasabi menu iframe: grid-menu.html now flows and scrolls
-   internally to fit its own content at any width, so the embed just
-   needs a generous, viewport-proportional height rather than a fixed
-   aspect ratio locked to width. */
-#ramenyoungwasabi .brand-banner {
-  height: clamp(35rem, 85vh, 57.5rem);
-}
-
+#ramenyoungwasabi .brand-banner,
 #fajardosfamilyktv .brand-banner {
-  height: clamp(35rem, 85vh, 57.5rem);
+  --banner-w: 1280;
+  --banner-h: 900;
 }
 
 

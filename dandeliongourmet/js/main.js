@@ -1,4 +1,31 @@
 (() => {
+  // Render each brand-banner iframe at its fixed design size (--banner-w/
+  // --banner-h in CSS) and scale it down to fit the container, so the
+  // embed always shows the same desktop layout — just zoomed out — instead
+  // of reflowing to the embedded page's own mobile breakpoints.
+  const banners = document.querySelectorAll('.brand-banner');
+  if (banners.length) {
+    const scaleBanner = (banner) => {
+      const iframe = banner.querySelector('.brand-banner-image');
+      if (!iframe) return;
+      const style = getComputedStyle(banner);
+      const designWidth = parseFloat(style.getPropertyValue('--banner-w'));
+      const designHeight = parseFloat(style.getPropertyValue('--banner-h'));
+      if (!designWidth || !designHeight) return;
+      iframe.style.width = `${designWidth}px`;
+      iframe.style.height = `${designHeight}px`;
+      iframe.style.transform = `scale(${banner.clientWidth / designWidth})`;
+    };
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      entries.forEach((entry) => scaleBanner(entry.target));
+    });
+    banners.forEach((banner) => {
+      scaleBanner(banner);
+      resizeObserver.observe(banner);
+    });
+  }
+
   const sections = {
     ryw: document.querySelector('#ramenyoungwasabi iframe'),
     ktv: document.querySelector('#fajardosfamilyktv iframe'),
