@@ -95,6 +95,7 @@ button {
   align-items: center;
   justify-content: space-between;
   min-height: 120px;
+  padding-inline: 2rem;
 }
 
 .brand {
@@ -197,7 +198,7 @@ button {
      capped by width too (80vw) so a narrow-but-tall phone never demands
      a circle wider than its own screen, and capped in absolute terms so
      it can't outgrow the app-frame's own max height. */
-  --preview-size: clamp(9rem, min(46vh, 80vw), 22rem);
+  --preview-size: clamp(9rem, min(56vh, 80vw), 40rem);
   /* overflow:hidden is load-bearing, not decorative: without it the 3
      hidden seats aren't just visually stray on wide viewports (≥1920px,
      corner thumbnails) — they can also push the page's real scrollable
