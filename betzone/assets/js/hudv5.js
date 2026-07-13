@@ -520,11 +520,11 @@ const computeGeometry = () => {
   // a gap from the screen edge, and inset from the left edge too (rather
   // than pinned full-height flush against the top-left corner).
   if (bp === 'wide' && leftColumnMode) {
-    const colW = Math.min(containerWidth, 500 * scale);
+    const colW = Math.min(containerWidth, 525 * scale);
     const leftGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale);
     const colX = leftGutter + leftGap;
-    const colH = canvas.height * 0.75;
     const bottomGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale);
+    const colH = canvas.height * 0.93 - bottomGap;
     const colY = canvas.height - colH - bottomGap;
     const walletH2 = colH * 0.06;
     const statH2   = colH * 0.20;
