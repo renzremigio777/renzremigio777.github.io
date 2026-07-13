@@ -550,16 +550,20 @@ const computeGeometry = () => {
     const betW = Math.min(containerWidth * 0.58, 640 * scale);
     const betH = canvas.height * 0.20;
     const rightGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale) * 3;
-    const betBottomGap = bottomGap * 3;
-    const betX = canvas.width - betW - rightGap;
-    const betY = canvas.height - betH - betBottomGap;
+    // Bottom of both floating panels lines up with the bottom of the bet log
+    // (statisticsGridA), i.e. the bottom of the wallet+stats column.
+    const logBottomY = colY + colHUsed;
 
-    // Bet controls (undo / chips / cancel) float directly to the left of the betting zone
-    const ctrlGap = rightGap;
-    const ctrlH   = betH;
-    const ctrlW   = Math.min(betW * 0.85, 380 * scale);
-    const ctrlX   = betX - ctrlW - ctrlGap;
-    const ctrlY   = betY;
+    // Bet controls (undo / chips / cancel) now sit on the far right
+    const ctrlH = betH;
+    const ctrlW = Math.min(betW * 0.85, 380 * scale);
+    const ctrlX = canvas.width - ctrlW - rightGap;
+    const ctrlY = logBottomY - ctrlH;
+
+    // Betting zone now sits to the left of the bet controls
+    const betCtrlGap = clamp(6 * scale, canvas.height * 0.008, 12 * scale);
+    const betX = ctrlX - betW - betCtrlGap;
+    const betY = logBottomY - betH;
 
     return {
       video: { X: 0, Y: 0, W: canvas.width, H: canvas.height },
@@ -990,7 +994,7 @@ const drawGlassPanel = (x, y, w, h, r = 0) => {
   ctx.restore();
 };
 
-const drawGlassPanels = (GEOMETRY, includeBetOptions = true) => {
+const drawGlassPanels = (GEOMETRY, includeBetOptions = true, includeMenuBar = true) => {
   const bp = getBreakpoint(containerWidth / window.devicePixelRatio);
   const r = 6 * scale;
 
@@ -1003,16 +1007,17 @@ const drawGlassPanels = (GEOMETRY, includeBetOptions = true) => {
   drawGlassPanel(gE.X, gE.Y, gE.W, gE.H, r);
   drawGlassPanel(gA.X, gA.Y, gA.W, gA.H, r);
   if (includeBetOptions) drawGlassPanel(bo.X, bo.Y, bo.W, bo.H, r);
-  drawGlassPanel(mb.X, mb.Y, mb.W, mb.H, r);
+  if (includeMenuBar) drawGlassPanel(mb.X, mb.Y, mb.W, mb.H, r);
   if (wb) drawGlassPanel(wb.X, wb.Y, wb.W, wb.H, r);
 };
 
-// Renders the betting-zone glass panel + content off-screen, then composites
-// it back rotated around its bottom edge (hinge), like a book cover leaning
-// back — real rotateX + perspective math, not a linear squeeze: each
-// horizontal row is scaled uniformly (width AND thickness) by how far back
-// it sits in depth, and rows are re-stacked from the fixed bottom edge
-// upward so the whole thing reads as a rotation, not just a static taper.
+// Renders a panel's glass background + content off-screen, then composites it
+// back rotated around its bottom edge (hinge), like a book cover leaning back
+// — real rotateX + perspective math, not a linear squeeze: each horizontal
+// row is scaled uniformly (width AND thickness) by how far back it sits in
+// depth, and rows are re-stacked from the fixed bottom edge upward so the
+// whole thing reads as a rotation, not just a static taper. A slight extra
+// leftward drift is layered on as rows recede, for an asymmetric lean.
 // Rendered at 2x resolution and drawn with high-quality smoothing so text
 // and chip edges stay crisp instead of degrading into a blurry/aliased mess.
 const ensureFlipCanvas = () => {
@@ -1028,8 +1033,11 @@ const ensureFlipCanvas = () => {
   }
 };
 
-const drawBettingZoneTilted = (GEOMETRY) => {
-  const bo = GEOMETRY['betOptions'];
+// `vanishX` lets multiple panels share one common vanishing point (instead of
+// each collapsing toward its own center) so they read as pieces of a single
+// tilting surface. Falls back to the panel's own center when omitted.
+const drawPanelTilted = (GEOMETRY, panelKey, drawContent, vanishX) => {
+  const bo = GEOMETRY[panelKey];
   ensureFlipCanvas();
 
   flipCtx.clearRect(0, 0, flipCanvas.width, flipCanvas.height);
@@ -1037,12 +1045,14 @@ const drawBettingZoneTilted = (GEOMETRY) => {
   ctx.save();
   ctx.scale(FLIP_SUPERSAMPLE, FLIP_SUPERSAMPLE);
   drawGlassPanel(bo.X, bo.Y, bo.W, bo.H, 6 * scale);
-  drawbetOptions(GEOMETRY);
+  drawContent(GEOMETRY);
   ctx.restore();
   ctx = mainCtx;
 
   const rows      = 96;
   const H         = bo.H, W = bo.W;
+  const centerX0  = bo.X + W * 0.5; // this panel's natural (untilted) horizontal center
+  const vX        = vanishX ?? centerX0;
   const maxAngle  = 38 * Math.PI / 180; // full lean-back angle at tilt = 1
   const angle     = maxAngle * bettingZoneTilt;
   const sinA      = Math.sin(angle), cosA = Math.cos(angle);
@@ -1053,23 +1063,33 @@ const drawBettingZoneTilted = (GEOMETRY) => {
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
-  let yCursor = bo.Y + H; // bottom edge — fixed hinge point, doesn't move
+
+  // Exact screen-Y for a point at local height u (0 = hinge/bottom, 1 = top):
+  // Y3d = u*H*cosA, perspective-divided by k(u) — evaluated directly per row
+  // boundary (not accumulated row-by-row), which is what keeps the edge a
+  // straight line instead of bowing into a curve.
+  const kAt = (u) => focal / (focal + u * H * sinA);
+  const yAt = (u) => (bo.Y + H) - (u * H * cosA) * kAt(u);
+
   for (let i = 0; i < rows; i++) {
-    const u        = (i + 0.5) * du; // 0 near bottom .. 1 near top (distance from hinge)
-    const z        = u * H * sinA;   // depth this row recedes to as it leans back
-    const k        = focal / (focal + z); // perspective scale factor at that depth
-    const srcRowH  = H * du;
-    const dstRowH  = srcRowH * cosA * k;
+    const u0       = i * du;       // bottom of this row (0 = hinge)
+    const u1       = u0 + du;      // top of this row
+    const uMid     = u0 + du * 0.5;
+    const k        = kAt(uMid);    // width/center scale sampled at the row's mid-depth
+    const dstY     = yAt(u1);
+    const dstRowH  = yAt(u0) - dstY;
     const dstRowW  = W * k;
+    const srcRowH  = H * du;
     const srcY     = bo.Y + H - (i + 1) * srcRowH;
-    const dstY     = yCursor - dstRowH;
-    const dstX     = bo.X + (W - dstRowW) * 0.5;
+    // Row center collapses toward the shared vanishing point by the same
+    // factor k that shrinks its width — the single-surface perspective rule.
+    const rowCenterX = vX + (centerX0 - vX) * k;
+    const dstX     = rowCenterX - dstRowW * 0.5;
     ctx.drawImage(
       flipCanvas,
       bo.X * FLIP_SUPERSAMPLE, srcY * FLIP_SUPERSAMPLE, W * FLIP_SUPERSAMPLE, (srcRowH + 1) * FLIP_SUPERSAMPLE,
       dstX, dstY, dstRowW, dstRowH + 1
     );
-    yCursor = dstY;
   }
   ctx.restore();
 };
@@ -1094,9 +1114,11 @@ const drawUI = () => {
   ctx.fillStyle = uiShadow;
   ctx.fillRect(uiX, GEOMETRY.uiY, uiW, GEOMETRY.uiH);
 
-  // Betting-zone 3D page-flip tilt — scattered mode only (any game), active
-  // whenever betting is closed (dealing/result), eases back to flat on reopen.
-  const wantBettingZoneTilt = scatteredMode && gamePhase !== 'betting' ? 1 : 0;
+  // Betting-zone 3D page-flip tilt — wide breakpoint + scattered mode only
+  // (any game), active whenever betting is closed (dealing/result), eases
+  // back to flat on reopen. Scattered mode's floating layout only exists at
+  // the wide breakpoint, so this must stay gated the same way.
+  const wantBettingZoneTilt = scatteredMode && getBreakpoint(containerWidth) === 'wide' && gamePhase !== 'betting' ? 1 : 0;
   if (wantBettingZoneTilt !== bettingZoneTiltTarget) {
     bettingZoneTiltTarget = wantBettingZoneTilt;
     bettingZoneTiltFrom = bettingZoneTilt;
@@ -1110,11 +1132,23 @@ const drawUI = () => {
   }
   const tiltingBettingZone = bettingZoneTilt > 0.001;
 
-  drawGlassPanels(GEOMETRY, !tiltingBettingZone);
-  if (tiltingBettingZone) drawBettingZoneTilted(GEOMETRY);
+  // Shared vanishing point so the betting zone and bet controls lean toward
+  // one common point (a single tilting surface) instead of each collapsing
+  // toward its own center — biased slightly left for the asymmetric lean.
+  let sharedVanishX;
+  if (tiltingBettingZone) {
+    const bo = GEOMETRY['betOptions'], mb = GEOMETRY['menuBar'];
+    const spanL = Math.min(bo.X, mb.X);
+    const spanR = Math.max(bo.X + bo.W, mb.X + mb.W);
+    sharedVanishX = (spanL + spanR) * 0.5 - (spanR - spanL) * 0.06;
+  }
+
+  drawGlassPanels(GEOMETRY, !tiltingBettingZone, !tiltingBettingZone);
+  if (tiltingBettingZone) drawPanelTilted(GEOMETRY, 'betOptions', drawbetOptions, sharedVanishX);
   else drawbetOptions(GEOMETRY);
   drawStatistics(GEOMETRY);
-  drawMenuBar(GEOMETRY);
+  if (tiltingBettingZone) drawPanelTilted(GEOMETRY, 'menuBar', drawMenuBar, sharedVanishX);
+  else drawMenuBar(GEOMETRY);
   // colorgame dice live view is rendered inside drawStatistics (gE panel)
 
 }
