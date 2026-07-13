@@ -2,7 +2,8 @@
 // --- Canvas Setup ---
 const canvas = document.createElement('canvas');
 document.body.prepend(canvas);
-const ctx = canvas.getContext('2d');
+let ctx = canvas.getContext('2d');
+const mainCtx = ctx; // the real, on-screen 2D context — restored after any offscreen redirect
 
 // Text-contrast helper: adds a subtle dark drop-shadow behind every fillText
 // call so labels stay readable over the live video feed. Skipped whenever a
@@ -209,6 +210,19 @@ let isLabelsOn      = false;
 let labelsBounds    = null;
 let leftColumnMode  = false; // wide breakpoint only — stack the whole UI in a single column pinned left
 let leftColumnBounds = null;
+let scatteredMode   = GAME_TYPE === 'colorgame'; // wide breakpoint only — stats+wallet+menu in a left column, betOptions floats bottom-right; defaults on for colorgame only
+let scatteredBounds  = null;
+
+// Betting-zone 3D page-flip tilt (colorgame + scattered mode only) — trapezoid
+// perspective that eases in while betting is closed and eases back out to flat
+// once betting reopens. See bettingZoneTilt* below and drawBettingZoneTilted().
+let bettingZoneTilt       = 0;    // current animated value, 0 (flat) .. 1 (fully tilted)
+let bettingZoneTiltTarget = 0;
+let bettingZoneTiltFrom   = 0;
+let bettingZoneTiltStart  = null; // performance.now() timestamp the current tween began
+const BETTING_ZONE_TILT_DURATION = 900; // ms — slow, deliberate lean (independent of the card-flip timing)
+let flipCanvas = null, flipCtx = null;
+const FLIP_SUPERSAMPLE = 2; // offscreen render scale for the tilt — keeps text/chips crisp once perspective-shrunk
 let topNavGameHits    = [];
 let topNavSettingsHit = null;
 let topNavUserHit     = null;
@@ -515,12 +529,55 @@ const computeGeometry = () => {
     };
   }
 
+  // wide + scattered mode: wallet/stats/menu stack in one narrow left column
+  // (statistics single-column, gridE above gridA, instead of side-by-side),
+  // while betOptions breaks off entirely and floats bottom-right on its own.
+  if (bp === 'wide' && scatteredMode) {
+    const colW = Math.min(containerWidth, 400 * scale);
+    const leftGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale);
+    const colX = leftGutter + leftGap;
+    const bottomGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale);
+    const colH = canvas.height * 0.93 - bottomGap;
+
+    const walletH2  = colH * 0.08;
+    const statAreaH = colH * 0.52;
+    const statEh    = statAreaH * 0.5;
+    const statAh    = statAreaH * 0.5;
+    // menu/bet-controls no longer stack in the column — the column now only holds wallet+stats
+    const colHUsed  = walletH2 + statAreaH;
+    const colY      = canvas.height - colHUsed - bottomGap;
+
+    const betW = Math.min(containerWidth * 0.58, 640 * scale);
+    const betH = canvas.height * 0.20;
+    const rightGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale) * 3;
+    const betBottomGap = bottomGap * 3;
+    const betX = canvas.width - betW - rightGap;
+    const betY = canvas.height - betH - betBottomGap;
+
+    // Bet controls (undo / chips / cancel) float directly to the left of the betting zone
+    const ctrlGap = rightGap;
+    const ctrlH   = betH;
+    const ctrlW   = Math.min(betW * 0.85, 380 * scale);
+    const ctrlX   = betX - ctrlW - ctrlGap;
+    const ctrlY   = betY;
+
+    return {
+      video: { X: 0, Y: 0, W: canvas.width, H: canvas.height },
+      walletBar:       { X: colX, Y: colY,                        W: colW, H: walletH2 },
+      statisticsGridE: { X: colX, Y: colY + walletH2,             W: colW, H: statEh },
+      statisticsGridA: { X: colX, Y: colY + walletH2 + statEh,    W: colW, H: statAh },
+      menuBar:         { X: ctrlX, Y: ctrlY, W: ctrlW, H: ctrlH },
+      betOptions:      { X: betX, Y: betY, W: betW, H: betH },
+      uiX: colX, uiW: colW, uiY: colY + walletH2, uiH: colHUsed - walletH2,
+    };
+  }
+
   // wide + left-column mode: whole UI stacked in one narrow column, floating
   // over a fullscreen video — 60% of the viewport tall, bottom-aligned with
   // a gap from the screen edge, and inset from the left edge too (rather
   // than pinned full-height flush against the top-left corner).
   if (bp === 'wide' && leftColumnMode) {
-    const colW = Math.min(containerWidth, 525 * scale);
+    const colW = Math.min(containerWidth, 500 * scale);
     const leftGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale);
     const colX = leftGutter + leftGap;
     const bottomGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale);
@@ -933,7 +990,7 @@ const drawGlassPanel = (x, y, w, h, r = 0) => {
   ctx.restore();
 };
 
-const drawGlassPanels = (GEOMETRY) => {
+const drawGlassPanels = (GEOMETRY, includeBetOptions = true) => {
   const bp = getBreakpoint(containerWidth / window.devicePixelRatio);
   const r = 6 * scale;
 
@@ -945,9 +1002,76 @@ const drawGlassPanels = (GEOMETRY) => {
 
   drawGlassPanel(gE.X, gE.Y, gE.W, gE.H, r);
   drawGlassPanel(gA.X, gA.Y, gA.W, gA.H, r);
-  drawGlassPanel(bo.X, bo.Y, bo.W, bo.H, r);
+  if (includeBetOptions) drawGlassPanel(bo.X, bo.Y, bo.W, bo.H, r);
   drawGlassPanel(mb.X, mb.Y, mb.W, mb.H, r);
   if (wb) drawGlassPanel(wb.X, wb.Y, wb.W, wb.H, r);
+};
+
+// Renders the betting-zone glass panel + content off-screen, then composites
+// it back rotated around its bottom edge (hinge), like a book cover leaning
+// back — real rotateX + perspective math, not a linear squeeze: each
+// horizontal row is scaled uniformly (width AND thickness) by how far back
+// it sits in depth, and rows are re-stacked from the fixed bottom edge
+// upward so the whole thing reads as a rotation, not just a static taper.
+// Rendered at 2x resolution and drawn with high-quality smoothing so text
+// and chip edges stay crisp instead of degrading into a blurry/aliased mess.
+const ensureFlipCanvas = () => {
+  const targetW = canvas.width * FLIP_SUPERSAMPLE;
+  const targetH = canvas.height * FLIP_SUPERSAMPLE;
+  if (!flipCanvas) {
+    flipCanvas = document.createElement('canvas');
+    flipCtx = flipCanvas.getContext('2d');
+  }
+  if (flipCanvas.width !== targetW || flipCanvas.height !== targetH) {
+    flipCanvas.width = targetW;
+    flipCanvas.height = targetH;
+  }
+};
+
+const drawBettingZoneTilted = (GEOMETRY) => {
+  const bo = GEOMETRY['betOptions'];
+  ensureFlipCanvas();
+
+  flipCtx.clearRect(0, 0, flipCanvas.width, flipCanvas.height);
+  ctx = flipCtx;
+  ctx.save();
+  ctx.scale(FLIP_SUPERSAMPLE, FLIP_SUPERSAMPLE);
+  drawGlassPanel(bo.X, bo.Y, bo.W, bo.H, 6 * scale);
+  drawbetOptions(GEOMETRY);
+  ctx.restore();
+  ctx = mainCtx;
+
+  const rows      = 96;
+  const H         = bo.H, W = bo.W;
+  const maxAngle  = 38 * Math.PI / 180; // full lean-back angle at tilt = 1
+  const angle     = maxAngle * bettingZoneTilt;
+  const sinA      = Math.sin(angle), cosA = Math.cos(angle);
+  const focal     = H * 1.8; // perspective strength — larger = flatter/subtler depth falloff
+  const du        = 1 / rows;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  let yCursor = bo.Y + H; // bottom edge — fixed hinge point, doesn't move
+  for (let i = 0; i < rows; i++) {
+    const u        = (i + 0.5) * du; // 0 near bottom .. 1 near top (distance from hinge)
+    const z        = u * H * sinA;   // depth this row recedes to as it leans back
+    const k        = focal / (focal + z); // perspective scale factor at that depth
+    const srcRowH  = H * du;
+    const dstRowH  = srcRowH * cosA * k;
+    const dstRowW  = W * k;
+    const srcY     = bo.Y + H - (i + 1) * srcRowH;
+    const dstY     = yCursor - dstRowH;
+    const dstX     = bo.X + (W - dstRowW) * 0.5;
+    ctx.drawImage(
+      flipCanvas,
+      bo.X * FLIP_SUPERSAMPLE, srcY * FLIP_SUPERSAMPLE, W * FLIP_SUPERSAMPLE, (srcRowH + 1) * FLIP_SUPERSAMPLE,
+      dstX, dstY, dstRowW, dstRowH + 1
+    );
+    yCursor = dstY;
+  }
+  ctx.restore();
 };
 
 const drawUI = () => {
@@ -970,8 +1094,25 @@ const drawUI = () => {
   ctx.fillStyle = uiShadow;
   ctx.fillRect(uiX, GEOMETRY.uiY, uiW, GEOMETRY.uiH);
 
-  drawGlassPanels(GEOMETRY);
-  drawbetOptions(GEOMETRY);
+  // Betting-zone 3D page-flip tilt — scattered mode only (any game), active
+  // whenever betting is closed (dealing/result), eases back to flat on reopen.
+  const wantBettingZoneTilt = scatteredMode && gamePhase !== 'betting' ? 1 : 0;
+  if (wantBettingZoneTilt !== bettingZoneTiltTarget) {
+    bettingZoneTiltTarget = wantBettingZoneTilt;
+    bettingZoneTiltFrom = bettingZoneTilt;
+    bettingZoneTiltStart = performance.now();
+  }
+  if (bettingZoneTiltStart !== null) {
+    const raw = Math.min((performance.now() - bettingZoneTiltStart) / BETTING_ZONE_TILT_DURATION, 1);
+    const eased = raw < 0.5 ? 4 * raw * raw * raw : 1 - Math.pow(-2 * raw + 2, 3) / 2; // ease-in-out cubic
+    bettingZoneTilt = bettingZoneTiltFrom + (bettingZoneTiltTarget - bettingZoneTiltFrom) * eased;
+    if (raw >= 1) bettingZoneTiltStart = null;
+  }
+  const tiltingBettingZone = bettingZoneTilt > 0.001;
+
+  drawGlassPanels(GEOMETRY, !tiltingBettingZone);
+  if (tiltingBettingZone) drawBettingZoneTilted(GEOMETRY);
+  else drawbetOptions(GEOMETRY);
   drawStatistics(GEOMETRY);
   drawMenuBar(GEOMETRY);
   // colorgame dice live view is rendered inside drawStatistics (gE panel)
@@ -1231,7 +1372,7 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
   ctx.font = `300 ${mainBetfontSize * 0.75}px Interroman, Arial`
   ctx.fillText('0.95:1', player.X + player.TW * 0.5 - player.R * 0.5, player.Y + player.LH * 0.325);
 
-  if (gamePhase !== 'result') drawBetChip(player.X + player.TW * 0.35, player.Y + player.LH * 0.55, betChipR, bets.player);
+  drawBetChip(player.X + player.TW * 0.35, player.Y + player.LH * 0.55, betChipR, bets.player);
 
   // -- Cards --
   playerCards.forEach((card, i) => {
@@ -1364,7 +1505,7 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
   ctx.fillText('0.95:1', banker.X + banker.TW / 2 + banker.R / 2, banker.Y + banker.LH * 0.325);
 
 
-  if (gamePhase !== 'result') drawBetChip(banker.X + banker.TW * 0.65, banker.Y + banker.LH * 0.55, betChipR, bets.banker);
+  drawBetChip(banker.X + banker.TW * 0.65, banker.Y + banker.LH * 0.55, betChipR, bets.banker);
 
   // -- Cards --
   bankerCards.forEach((card, i) => {
@@ -1483,7 +1624,7 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
   ctx.fillText('8:1', tie.CX, tie.CY - tie.R * 0.75);
 
   betChipPositions.tie = { x: tie.CX, y: tie.CY - tie.R * 0.35, r: betChipR };
-  if (gamePhase !== 'result') drawBetChip(tie.CX, tie.CY - tie.R * 0.35, betChipR, bets.tie);
+  drawBetChip(tie.CX, tie.CY - tie.R * 0.35, betChipR, bets.tie);
 
   // -- Stats row (tie — centered: dot+count left half, amount right half) --
   {
@@ -1622,7 +1763,7 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
     ctx.font = `300 ${sideBetfontSize * 0.85}px Interroman, Arial`
     ctx.fillText('04:20', sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.70);
     betChipPositions[side.toLowerCase()] = { x: sideBet.X + sideBet.W * 0.5, y: sideBet.Y + sideBet.H * 0.5, r: sideBet.H * 0.28 };
-    if (gamePhase !== 'result') drawBetChip(sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.5, sideBet.H * 0.28, bets[side.toLowerCase()]);
+    drawBetChip(sideBet.X + sideBet.W * 0.5, sideBet.Y + sideBet.H * 0.5, sideBet.H * 0.28, bets[side.toLowerCase()]);
 
 
 
@@ -1735,7 +1876,7 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
   ctx.font = `300 ${mainBetfontSize * 0.75}px Interroman, Arial`;
   ctx.fillText('1 : 1', tA.X + tA.TW * 0.5 - tA.R * 0.5, tA.Y + tA.LH * 0.325);
 
-  if (gamePhase !== 'result') drawBetChip(tA.X + tA.TW * 0.35, tA.Y + tA.LH * 0.55, betChipR, bets[keyA]);
+  drawBetChip(tA.X + tA.TW * 0.35, tA.Y + tA.LH * 0.55, betChipR, bets[keyA]);
   betChipPositions[keyA] = { x: tA.X + tA.TW * 0.35, y: tA.Y + tA.LH * 0.55, r: betChipR };
 
   // Stats A
@@ -1822,7 +1963,7 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
   ctx.font = `300 ${mainBetfontSize * 0.70}px Interroman, Arial`;
   ctx.fillText('1 : 1', tB.X + tB.TW / 2 + tB.R / 2, tB.Y + tB.LH * 0.325);
 
-  if (gamePhase !== 'result') drawBetChip(tB.X + tB.TW * 0.65, tB.Y + tB.LH * 0.55, betChipR, bets[keyB]);
+  drawBetChip(tB.X + tB.TW * 0.65, tB.Y + tB.LH * 0.55, betChipR, bets[keyB]);
   betChipPositions[keyB] = { x: tB.X + tB.TW * 0.65, y: tB.Y + tB.LH * 0.55, r: betChipR };
 
   // Stats B (mirrored)
@@ -2349,11 +2490,8 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
         }
       }
 
-      // ── Chip ──
-      if (gamePhase === 'betting') {
-        drawBetChip(cx, chipCY, chipR, bets[key]);
-      }
     }
+    drawBetChip(cx, ty + tileH * 0.44, chipR, bets[key]);
     betChipPositions[key] = { x: cx, y: ty + tileH * 0.44, r: chipR };
 
     // ── WIN result overlay on each winning tile ──
@@ -2471,7 +2609,7 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
 
         const chipCy = sy + subRowH * 0.66;
         betChipPositions[betKey] = { x: scx, y: chipCy, r: subChipR };
-        if (gamePhase === 'betting') drawBetChip(scx, chipCy, subChipR, bets[betKey]);
+        drawBetChip(scx, chipCy, subChipR, bets[betKey]);
       });
     });
   }
@@ -4278,9 +4416,9 @@ const drawTopNav = () => {
     ctx.stroke();
   }
 
-  // ── Utility slots: Chat | Volume | Video | Layout | Lobby | Labels | User [| Left Column — wide only] ──
+  // ── Utility slots: Chat | Volume | Video | Layout | Lobby | Labels | User [| Left Column | Scattered — wide only] ──
   const utilW = navX + navW - divX;
-  const NUM_UTIL = isWideBp ? 8 : 7;
+  const NUM_UTIL = isWideBp ? 9 : 7;
   const slotW = utilW / NUM_UTIL;
   const icoSz = navH * 0.36;
   const midY  = navY + navH * 0.5;
@@ -4414,6 +4552,23 @@ const drawTopNav = () => {
     leftColumnBounds = { X: cx - slotW * 0.5, Y: navY, W: slotW, H: navH };
   } else {
     leftColumnBounds = null;
+  }
+
+  // Slot 8 — Scattered layout toggle (wide breakpoint only)
+  if (isWideBp) {
+    const cx = drawNavSlot(8, scatteredMode, 'rgba(255,180,120,0.80)');
+    const g = icoSz * 0.82, gx = cx - g * 0.5, gy = midY - g * 0.5;
+    ctx.strokeStyle = scatteredMode ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    ctx.lineWidth = 1.1 * S; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.roundRect(gx, gy, g, g, 2 * S); ctx.stroke();
+    ctx.fillStyle = scatteredMode ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    // Narrow left rail (stats/wallet/menu column)
+    ctx.beginPath(); ctx.roundRect(gx + g * 0.10, gy + g * 0.10, g * 0.24, g * 0.80, 1 * S); ctx.fill();
+    // Detached block, bottom-right (betOptions floating on its own)
+    ctx.beginPath(); ctx.roundRect(gx + g * 0.56, gy + g * 0.56, g * 0.34, g * 0.34, 1 * S); ctx.fill();
+    scatteredBounds = { X: cx - slotW * 0.5, Y: navY, W: slotW, H: navH };
+  } else {
+    scatteredBounds = null;
   }
 
   topNavSettingsHit = null;
@@ -4564,12 +4719,13 @@ canvas.addEventListener('pointermove', (e) => {
   const overVolume    = volumeBounds    && x >= volumeBounds.X    && x <= volumeBounds.X    + volumeBounds.W    && y >= volumeBounds.Y    && y <= volumeBounds.Y    + volumeBounds.H;
   const overLayout    = layoutBounds    && x >= layoutBounds.X    && x <= layoutBounds.X    + layoutBounds.W    && y >= layoutBounds.Y    && y <= layoutBounds.Y    + layoutBounds.H;
   const overLeftColumn = leftColumnBounds && x >= leftColumnBounds.X && x <= leftColumnBounds.X + leftColumnBounds.W && y >= leftColumnBounds.Y && y <= leftColumnBounds.Y + leftColumnBounds.H;
+  const overScattered  = scatteredBounds  && x >= scatteredBounds.X  && x <= scatteredBounds.X  + scatteredBounds.W  && y >= scatteredBounds.Y  && y <= scatteredBounds.Y  + scatteredBounds.H;
   const overChatClose = isChatOpen && chatCloseBounds && x >= chatCloseBounds.X && x <= chatCloseBounds.X + chatCloseBounds.W && y >= chatCloseBounds.Y && y <= chatCloseBounds.Y + chatCloseBounds.H;
   const overChatSend  = isChatOpen && chatSendBounds  && x >= chatSendBounds.X  && x <= chatSendBounds.X  + chatSendBounds.W  && y >= chatSendBounds.Y  && y <= chatSendBounds.Y  + chatSendBounds.H;
   const overUndo      = undoBounds   && x >= undoBounds.X   && x <= undoBounds.X   + undoBounds.W   && y >= undoBounds.Y   && y <= undoBounds.Y   + undoBounds.H;
   const overCancel    = cancelBounds && x >= cancelBounds.X && x <= cancelBounds.X + cancelBounds.W && y >= cancelBounds.Y && y <= cancelBounds.Y + cancelBounds.H;
   const overChipRow   = chipRowBounds.some(b => x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H);
-  canvas.style.cursor = (overChip || overChipRow || overBetOption || overChat || overLobby || overVolume || overLayout || overLeftColumn || overUndo || overCancel || overChatClose || overChatSend || overNavGame || overNavSetting || overNavUser || overNavToggle) ? 'pointer' : 'default';
+  canvas.style.cursor = (overChip || overChipRow || overBetOption || overChat || overLobby || overVolume || overLayout || overLeftColumn || overScattered || overUndo || overCancel || overChatClose || overChatSend || overNavGame || overNavSetting || overNavUser || overNavToggle) ? 'pointer' : 'default';
 });
 
 canvas.addEventListener('pointerdown', (e) => {
@@ -4626,6 +4782,8 @@ canvas.addEventListener('pointerdown', (e) => {
     pressedRegion = 'labels';
   } else if (leftColumnBounds && x >= leftColumnBounds.X && x <= leftColumnBounds.X + leftColumnBounds.W && y >= leftColumnBounds.Y && y <= leftColumnBounds.Y + leftColumnBounds.H) {
     pressedRegion = 'leftcolumn';
+  } else if (scatteredBounds && x >= scatteredBounds.X && x <= scatteredBounds.X + scatteredBounds.W && y >= scatteredBounds.Y && y <= scatteredBounds.Y + scatteredBounds.H) {
+    pressedRegion = 'scattered';
   } else if (isChatOpen && chatCloseBounds && x >= chatCloseBounds.X && x <= chatCloseBounds.X + chatCloseBounds.W && y >= chatCloseBounds.Y && y <= chatCloseBounds.Y + chatCloseBounds.H) {
     pressedRegion = 'chatClose';
   } else if (isChatOpen && chatSendBounds && x >= chatSendBounds.X && x <= chatSendBounds.X + chatSendBounds.W && y >= chatSendBounds.Y && y <= chatSendBounds.Y + chatSendBounds.H) {
@@ -4672,7 +4830,7 @@ canvas.addEventListener('pointerup', () => {
     pressedRegion = null; return;
   }
 
-  if (pressedRegion === 'lobby') { window.location.href = '/'; return; }
+  if (pressedRegion === 'lobby') { window.location.href = '/betzone'; return; }
 
   if (pressedRegion === 'chat') {
     isChatOpen = !isChatOpen;
@@ -4712,6 +4870,12 @@ canvas.addEventListener('pointerup', () => {
   }
   if (pressedRegion === 'leftcolumn') {
     leftColumnMode = !leftColumnMode;
+    if (leftColumnMode) scatteredMode = false;
+    pressedRegion = null; return;
+  }
+  if (pressedRegion === 'scattered') {
+    scatteredMode = !scatteredMode;
+    if (scatteredMode) leftColumnMode = false;
     pressedRegion = null; return;
   }
 
