@@ -515,25 +515,29 @@ const computeGeometry = () => {
     };
   }
 
-  // wide + left-column mode: whole UI stacked in one narrow column pinned to
-  // the left edge; the live video fills the entire remaining right side at
-  // full screen height instead of just the top band.
+  // wide + left-column mode: whole UI stacked in one narrow column, floating
+  // over a fullscreen video — 60% of the viewport tall, bottom-aligned with
+  // a gap from the screen edge, and inset from the left edge too (rather
+  // than pinned full-height flush against the top-left corner).
   if (bp === 'wide' && leftColumnMode) {
-    const colW = Math.min(containerWidth, 420 * scale);
-    const colX = leftGutter;
-    const colH = canvas.height;
+    const colW = Math.min(containerWidth, 500 * scale);
+    const leftGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale);
+    const colX = leftGutter + leftGap;
+    const colH = canvas.height * 0.75;
+    const bottomGap = clamp(10 * scale, canvas.height * 0.02, 24 * scale);
+    const colY = canvas.height - colH - bottomGap;
     const walletH2 = colH * 0.06;
     const statH2   = colH * 0.20;
     const betH2    = colH * 0.42;
     const menuH2   = colH - walletH2 - statH2 - betH2;
     return {
-      video: { X: colX + colW, Y: 0, W: Math.max(0, canvas.width - (colX + colW)), H: colH },
-      walletBar:       { X: colX, Y: 0,                          W: colW,       H: walletH2 },
-      statisticsGridE: { X: colX, Y: walletH2,                   W: colW * 0.5, H: statH2 },
-      statisticsGridA: { X: colX + colW * 0.5, Y: walletH2,      W: colW * 0.5, H: statH2 },
-      betOptions:      { X: colX, Y: walletH2 + statH2,          W: colW,       H: betH2 },
-      menuBar:         { X: colX, Y: walletH2 + statH2 + betH2,  W: colW,       H: menuH2 },
-      uiX: colX, uiW: colW, uiY: walletH2, uiH: colH - walletH2,
+      video: { X: 0, Y: 0, W: canvas.width, H: canvas.height },
+      walletBar:       { X: colX, Y: colY,                            W: colW,       H: walletH2 },
+      statisticsGridE: { X: colX, Y: colY + walletH2,                 W: colW * 0.5, H: statH2 },
+      statisticsGridA: { X: colX + colW * 0.5, Y: colY + walletH2,    W: colW * 0.5, H: statH2 },
+      betOptions:      { X: colX, Y: colY + walletH2 + statH2,        W: colW,       H: betH2 },
+      menuBar:         { X: colX, Y: colY + walletH2 + statH2 + betH2, W: colW,      H: menuH2 },
+      uiX: colX, uiW: colW, uiY: colY + walletH2, uiH: colH - walletH2,
     };
   }
 
