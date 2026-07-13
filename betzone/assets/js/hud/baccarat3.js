@@ -10,17 +10,17 @@ window.GAME_CONFIG = {
     PLAYERBLUE:  '#00c8a8',
     STROKEBLUE:  '#00e5cc',
     NEONBLUE:    '#00ffe0',
-    FILLBLUE:    '#002820',
+    FILLBLUE:    '#0e5f4c',
     // Banker side → amber/orange
     BANKERRED:   '#e07020',
     STROKERED:   '#f09030',
     NEONRED:     '#ffb040',
-    FILLRED:     '#2a1000',
+    FILLRED:     '#753000',
     // Tie → violet
     TIEGREEN:    '#9060e0',
     STROKEGREEN: '#a878f8',
     NEONGREEN:   '#c8a8ff',
-    FILLGREEN:   '#1a0840',
+    FILLGREEN:   '#411f82',
   },
 };
 

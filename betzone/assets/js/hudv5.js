@@ -4,6 +4,24 @@ const canvas = document.createElement('canvas');
 document.body.prepend(canvas);
 const ctx = canvas.getContext('2d');
 
+// Text-contrast helper: adds a subtle dark drop-shadow behind every fillText
+// call so labels stay readable over the live video feed. Skipped whenever a
+// draw call has already set its own shadow (used for neon "WIN"/glow text),
+// so those effects are left untouched.
+const _fillText = ctx.fillText.bind(ctx);
+ctx.fillText = function (text, x, y, maxWidth) {
+  if (ctx.shadowBlur > 0) {
+    _fillText(text, x, y, maxWidth);
+    return;
+  }
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.75)';
+  ctx.shadowBlur = 3 * (scale || 1);
+  ctx.shadowOffsetY = 1 * (scale || 1);
+  _fillText(text, x, y, maxWidth);
+  ctx.restore();
+};
+
 // --- Background Video (live stream, embedded via iframe) ---
 const videoFrameEl = document.createElement('iframe');
 videoFrameEl.src = (window.GAME_CONFIG && window.GAME_CONFIG.videoSrc) || 'https://studio.jrta.online/play?stream=baccarat1';
@@ -13,6 +31,43 @@ videoFrameEl.style.position = 'fixed';
 videoFrameEl.style.border = '0';
 videoFrameEl.style.pointerEvents = 'none';
 document.body.insertBefore(videoFrameEl, canvas);
+
+// --- Stream error overlay (shown when the embed is blocked, e.g. 403) ---
+const videoErrorEl = document.createElement('div');
+videoErrorEl.style.position = 'fixed';
+videoErrorEl.style.display = 'none';
+videoErrorEl.style.alignItems = 'center';
+videoErrorEl.style.justifyContent = 'center';
+videoErrorEl.style.textAlign = 'center';
+videoErrorEl.style.background = 'rgba(10,8,20,0.92)';
+videoErrorEl.style.color = '#ff6060';
+videoErrorEl.style.fontFamily = 'Interroman, Arial, sans-serif';
+videoErrorEl.style.fontSize = '14px';
+videoErrorEl.style.padding = '1rem';
+videoErrorEl.style.boxSizing = 'border-box';
+document.body.insertBefore(videoErrorEl, canvas);
+
+let videoStreamBlocked = false;
+const showVideoError = (msg) => {
+  videoStreamBlocked = true;
+  videoErrorEl.textContent = `⚠ ${msg}`;
+};
+
+// HTTP-level errors (403, etc.) never fire the iframe's native 'error' event —
+// the browser just loads the host's error page inside the frame. A CORS-enabled
+// status check is the only way to see the real status code; if the request is
+// blocked by CORS instead, we simply can't tell and leave the frame as-is.
+const checkVideoStreamStatus = () => {
+  const src = videoFrameEl.src;
+  if (!src) return;
+  fetch(src, { mode: 'cors', credentials: 'omit' })
+    .then((res) => {
+      if (res.status === 403) showVideoError('403 Forbidden — stream unavailable');
+    })
+    .catch(() => {});
+};
+checkVideoStreamStatus();
+videoFrameEl.addEventListener('error', () => showVideoError('Unable to load stream'));
 
 // --- Background Music ---
 const musicEl = document.createElement('audio');
@@ -40,10 +95,21 @@ const positionVideoFrame = (GEOMETRY) => {
     ? { X: 0, Y: 0, W: canvas.width, H: canvas.height }
     : GEOMETRY['video'];
 
-  videoFrameEl.style.left   = (area.X / scale) + 'px';
-  videoFrameEl.style.top    = (area.Y / scale) + 'px';
-  videoFrameEl.style.width  = (area.W / scale) + 'px';
-  videoFrameEl.style.height = (area.H / scale) + 'px';
+  const left = (area.X / scale) + 'px';
+  const top  = (area.Y / scale) + 'px';
+  const w    = (area.W / scale) + 'px';
+  const h    = (area.H / scale) + 'px';
+
+  videoFrameEl.style.left   = left;
+  videoFrameEl.style.top    = top;
+  videoFrameEl.style.width  = w;
+  videoFrameEl.style.height = h;
+
+  videoErrorEl.style.left    = left;
+  videoErrorEl.style.top     = top;
+  videoErrorEl.style.width   = w;
+  videoErrorEl.style.height  = h;
+  videoErrorEl.style.display = videoStreamBlocked ? 'flex' : 'none';
 };
 
 const font = new FontFace("Interroman", "url(/assets/fonts/Interroman.woff2)");
@@ -68,9 +134,17 @@ let undoBounds = null;
 let cancelBounds = null;
 let balance = 510000;
 const GAME_TYPE = (window.GAME_CONFIG && window.GAME_CONFIG.gameType) || 'baccarat';
+const COLOR_GAME_EMPTY_BETS = {
+  red: 0, red_x2: 0, red_x3: 0,
+  blue: 0, blue_x2: 0, blue_x3: 0,
+  yellow: 0, yellow_x2: 0, yellow_x3: 0,
+  green: 0, green_x2: 0, green_x3: 0,
+  white: 0, white_x2: 0, white_x3: 0,
+  pink: 0, pink_x2: 0, pink_x3: 0,
+};
 let bets = GAME_TYPE === 'gostop'    ? { go: 0, stop: 0 }
          : GAME_TYPE === 'oddeven'   ? { odd: 0, even: 0 }
-         : GAME_TYPE === 'colorgame' ? { red: 0, blue: 0, yellow: 0, green: 0, white: 0, pink: 0 }
+         : GAME_TYPE === 'colorgame' ? { ...COLOR_GAME_EMPTY_BETS }
          : { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
 let betHistory = [];
 let betLog        = [];  // persistent cross-round feed: { player, amount, region, isYou }
@@ -147,6 +221,10 @@ const GAME_NAV = [
   { id: 'colorgame', label: 'COLOR'   },
 ];
 
+// Color Game side-bet payout odds — betting a specific color hits exactly 2 or all 3 dice
+const COLOR_X2_ODDS = 8;
+const COLOR_X3_ODDS = 24;
+
 const REGION_INFO = {
   player:  { label: 'PLAYER',  odds: '0.95 : 1', desc: 'Bet on the Player hand to win.', color: '#7752ff' },
   banker:  { label: 'BANKER',  odds: '0.95 : 1', desc: 'Bet on the Banker hand to win.', color: '#f55858' },
@@ -165,6 +243,20 @@ const REGION_INFO = {
   green:   { label: 'GREEN',   odds: '1 : 1',    desc: 'Bet on the Green color.', color: '#20c060' },
   white:   { label: 'WHITE',   odds: '1 : 1',    desc: 'Bet on the White color.', color: '#c0c8d0' },
   pink:    { label: 'PINK',    odds: '1 : 1',    desc: 'Bet on the Pink color.', color: '#e020a0' },
+
+  // Color Game side bets — double/triple hit on a specific color
+  red_x2:    { label: 'RED ×2',    odds: `${COLOR_X2_ODDS} : 1`, desc: 'Bet that exactly 2 of the 3 dice show Red.', color: '#e82020' },
+  red_x3:    { label: 'RED ×3',    odds: `${COLOR_X3_ODDS} : 1`, desc: 'Bet that all 3 dice show Red.', color: '#e82020' },
+  blue_x2:   { label: 'BLUE ×2',   odds: `${COLOR_X2_ODDS} : 1`, desc: 'Bet that exactly 2 of the 3 dice show Blue.', color: '#2060e8' },
+  blue_x3:   { label: 'BLUE ×3',   odds: `${COLOR_X3_ODDS} : 1`, desc: 'Bet that all 3 dice show Blue.', color: '#2060e8' },
+  yellow_x2: { label: 'YELLOW ×2', odds: `${COLOR_X2_ODDS} : 1`, desc: 'Bet that exactly 2 of the 3 dice show Yellow.', color: '#e8b800' },
+  yellow_x3: { label: 'YELLOW ×3', odds: `${COLOR_X3_ODDS} : 1`, desc: 'Bet that all 3 dice show Yellow.', color: '#e8b800' },
+  green_x2:  { label: 'GREEN ×2',  odds: `${COLOR_X2_ODDS} : 1`, desc: 'Bet that exactly 2 of the 3 dice show Green.', color: '#20c060' },
+  green_x3:  { label: 'GREEN ×3',  odds: `${COLOR_X3_ODDS} : 1`, desc: 'Bet that all 3 dice show Green.', color: '#20c060' },
+  white_x2:  { label: 'WHITE ×2',  odds: `${COLOR_X2_ODDS} : 1`, desc: 'Bet that exactly 2 of the 3 dice show White.', color: '#c0c8d0' },
+  white_x3:  { label: 'WHITE ×3',  odds: `${COLOR_X3_ODDS} : 1`, desc: 'Bet that all 3 dice show White.', color: '#c0c8d0' },
+  pink_x2:   { label: 'PINK ×2',   odds: `${COLOR_X2_ODDS} : 1`, desc: 'Bet that exactly 2 of the 3 dice show Pink.', color: '#e020a0' },
+  pink_x3:   { label: 'PINK ×3',   odds: `${COLOR_X3_ODDS} : 1`, desc: 'Bet that all 3 dice show Pink.', color: '#e020a0' },
 };
 
 let containerAvailableWidth = 0;
@@ -316,14 +408,14 @@ const COLORS = {
 
 
   //-- Hard Colors --
-  FILLRED: "#751010",
-  FILLGREEN: "#1f7553",
-  FILLBLUE: "#0b3561",
+  FILLRED: "#a81f1f",
+  FILLGREEN: "#22945f",
+  FILLBLUE: "#1a4f8f",
   STROKERED: "#f05454e7",
   STROKEGREEN: "#14ffa1bb",
   STROKEBLUE: "#247cdae8",
 
-  FILLSIDE: "#1b1e33",
+  FILLSIDE: "#33375c",
   STROKESIDE: "#565975",
 };
 // Allow per-game color overrides via GAME_CONFIG
@@ -333,17 +425,17 @@ if (window.GAME_CONFIG && window.GAME_CONFIG.colors) {
 
 // Non-baccarat tile palettes — can be overridden via GAME_CONFIG.tileColors
 const TILE_COLORS = Object.assign({
-  go:     { fill: '#1a0808', stroke: '#ff4040', neon: '#ff7070' },
-  stop:   { fill: '#080e1a', stroke: '#4080ff', neon: '#6699ff' },
-  odd:    { fill: '#120430', stroke: '#b040ff', neon: '#cc77ff' },
-  even:   { fill: '#03180a', stroke: '#10c060', neon: '#30e880' },
+  go:     { fill: '#6b1a1a', stroke: '#ff4040', neon: '#ff7070' },
+  stop:   { fill: '#173f7a', stroke: '#4080ff', neon: '#6699ff' },
+  odd:    { fill: '#421f75', stroke: '#b040ff', neon: '#cc77ff' },
+  even:   { fill: '#136b3a', stroke: '#10c060', neon: '#30e880' },
   // Color Game palette
-  red:    { fill: '#5a0a0a', stroke: '#e82020', neon: '#ff5555' },
-  blue:   { fill: '#0a1060', stroke: '#2060e8', neon: '#5599ff' },
-  yellow: { fill: '#5a4800', stroke: '#e8b800', neon: '#ffe050' },
-  green:  { fill: '#0a4020', stroke: '#20c060', neon: '#50e890' },
-  white:  { fill: '#484848', stroke: '#c0c8d0', neon: '#ffffff' },
-  pink:   { fill: '#5a0840', stroke: '#e020a0', neon: '#ff60cc' },
+  red:    { fill: '#8f1f1f', stroke: '#e82020', neon: '#ff5555' },
+  blue:   { fill: '#1c39a3', stroke: '#2060e8', neon: '#5599ff' },
+  yellow: { fill: '#8f7300', stroke: '#e8b800', neon: '#ffe050' },
+  green:  { fill: '#187a45', stroke: '#20c060', neon: '#50e890' },
+  white:  { fill: '#6e6e6e', stroke: '#c0c8d0', neon: '#ffffff' },
+  pink:   { fill: '#8f1468', stroke: '#e020a0', neon: '#ff60cc' },
 }, (window.GAME_CONFIG && window.GAME_CONFIG.tileColors) || {});
 
 const _pushFakeBet = () => {
@@ -562,7 +654,7 @@ const startNewRound = () => {
   colorGameDice = [null, null, null];
   bets = GAME_TYPE === 'gostop'    ? { go: 0, stop: 0 }
        : GAME_TYPE === 'oddeven'   ? { odd: 0, even: 0 }
-       : GAME_TYPE === 'colorgame' ? { red: 0, blue: 0, yellow: 0, green: 0, white: 0, pink: 0 }
+       : GAME_TYPE === 'colorgame' ? { ...COLOR_GAME_EMPTY_BETS }
        : { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
   betHistory = [];
 };
@@ -599,13 +691,29 @@ const runColorGameDeal = () => {
     // count how many dice show each color
     const counts = {};
     roll.forEach(c => { counts[c] = (counts[c] || 0) + 1; });
-    winners = Object.keys(counts);
+    const baseWinners = Object.keys(counts);
+    // double (×2) / triple (×3) side bets — exact match count on that color
+    const sideWinners = [];
+    baseWinners.forEach(key => {
+      if (counts[key] === 2) sideWinners.push(`${key}_x2`);
+      if (counts[key] === 3) sideWinners.push(`${key}_x3`);
+    });
+    winners = [...baseWinners, ...sideWinners];
     // payout: original stake + 1× per matching die
-    winners.forEach(key => {
+    baseWinners.forEach(key => {
       if (bets[key] > 0) {
         const payout = bets[key] + bets[key] * counts[key];
         balance += payout;
         spawnWinChips(key, payout);
+      }
+    });
+    // side-bet payout: original stake + fixed odds for hitting double/triple
+    sideWinners.forEach(sideKey => {
+      if (bets[sideKey] > 0) {
+        const odds = sideKey.endsWith('_x3') ? COLOR_X3_ODDS : COLOR_X2_ODDS;
+        const payout = bets[sideKey] + bets[sideKey] * odds;
+        balance += payout;
+        spawnWinChips(sideKey, payout);
       }
     });
     gamePhase = 'result';
@@ -764,15 +872,23 @@ const drawLayout = () => {
 const drawGlassPanel = (x, y, w, h, r = 0) => {
   ctx.save();
 
-  // semi-transparent dark fill
+  // drop shadow — lifts the panel off the video/background behind it
+  ctx.shadowColor = 'rgba(0,0,0,0.55)';
+  ctx.shadowBlur = 10 * scale;
+  ctx.shadowOffsetY = 3 * scale;
+
+  // semi-transparent dark fill — translucent glass, not a solid card
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
-  ctx.fillStyle = 'rgba(8, 8, 18, 0.62)';
+  ctx.fillStyle = 'rgba(8, 8, 20, 0.66)';
   ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
 
   // top-edge light gradient (shimmer)
   const shimmer = ctx.createLinearGradient(x, y, x, y + h * 0.35);
-  shimmer.addColorStop(0, 'rgba(255,255,255,0.07)');
+  shimmer.addColorStop(0, 'rgba(255,255,255,0.09)');
   shimmer.addColorStop(1, 'rgba(255,255,255,0.00)');
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
@@ -782,7 +898,7 @@ const drawGlassPanel = (x, y, w, h, r = 0) => {
   // thin border
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
-  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
   ctx.lineWidth = 1 * scale;
   ctx.stroke();
 
@@ -813,14 +929,15 @@ const drawUI = () => {
 
   videoFrameEl.style.display = isVideoOn ? '' : 'none';
   if (isVideoOn) positionVideoFrame(GEOMETRY);
+  else videoErrorEl.style.display = 'none';
   const uiShadow = ctx.createLinearGradient(0, GEOMETRY.uiY, 0, GEOMETRY.uiY + GEOMETRY.uiH);
-  uiShadow.addColorStop(0, 'rgba(10, 8, 28, 0)');
-  uiShadow.addColorStop(0.5, 'rgba(10, 8, 28, 0.85)');
-  uiShadow.addColorStop(1, 'rgba(10, 8, 28, 0.44)');
+  uiShadow.addColorStop(0, 'rgba(6, 5, 16, 0.05)');
+  uiShadow.addColorStop(0.4, 'rgba(6, 5, 16, 0.45)');
+  uiShadow.addColorStop(1, 'rgba(6, 5, 16, 0.35)');
   ctx.fillStyle = uiShadow;
   ctx.fillRect(0, GEOMETRY.uiY, canvas.width, GEOMETRY.uiH);
 
-  // drawGlassPanels(GEOMETRY);
+  drawGlassPanels(GEOMETRY);
   drawbetOptions(GEOMETRY);
   drawStatistics(GEOMETRY);
   drawMenuBar(GEOMETRY);
@@ -982,7 +1099,7 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
 
   const pbH = clamp(5, GEOMETRY['betOptions'].H * 0.016, 8) * scale;
   const pbR = pbH * 0.5;
-  const betChipR = GEOMETRY['betOptions'].H * 0.07;
+  const betChipR = GEOMETRY['betOptions'].H * 0.055;
   ctx.setLineDash([])
 
   // ── Betting status container effect ──
@@ -1494,50 +1611,7 @@ const drawBetOptionsBaccarat = async (GEOMETRY) => {
     ctx.fill();
     ctx.restore();
   }
-
-  // ── Betting status badge ──
-  {
-    const statusFs = clamp(8, hRef * 0.055, 10) * scale;
-    ctx.font = `700 ${statusFs}px Interroman, Arial`;
-    const statusText = bettingOpen ? 'BETTING OPEN' : 'BETTING CLOSED';
-    const dotColor = bettingOpen ? '#4ade80' : '#f87171';
-    const bgColor = bettingOpen ? 'rgba(74,222,128,0.12)' : 'rgba(248,113,113,0.10)';
-    const bdColor = bettingOpen ? 'rgba(74,222,128,0.40)' : 'rgba(248,113,113,0.28)';
-    const txColor = bettingOpen ? '#bbf7d0' : '#fecaca';
-
-    const dotR = statusFs * 0.24;
-    const pad = 8 * scale;
-    const pillH = statusFs * 1.8;
-    const pillW = ctx.measureText(statusText).width + dotR * 2 + pad * 2.5 + 4 * scale;
-    const pillX = bO.X + bO.W * 0.5 - pillW * 0.5;
-    const pillY = bO.Y + betOptionsGap;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
-    ctx.fillStyle = bgColor;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
-    ctx.strokeStyle = bdColor;
-    ctx.lineWidth = 1 * scale;
-    ctx.stroke();
-
-    const dotX = pillX + pad + dotR;
-    const dotY = pillY + pillH * 0.5;
-    ctx.beginPath();
-    ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
-    ctx.fillStyle = dotColor;
-    if (bettingOpen) { ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 4 * scale; }
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = txColor;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(statusText, dotX + dotR + 4 * scale, dotY);
-    ctx.restore();
-  }
+  // Betting-open/closed status now lives in drawPhaseBanner().
 }
 
 // ── Two-tile bet options — identical arc shapes to baccarat, parameterised ────
@@ -1556,7 +1630,7 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
   const mainBetfontSize = clamp(11, hRef * 0.10, 18) * scale;
   const pbH          = clamp(5, GEOMETRY['betOptions'].H * 0.016, 8) * scale;
   const pbR          = pbH * 0.5;
-  const betChipR     = GEOMETRY['betOptions'].H * 0.07;
+  const betChipR     = GEOMETRY['betOptions'].H * 0.055;
   const bO           = GEOMETRY['betOptions'];
   const bettingOpen  = gamePhase === 'betting';
   const betting      = bettingOpen;
@@ -1958,33 +2032,7 @@ const drawBetOptionsSimple = (GEOMETRY, keyA, keyB, labelA, labelB, showBall = f
     ctx.restore();
   }
 
-  // ── Betting status badge (identical to baccarat) ──
-  { const statusFs = clamp(8, hRef * 0.055, 10) * scale;
-    ctx.font = `700 ${statusFs}px Interroman, Arial`;
-    const statusText = bettingOpen ? 'BETTING OPEN' : 'BETTING CLOSED';
-    const dotColor   = bettingOpen ? '#4ade80'  : '#f87171';
-    const bgColor    = bettingOpen ? 'rgba(74,222,128,0.12)'  : 'rgba(248,113,113,0.10)';
-    const bdColor    = bettingOpen ? 'rgba(74,222,128,0.40)'  : 'rgba(248,113,113,0.28)';
-    const txColor    = bettingOpen ? '#bbf7d0' : '#fecaca';
-    const dotR = statusFs * 0.24, pad = 8*scale;
-    const pillH = statusFs * 1.8;
-    const pillW = ctx.measureText(statusText).width + dotR * 2 + pad * 2.5 + 4*scale;
-    const pillX = bO.X + bO.W * 0.5 - pillW * 0.5;
-    const pillY = bO.Y + betOptionsGap;
-    ctx.save();
-    ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
-    ctx.fillStyle = bgColor; ctx.fill();
-    ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
-    ctx.strokeStyle = bdColor; ctx.lineWidth = 1*scale; ctx.stroke();
-    const dotX = pillX + pad + dotR, dotY = pillY + pillH * 0.5;
-    ctx.beginPath(); ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
-    ctx.fillStyle = dotColor;
-    if (bettingOpen) { ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 4*scale; }
-    ctx.fill(); ctx.shadowBlur = 0;
-    ctx.fillStyle = txColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(statusText, dotX + dotR + 4*scale, dotY);
-    ctx.restore();
-  }
+  // Betting-open/closed status now lives in drawPhaseBanner().
 };
 
 // ── Color Game — 3 dice cubes display ────────────────────────────────────────
@@ -2087,19 +2135,33 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
 
-  const gap          = 8 * scale;
+  const gap          = clamp(2 * scale, bO.W * 0.025, 4 * scale); // same tight spacing as COLOR STATS
   const bettingOpen  = gamePhase === 'betting';
-  const tileR        = bO.H * 0.06;
+  const tileR        = bO.H * 0.08;
   const borderWidth  = 2 * scale;
-  const hRef         = bO.H / scale;
 
-  // ── Layout — tiles fill the full bet options height (dice shown in popup) ──
-  const tileAreaY  = bO.Y;
-  const tileAreaH  = bO.H;
-  const COLS = 3, ROWS = 2;
+  // ── Vertical layout — 4 bands (badge / main row / ×2 row / ×3 row), all
+  //    separated by the same `gap` — top margin, between every band, and
+  //    bottom margin are identical, the same symmetric-grid approach the
+  //    COLOR STATS panel uses. Band heights split the remaining space by weight.
+  // Betting-open/closed status now lives in drawPhaseBanner(), so this panel
+  // only needs 3 bands: main row / ×2 row / ×3 row.
+  const BAND_W   = { main: 1.55, side: 0.60 }; // side used for both ×2 and ×3
+  const weightSum = BAND_W.main + BAND_W.side * 2;
+  const contentH  = bO.H - gap * 4; // 3 bands → 4 gaps (top + 2 between + bottom)
+  const tileAreaH = contentH * (BAND_W.main  / weightSum);
+  const subRowH   = contentH * (BAND_W.side  / weightSum);
+
+  const tileAreaY = bO.Y + gap;
+  const subY_x2   = tileAreaY + tileAreaH + gap;
+  const subY_x3   = subY_x2 + subRowH + gap;
+
+  // ── Layout — 6 main tiles in a single row, so each one lines up directly
+  //    above its own ×2/×3 side-bet pair below ──
+  const COLS = 6, ROWS = 1;
   const tileW = (bO.W - gap * (COLS + 1)) / COLS;
-  const tileH = (tileAreaH - gap * (ROWS + 1)) / ROWS;
-  const chipR = Math.min(tileW, tileH) * 0.13;
+  const tileH = tileAreaH;
+  const chipR = Math.min(tileW, tileH) * 0.15;
 
   // Screen-tint on any winning color
   if (gamePhase === 'result' && winners.length > 0) {
@@ -2119,7 +2181,7 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
     const col = i % COLS;
     const row = Math.floor(i / COLS);
     const tx  = bO.X + gap + col * (tileW + gap);
-    const ty  = tileAreaY + gap + row * (tileH + gap);
+    const ty  = tileAreaY + row * (tileH + gap); // ROWS === 1, band already carries its own margin
     const cx  = tx + tileW / 2;
     const cy  = ty + tileH / 2;
 
@@ -2129,13 +2191,11 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
     const hasBet   = bets[key] > 0;
     const matchCnt = colorGameDice.filter(d => d === key).length;
 
-    // Border radius only on the 4 panel outer corners; inner edges are flush
-    const rTL = (row === 0       && col === 0)       ? tileR : 0;
-    const rTR = (row === 0       && col === COLS - 1) ? tileR : 0;
-    const rBR = (row === ROWS - 1 && col === COLS - 1) ? tileR : 0;
-    const rBL = (row === ROWS - 1 && col === 0)       ? tileR : 0;
+    // Each color is a vertical column: main tile (top) + ×2 + ×3 (bottom) read
+    // as one joined strip, so only the column's own top corners round here —
+    // the ×3 tile below rounds the bottom corners to match.
     const shape = new Path2D();
-    shape.roundRect(tx, ty, tileW, tileH, [rTL, rTR, rBR, rBL]);
+    shape.roundRect(tx, ty, tileW, tileH, [tileR, tileR, 0, 0]);
     hitRegions[key] = shape;
 
     // ── Tile background ──
@@ -2178,7 +2238,9 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
 
     // ── Labels — only during betting/dealing ──
     if (gamePhase !== 'result') {
-      const nameFs = clamp(9 * scale, tileH * 0.20, 22 * scale);
+      // Capped by both tile height and width — 6-across tiles are narrow, so
+      // long names like "YELLOW" must shrink to fit instead of overflowing.
+      const nameFs = clamp(7 * scale, Math.min(tileH * 0.20, tileW * 0.24), 22 * scale);
       const pbMX   = tileW * 0.09;
       const pbW    = tileW - pbMX * 2;
       const chipCY = ty + tileH * 0.44;
@@ -2288,7 +2350,7 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
       ctx.shadowBlur = 0;
 
       // WIN text
-      const winFs = clamp(13 * scale, tileH * 0.24, 40 * scale);
+      const winFs = clamp(9 * scale, Math.min(tileH * 0.24, tileW * 0.30), 40 * scale);
       ctx.font      = `900 ${winFs}px Interroman, Arial`;
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = color.neon; ctx.shadowBlur = (12 + glow * 20) * scale;
@@ -2305,7 +2367,7 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
 
       // Payout
       if (profit > 0) {
-        const payFs = clamp(8 * scale, tileH * 0.14, 18 * scale);
+        const payFs = clamp(6 * scale, Math.min(tileH * 0.14, tileW * 0.22), 18 * scale);
         ctx.font      = `700 ${payFs}px Interroman, Arial`;
         ctx.fillStyle = '#fcd34d';
         ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 8 * scale;
@@ -2317,33 +2379,71 @@ const drawBetOptionsColorGame = (GEOMETRY) => {
     }
   });
 
-  // ── Betting-open status badge ──
-  { const statusFs = clamp(8, hRef * 0.055, 10) * scale;
-    ctx.font = `700 ${statusFs}px Interroman, Arial`;
-    const statusText = bettingOpen ? 'BETTING OPEN' : 'BETTING CLOSED';
-    const dotColor   = bettingOpen ? '#4ade80'  : '#f87171';
-    const bgColor    = bettingOpen ? 'rgba(74,222,128,0.12)'  : 'rgba(248,113,113,0.10)';
-    const bdColor    = bettingOpen ? 'rgba(74,222,128,0.40)'  : 'rgba(248,113,113,0.28)';
-    const txColor    = bettingOpen ? '#bbf7d0' : '#fecaca';
-    const dotR = statusFs * 0.24, pad = 8 * scale;
-    const pillH = statusFs * 1.8;
-    const pillW = ctx.measureText(statusText).width + dotR * 2 + pad * 2.5 + 4 * scale;
-    const pillX = bO.X + bO.W * 0.5 - pillW * 0.5;
-    const pillY = bO.Y + gap * 0.5; // top-centre float, above tile content
-    ctx.save();
-    ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
-    ctx.fillStyle = bgColor; ctx.fill();
-    ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
-    ctx.strokeStyle = bdColor; ctx.lineWidth = 1 * scale; ctx.stroke();
-    const dotX = pillX + pad + dotR, dotY = pillY + pillH * 0.5;
-    ctx.beginPath(); ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
-    ctx.fillStyle = dotColor;
-    if (bettingOpen) { ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 4 * scale; }
-    ctx.fill(); ctx.shadowBlur = 0;
-    ctx.fillStyle = txColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(statusText, dotX + dotR + 4 * scale, dotY);
-    ctx.restore();
+  // ── Side bets — ×2 (exact double) / ×3 (exact triple) per color, smaller than the main tiles ──
+  {
+    // Reuse the main row's own column width/gap so every ×2/×3 pair lines up
+    // directly beneath its matching color tile; row heights/positions come
+    // from the same band system computed above.
+    const subGap  = gap;
+    const subColW = tileW;
+    const subR    = Math.min(subColW, subRowH) * 0.22;
+    const subFs   = clamp(6 * scale, subRowH * 0.34, 11 * scale);
+    const subChipR = Math.min(subColW, subRowH) * 0.22;
+    const subRowY = { x2: subY_x2, x3: subY_x3 };
+
+    ['x2', 'x3'].forEach((mult) => {
+      const sy = subRowY[mult];
+      COLOR_GAME_KEYS.forEach((key, ki) => {
+        const sx     = bO.X + subGap + ki * (subColW + subGap);
+        const scx    = sx + subColW * 0.5;
+        const betKey = `${key}_${mult}`;
+        const color  = TILE_COLORS[key];
+        const hasBet = bets[betKey] > 0;
+        const isWin  = gamePhase === 'result' && winners.includes(betKey);
+        const blink  = isWin && Math.sin(performance.now() * 0.006) > 0;
+
+        // ×2 sits in the middle of the column — no rounding, flush against
+        // the main tile above and the ×3 tile below. ×3 is the column's
+        // bottom, so only its bottom corners round.
+        const radii = mult === 'x3' ? [0, 0, subR, subR] : [0, 0, 0, 0];
+        const shape = new Path2D();
+        shape.roundRect(sx, sy, subColW, subRowH, radii);
+        hitRegions[betKey] = shape;
+
+        ctx.save();
+        ctx.shadowColor = color.stroke;
+        ctx.shadowBlur  = isWin ? (blink ? 30 * scale : 8 * scale) : hasBet ? 10 * scale : 0;
+        ctx.strokeStyle = blink ? '#ffffff' : color.stroke;
+        ctx.lineWidth   = (hasBet || isWin) ? borderWidth * 1.3 : borderWidth * 0.75;
+        ctx.stroke(shape);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = color.fill;
+        ctx.fill(shape);
+        if (blink) { ctx.fillStyle = 'rgba(255,255,255,0.30)'; ctx.fill(shape); }
+        if (bettingOpen && pressedRegion === betKey) { ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fill(shape); }
+        if (gamePhase === 'result' && !isWin) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill(shape); }
+        ctx.restore();
+
+        if (gamePhase !== 'result') {
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.font = `700 ${subFs}px Interroman, Arial`;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(mult === 'x2' ? '×2' : '×3', scx, sy + subRowH * 0.28);
+          if (!hasBet) {
+            ctx.font = `500 ${subFs * 0.78}px Interroman, Arial`;
+            ctx.fillStyle = 'rgba(255,255,255,0.42)';
+            ctx.fillText(key[0].toUpperCase(), scx, sy + subRowH * 0.68);
+          }
+        }
+
+        const chipCy = sy + subRowH * 0.66;
+        betChipPositions[betKey] = { x: scx, y: chipCy, r: subChipR };
+        if (gamePhase === 'betting') drawBetChip(scx, chipCy, subChipR, bets[betKey]);
+      });
+    });
   }
+
+  // Betting-open/closed status now lives in drawPhaseBanner().
 };
 
 // ── Color Game — dice result popup (drawn on top of everything) ──────────────
@@ -3221,11 +3321,17 @@ const drawMenuBar = (GEOMETRY) => {
   ctx.setLineDash([])
 
   // --- Main ---
+  // On wide layouts the wallet lives in the sidebar (not here), so the chip/undo/cancel
+  // row can use nearly the full band, centered. On mobile/tablet the wallet row shares
+  // this band below the controls, so only the top portion is reserved, still centered
+  // within that portion rather than flush against the top edge.
+  const isWideLayout = GEOMETRY['statisticsGridA'].X > GEOMETRY['statisticsGridE'].X + GEOMETRY['statisticsGridE'].W + 1;
+  const mainH = GEOMETRY['menuBar'].H * (isWideLayout ? 0.90 : 0.62);
   const main = {
     X: GEOMETRY['menuBar'].X,
-    Y: GEOMETRY['menuBar'].Y,
+    Y: GEOMETRY['menuBar'].Y + (isWideLayout ? (GEOMETRY['menuBar'].H - mainH) * 0.5 : GEOMETRY['menuBar'].H * 0.06),
     W: GEOMETRY['menuBar'].W,
-    H: GEOMETRY['menuBar'].H * 0.65,
+    H: mainH,
   }
 
   ctx.fillStyle = COLORS.FILLBLUE;
@@ -3401,7 +3507,7 @@ const drawMenuBar = (GEOMETRY) => {
     chipRowBounds = [];
     hitRegions.chip = null;
     const slotW = chipAreaW / chips.length;
-    const rowR = Math.min(chipsController.H * 0.55, slotW * 0.46);
+    const rowR = Math.min(chipsController.H * 0.42, slotW * 0.36);
     const rowCY = chipsController.Y + chipsController.H * 0.5;
     chips.forEach((_, i) => {
       const isActive = i === currentChipIndex;
@@ -3418,7 +3524,7 @@ const drawMenuBar = (GEOMETRY) => {
     chipRowBounds = [];
     const chipCX = chipAreaX + chipAreaW * 0.5;
     const chipCY = chipsController.Y + chipsController.H * 0.5;
-    const chipR = chipsController.H * 0.38;
+    const chipR = chipsController.H * 0.30;
     chipButtonCenter = { x: chipCX, y: chipCY, r: chipR };
     const chipShape = new Path2D();
     chipShape.arc(chipCX, chipCY, chipR, 0, Math.PI * 2);
@@ -3430,11 +3536,11 @@ const drawMenuBar = (GEOMETRY) => {
 
 
   // --- Wallet ---
-  const isWide = GEOMETRY['statisticsGridA'].X > GEOMETRY['statisticsGridE'].X + GEOMETRY['statisticsGridE'].W + 1;
+  const isWide = isWideLayout;
   const gA = GEOMETRY['statisticsGridA'];
   const wallet = isWide
     ? { X: gA.X, Y: gA.Y, W: gA.W, H: gA.H * 0.18 }
-    : { X: GEOMETRY['menuBar'].X, Y: GEOMETRY['menuBar'].Y + main.H, W: GEOMETRY['menuBar'].W, H: GEOMETRY['menuBar'].H - main.H };
+    : { X: GEOMETRY['menuBar'].X, Y: main.Y + main.H, W: GEOMETRY['menuBar'].W, H: (GEOMETRY['menuBar'].Y + GEOMETRY['menuBar'].H) - (main.Y + main.H) };
   const wRef = wallet.H / scale;
   const wPad = wallet.W * 0.03;
   const row1H = wallet.H * 0.38;
@@ -3695,6 +3801,43 @@ const drawFlyingChips = () => {
   });
 };
 
+// Small "BETTING OPEN / BETTING CLOSED" pill — shared by every game's phase
+// banner instead of each drawBetOptions* function drawing its own copy.
+// `x`/`topY` anchor the pill's top edge; `align` says what `x` means:
+// 'center' (default) — x is the pill's horizontal center
+// 'end'              — x is the pill's right edge
+// `maxFs` caps the font size — used to keep the pill inside tight spaces.
+const drawBettingStatusBadge = (x, topY, align = 'center', maxFs = 10 * scale) => {
+  const open = gamePhase === 'betting';
+  const statusFs = clamp(7 * scale, Math.min(containerWidth * 0.018, maxFs), maxFs);
+  ctx.font = `700 ${statusFs}px Interroman, Arial`;
+  const statusText = open ? 'BETTING OPEN' : 'BETTING CLOSED';
+  const dotColor = open ? '#4ade80' : '#f87171';
+  const bgColor  = open ? 'rgba(74,222,128,0.12)' : 'rgba(248,113,113,0.10)';
+  const bdColor  = open ? 'rgba(74,222,128,0.40)' : 'rgba(248,113,113,0.28)';
+  const txColor  = open ? '#bbf7d0' : '#fecaca';
+  const dotR = statusFs * 0.24, pad = 8 * scale;
+  const pillH = statusFs * 1.8;
+  const pillW = ctx.measureText(statusText).width + dotR * 2 + pad * 2.5 + 4 * scale;
+  const pillX = align === 'end' ? x - pillW : x - pillW * 0.5;
+  const pillY = topY;
+
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
+  ctx.fillStyle = bgColor; ctx.fill();
+  ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH * 0.5);
+  ctx.strokeStyle = bdColor; ctx.lineWidth = 1 * scale; ctx.stroke();
+  const dotX = pillX + pad + dotR, dotY = pillY + pillH * 0.5;
+  ctx.beginPath(); ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+  ctx.fillStyle = dotColor;
+  if (open) { ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 4 * scale; }
+  ctx.fill(); ctx.shadowBlur = 0;
+  ctx.fillStyle = txColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(statusText, dotX + dotR + 4 * scale, dotY);
+  ctx.restore();
+  return pillH;
+};
+
 const drawPhaseBanner = () => {
   if (!lastGEOMETRY) return;
   const now = performance.now();
@@ -3702,6 +3845,18 @@ const drawPhaseBanner = () => {
   const bp = getBreakpoint(containerWidth / window.devicePixelRatio);
   const isLarge = bp === 'wide' || bp === 'desktop';
   const wb = G['walletBar'];
+
+  // Betting-open/closed status — one fixed position for every game and every
+  // breakpoint: centered directly beneath the top nav bar, which is itself
+  // always pinned near the top of the screen. That spot sits above every
+  // game's betOptions/stats/menuBar geometry, so it can never overlap them.
+  // Always shown, independent of the phase label below (blank while "dealing").
+  {
+    const S = scale;
+    const navH = clamp(30 * S, canvas.height * 0.042, 44 * S);
+    const navY = 7 * S;
+    drawBettingStatusBadge(leftGutter + containerWidth * 0.5, navY + navH + 6 * S);
+  }
 
   // Phase data
   let label, sublabel, accentColor, tintRgb, progress = 1;
@@ -4021,10 +4176,14 @@ const drawTopNav = () => {
 
   // ── Panel background ──
   ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8*S; ctx.shadowOffsetY = 2*S;
   ctx.beginPath(); ctx.roundRect(navX, navY, navW, navH, navR);
+  ctx.fillStyle = 'rgba(6, 5, 14, 0.58)'; ctx.fill();
+  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
   const bg = ctx.createLinearGradient(navX, navY, navX, navY + navH);
-  bg.addColorStop(0, 'rgba(255,255,255,0.10)');
-  bg.addColorStop(1, 'rgba(255,255,255,0.03)');
+  bg.addColorStop(0, 'rgba(255,255,255,0.08)');
+  bg.addColorStop(1, 'rgba(255,255,255,0.00)');
+  ctx.beginPath(); ctx.roundRect(navX, navY, navW, navH, navR);
   ctx.fillStyle = bg; ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 0.8*S; ctx.stroke();
   ctx.restore();
@@ -4525,8 +4684,9 @@ canvas.addEventListener('pointerup', () => {
     if (totalBet > 0) {
       lastBets = { ...bets };
       balance += totalBet;
-      bets = GAME_TYPE === 'gostop'  ? { go: 0, stop: 0 }
-           : GAME_TYPE === 'oddeven' ? { odd: 0, even: 0 }
+      bets = GAME_TYPE === 'gostop'    ? { go: 0, stop: 0 }
+           : GAME_TYPE === 'oddeven'   ? { odd: 0, even: 0 }
+           : GAME_TYPE === 'colorgame' ? { ...COLOR_GAME_EMPTY_BETS }
            : { player: 0, banker: 0, tie: 0, p_bonus: 0, p_pair: 0, b_bonus: 0, b_pair: 0 };
       betHistory = [];
     }

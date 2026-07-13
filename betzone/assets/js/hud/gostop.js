@@ -7,8 +7,8 @@ window.GAME_CONFIG = {
   videoSrc: 'https://studio.jrta.online/play?stream=gostop',
   videoEnabled: true,
   tileColors: {
-    go:   { fill: '#1a0808', stroke: '#ff4040', neon: '#ff7070' },
-    stop: { fill: '#080e1a', stroke: '#4080ff', neon: '#6699ff' },
+    go:   { fill: '#6b1a1a', stroke: '#ff4040', neon: '#ff7070' },
+    stop: { fill: '#173f7a', stroke: '#4080ff', neon: '#6699ff' },
   },
 };
 

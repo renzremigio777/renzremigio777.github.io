@@ -10,12 +10,12 @@ window.GAME_CONFIG = {
     PLAYERBLUE:  '#c8a832',
     STROKEBLUE:  '#d4b84a',
     NEONBLUE:    '#ffd700',
-    FILLBLUE:    '#3a2a00',
+    FILLBLUE:    '#6e4f00',
     // Banker side → rose/pink
     BANKERRED:   '#e0509a',
     STROKERED:   '#e870b0',
     NEONRED:     '#ff88cc',
-    FILLRED:     '#3a0020',
+    FILLRED:     '#7a0f4a',
     // Tie → emerald (unchanged)
   },
 };
