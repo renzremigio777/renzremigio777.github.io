@@ -3,7 +3,8 @@ window.GAME_CONFIG = {
   gameId:   'baccarat3',
   title:    'VIP Baccarat',
   limits:   '₱1,000–500,000',
-  videoSrc: 'https://platform.jrta.online/play?stream=testiligan',
+  videoSrc: 'https://studio.jrta.online/play?stream=baccarat3',
+  videoEnabled: true,
   colors: {
     // Player side → teal/cyan
     PLAYERBLUE:  '#00c8a8',

@@ -3,7 +3,8 @@ window.GAME_CONFIG = {
   gameId:   'baccarat2',
   title:    'Speed Baccarat 2',
   limits:   '₱100–50,000',
-  videoSrc: 'https://platform.jrta.online/play?stream=testiligan',
+  videoSrc: 'https://studio.jrta.online/play?stream=baccarat2',
+  videoEnabled: true,
   colors: {
     // Player side → gold
     PLAYERBLUE:  '#c8a832',

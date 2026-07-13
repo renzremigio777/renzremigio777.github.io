@@ -4,7 +4,8 @@ window.GAME_CONFIG = {
   gameType: 'colorgame',
   title:    'Color Game Live',
   limits:   '₱50–10,000',
-  videoSrc: 'https://platform.jrta.online/play?stream=testiligan',
+  videoSrc: 'https://studio.jrta.online/play?stream=cgtable',
+  videoEnabled: true,
 };
 
 const _s = document.createElement('script');

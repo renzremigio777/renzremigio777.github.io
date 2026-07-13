@@ -4,7 +4,8 @@ window.GAME_CONFIG = {
   gameType: 'gostop',
   title:    'Go-Stop Live',
   limits:   '₱50–10,000',
-  videoSrc: 'https://platform.jrta.online/play?stream=testiligan',
+  videoSrc: 'https://studio.jrta.online/play?stream=gostop',
+  videoEnabled: true,
   tileColors: {
     go:   { fill: '#1a0808', stroke: '#ff4040', neon: '#ff7070' },
     stop: { fill: '#080e1a', stroke: '#4080ff', neon: '#6699ff' },

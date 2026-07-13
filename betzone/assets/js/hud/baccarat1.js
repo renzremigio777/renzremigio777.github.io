@@ -3,7 +3,7 @@ window.GAME_CONFIG = {
   gameId:        'baccarat1',
   title:         'Speed Baccarat 1',
   limits:        '₱50–10,000',
-  videoSrc:      'https://platform.jrta.online/play?stream=testiligan',
+  videoSrc:      'https://studio.jrta.online/play?stream=baccarat1',
   videoEnabled:  true,
 };
 

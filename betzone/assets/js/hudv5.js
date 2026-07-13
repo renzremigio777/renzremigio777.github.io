@@ -4,27 +4,15 @@ const canvas = document.createElement('canvas');
 document.body.prepend(canvas);
 const ctx = canvas.getContext('2d');
 
-// --- Background Video ---
-const videoEl = document.createElement('video');
-videoEl.loop = true;
-videoEl.muted = true;
-videoEl.playsInline = true;
-videoEl.autoplay = true;
-videoEl.style.display = 'none';
-// MP4 first — required for iOS Safari (no WebM support); WebM for Chrome/Firefox
-const srcMp4 = document.createElement('source');
-srcMp4.src = (window.GAME_CONFIG && window.GAME_CONFIG.videoSrc) || 'https://platform.jrta.online/play?stream=testiligan';
-srcMp4.type = 'video/mp4';
-const srcWebm = document.createElement('source');
-srcWebm.src = '../assets/videos/bacarrat-stream.webm';
-srcWebm.type = 'video/webm';
-videoEl.appendChild(srcMp4);
-// videoEl.appendChild(srcWebm);
-document.body.appendChild(videoEl);
-videoEl.play().catch(() => { });
-// iOS requires play() inside a user gesture — retry on first touch
-const iosVideoUnlock = () => { videoEl.play().catch(() => { }); document.removeEventListener('touchstart', iosVideoUnlock); };
-document.addEventListener('touchstart', iosVideoUnlock, { once: true });
+// --- Background Video (live stream, embedded via iframe) ---
+const videoFrameEl = document.createElement('iframe');
+videoFrameEl.src = (window.GAME_CONFIG && window.GAME_CONFIG.videoSrc) || 'https://studio.jrta.online/play?stream=baccarat1';
+videoFrameEl.allow = 'autoplay; fullscreen';
+videoFrameEl.setAttribute('allowfullscreen', '');
+videoFrameEl.style.position = 'fixed';
+videoFrameEl.style.border = '0';
+videoFrameEl.style.pointerEvents = 'none';
+document.body.insertBefore(videoFrameEl, canvas);
 
 // --- Background Music ---
 const musicEl = document.createElement('audio');
@@ -43,36 +31,19 @@ const unlockMusic = () => {
 };
 document.addEventListener('pointerdown', unlockMusic, { once: true });
 
-const drawVideo = (GEOMETRY) => {
-  if (videoEl.readyState < 2) return;
-  const vw = videoEl.videoWidth, vh = videoEl.videoHeight;
-  if (!vw || !vh) return;
-
+const positionVideoFrame = (GEOMETRY) => {
   const bp = getBreakpoint(containerWidth / window.devicePixelRatio);
   const isFullscreen = bp === 'wide' || bp === 'desktop';
 
-  let area;
-  if (isFullscreen) {
-    // Full canvas — contain-fit (preserve aspect ratio, no crop)
-    area = { X: 0, Y: 0, W: canvas.width, H: canvas.height };
-    const s = 1//th.min(area.W / vw, area.H / vh);
-    const dw = vw * s, dh = vh * s;
-    const dx = (area.W - dw) / 2, dy = (area.H - dh) / 2;
-    ctx.drawImage(videoEl, dx, dy, dw, dh);
-  } else {
-    // Top area — contain-fit within GEOMETRY.video
-    area = GEOMETRY['video'];
-    const s = Math.min(area.W / vw, area.H / vh);
-    const dw = vw * s, dh = vh * s;
-    const dx = area.X + (area.W - dw) / 2;
-    const dy = area.Y + (area.H - dh) / 2;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(area.X, area.Y, area.W, area.H);
-    ctx.clip();
-    ctx.drawImage(videoEl, dx, dy, dw, dh);
-    ctx.restore();
-  }
+  // Full canvas for wide/desktop, top area only for mobile/tablet
+  const area = isFullscreen
+    ? { X: 0, Y: 0, W: canvas.width, H: canvas.height }
+    : GEOMETRY['video'];
+
+  videoFrameEl.style.left   = (area.X / scale) + 'px';
+  videoFrameEl.style.top    = (area.Y / scale) + 'px';
+  videoFrameEl.style.width  = (area.W / scale) + 'px';
+  videoFrameEl.style.height = (area.H / scale) + 'px';
 };
 
 const font = new FontFace("Interroman", "url(/assets/fonts/Interroman.woff2)");
@@ -840,7 +811,8 @@ const drawUI = () => {
   const GEOMETRY = computeGeometry();
   lastGEOMETRY = GEOMETRY;
 
-  if (isVideoOn) drawVideo(GEOMETRY);
+  videoFrameEl.style.display = isVideoOn ? '' : 'none';
+  if (isVideoOn) positionVideoFrame(GEOMETRY);
   const uiShadow = ctx.createLinearGradient(0, GEOMETRY.uiY, 0, GEOMETRY.uiY + GEOMETRY.uiH);
   uiShadow.addColorStop(0, 'rgba(10, 8, 28, 0)');
   uiShadow.addColorStop(0.5, 'rgba(10, 8, 28, 0.85)');
@@ -4481,7 +4453,7 @@ canvas.addEventListener('pointerup', () => {
     pressedRegion = null; return;
   }
   if (pressedRegion === 'nav_setting_mute') {
-    isMuted = !isMuted; videoEl.muted = isMuted; musicEl.muted = isMuted;
+    isMuted = !isMuted; musicEl.muted = isMuted;
     pressedRegion = null; return;
   }
   if (pressedRegion === 'nav_setting_layout') {
@@ -4512,7 +4484,6 @@ canvas.addEventListener('pointerup', () => {
   }
   if (pressedRegion === 'volume') {
     isMuted = !isMuted;
-    videoEl.muted = isMuted;
     musicEl.muted = isMuted;
     pressedRegion = null; return;
   }
