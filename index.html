@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme') || 'system';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <title>Marlon Renz Remigio — Fullstack Developer &amp; Software Engineer</title>
   <meta name="description" content="Portfolio and resume of Marlon Renz O. Remigio, a Fullstack Developer and Software Engineer with 7 years of experience in Vue.js, .NET, and full-stack web development.">
   <meta name="keywords" content="Marlon Renz Remigio, Fullstack Developer, Software Engineer, Vue JS Developer, .NET Developer, Frontend Developer, Web Developer Philippines">
@@ -45,15 +51,22 @@
   <header>
     <div class="wrap header-inner">
       <a href="#top">Marlon Renz Remigio</a>
-      <nav aria-label="Primary">
-        <ul>
-          <li><a href="#about">About</a></li>
-          <li><a href="#skills">Skills</a></li>
-          <li><a href="#experience">Experience</a></li>
-          <li><a href="#projects">Projects</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-      </nav>
+      <div class="header-controls">
+        <nav aria-label="Primary">
+          <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#experience">Experience</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </nav>
+        <div class="theme-toggle" role="group" aria-label="Theme">
+          <button type="button" data-theme-choice="light" aria-label="Light theme" title="Light">☀️</button>
+          <button type="button" data-theme-choice="dark" aria-label="Dark theme" title="Dark">🌙</button>
+          <button type="button" data-theme-choice="system" aria-label="Use system theme" title="System">🖥️</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -176,14 +189,36 @@
         <details open>
           <summary><h2>🚀 Featured Projects</h2></summary>
           <div class="details-body">
-            <ul>
-              <li>🌼 <a href="/dandeliongourmet/" target="_blank">Dandelion Gourmet</a> — restaurant &amp; KTV brand site</li>
-              <li>🎤 <a href="/fajardosfamilyktv/" target="_blank">Fajardo's Family KTV</a> — family KTV bar landing page</li>
-              <li>🍜 <a href="/ramenyoungwasabi/" target="_blank">Ramen Young Wasabi</a> — ramen restaurant site with digital menu</li>
-              <li>🏓 <a href="/pingpongero/" target="_blank">Pingpongero</a> — table tennis community site</li>
-              <li>🧑‍💻 <a href="/dotara/" target="_blank">.ARA</a> — tech company website</li>
-              <li>♠️ <a href="/betzone" target="_blank">Betzone</a> — online betting platform</li>
-            </ul>
+            <div class="project-grid">
+              <a class="project-card" href="/dandeliongourmet/" target="_blank">
+                <h3>🌼 Dandelion Gourmet</h3>
+                <p>Restaurant &amp; KTV brand site</p>
+              </a>
+              <a class="project-card" href="/fajardosfamilyktv/" target="_blank">
+                <h3>🎤 Fajardo's Family KTV</h3>
+                <p>Family KTV bar landing page</p>
+              </a>
+              <a class="project-card" href="/ramenyoungwasabi/" target="_blank">
+                <h3>🍜 Ramen Young Wasabi</h3>
+                <p>Ramen restaurant site with digital menu</p>
+              </a>
+              <a class="project-card" href="/pingpongero/" target="_blank">
+                <h3>🏓 Pingpongero</h3>
+                <p>Table tennis community site</p>
+              </a>
+              <a class="project-card" href="/dotara/" target="_blank">
+                <h3>🧑‍💻 .ARA</h3>
+                <p>Tech company website</p>
+              </a>
+              <a class="project-card" href="https://ara-pg.dotara.dev/" target="_blank">
+                <h3>♠️ .ARA Bet</h3>
+                <p>Online betting platform</p>
+              </a>
+              <a class="project-card" href="/betzone" target="_blank">
+                <h3>♠️ Betzone - Provider</h3>
+                <p>Online betting game provider</p>
+              </a>
+            </div>
           </div>
         </details>
       </div>
@@ -213,5 +248,28 @@
       <p>© 2026 Marlon Renz O. Remigio.</p>
     </div>
   </footer>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var buttons = document.querySelectorAll('[data-theme-choice]');
+
+      function applyTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        buttons.forEach(function (btn) {
+          btn.setAttribute('aria-pressed', btn.dataset.themeChoice === theme);
+        });
+      }
+
+      applyTheme(root.getAttribute('data-theme') || 'system');
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          applyTheme(btn.dataset.themeChoice);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

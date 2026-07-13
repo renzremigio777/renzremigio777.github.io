@@ -207,6 +207,8 @@ let isUserPrefOpen  = false;
 let isGameDropOpen  = false;
 let isLabelsOn      = false;
 let labelsBounds    = null;
+let leftColumnMode  = false; // wide breakpoint only — stack the whole UI in a single column pinned left
+let leftColumnBounds = null;
 let topNavGameHits    = [];
 let topNavSettingsHit = null;
 let topNavUserHit     = null;
@@ -494,7 +496,7 @@ const computeGeometry = () => {
       statisticsGridE: { X: leftGutter, Y: uiY + betH, W: containerWidth * 0.5, H: statH },
       statisticsGridA: { X: leftGutter + containerWidth * 0.5, Y: uiY + betH, W: containerWidth * 0.5, H: statH },
       menuBar: { X: leftGutter, Y: uiY + betH + statH, W: containerWidth, H: menuH },
-      uiY, uiH,
+      uiX: leftGutter, uiW: containerWidth, uiY, uiH,
     };
   }
 
@@ -509,7 +511,29 @@ const computeGeometry = () => {
       statisticsGridA: { X: leftGutter + containerWidth * 0.5, Y: uiY, W: containerWidth * 0.5, H: statH },
       betOptions: { X: leftGutter, Y: uiY + statH, W: containerWidth, H: betH },
       menuBar: { X: leftGutter, Y: uiY + statH + betH, W: containerWidth, H: menuH },
-      uiY, uiH,
+      uiX: leftGutter, uiW: containerWidth, uiY, uiH,
+    };
+  }
+
+  // wide + left-column mode: whole UI stacked in one narrow column pinned to
+  // the left edge; the live video fills the entire remaining right side at
+  // full screen height instead of just the top band.
+  if (bp === 'wide' && leftColumnMode) {
+    const colW = Math.min(containerWidth, 420 * scale);
+    const colX = leftGutter;
+    const colH = canvas.height;
+    const walletH2 = colH * 0.06;
+    const statH2   = colH * 0.20;
+    const betH2    = colH * 0.42;
+    const menuH2   = colH - walletH2 - statH2 - betH2;
+    return {
+      video: { X: colX + colW, Y: 0, W: Math.max(0, canvas.width - (colX + colW)), H: colH },
+      walletBar:       { X: colX, Y: 0,                          W: colW,       H: walletH2 },
+      statisticsGridE: { X: colX, Y: walletH2,                   W: colW * 0.5, H: statH2 },
+      statisticsGridA: { X: colX + colW * 0.5, Y: walletH2,      W: colW * 0.5, H: statH2 },
+      betOptions:      { X: colX, Y: walletH2 + statH2,          W: colW,       H: betH2 },
+      menuBar:         { X: colX, Y: walletH2 + statH2 + betH2,  W: colW,       H: menuH2 },
+      uiX: colX, uiW: colW, uiY: walletH2, uiH: colH - walletH2,
     };
   }
 
@@ -528,7 +552,7 @@ const computeGeometry = () => {
     betOptions: { X: leftGutter + sideW, Y: uiY + walletH, W: centerW, H: betH },
     menuBar: { X: leftGutter + sideW, Y: uiY + walletH + betH, W: centerW, H: menuH },
     walletBar: { X: leftGutter + sideW, Y: uiY, W: centerW, H: walletH },
-    uiY, uiH,
+    uiX: leftGutter, uiW: containerWidth, uiY, uiH,
   };
 }
 
@@ -930,12 +954,17 @@ const drawUI = () => {
   videoFrameEl.style.display = isVideoOn ? '' : 'none';
   if (isVideoOn) positionVideoFrame(GEOMETRY);
   else videoErrorEl.style.display = 'none';
+  // uiX/uiW scope the wash to the actual UI column — in left-column mode that's
+  // a narrow strip, not the full canvas width (which would otherwise darken
+  // the live video filling the rest of the screen).
+  const uiX = GEOMETRY.uiX ?? leftGutter;
+  const uiW = GEOMETRY.uiW ?? containerWidth;
   const uiShadow = ctx.createLinearGradient(0, GEOMETRY.uiY, 0, GEOMETRY.uiY + GEOMETRY.uiH);
   uiShadow.addColorStop(0, 'rgba(6, 5, 16, 0.05)');
   uiShadow.addColorStop(0.4, 'rgba(6, 5, 16, 0.45)');
   uiShadow.addColorStop(1, 'rgba(6, 5, 16, 0.35)');
   ctx.fillStyle = uiShadow;
-  ctx.fillRect(0, GEOMETRY.uiY, canvas.width, GEOMETRY.uiH);
+  ctx.fillRect(uiX, GEOMETRY.uiY, uiW, GEOMETRY.uiH);
 
   drawGlassPanels(GEOMETRY);
   drawbetOptions(GEOMETRY);
@@ -4162,6 +4191,7 @@ const drawChat = () => {
 // ─── Top Navigation Bar ──────────────────────────────────────────────────────
 const drawTopNav = () => {
   const S       = scale;
+  const isWideBp = getBreakpoint(containerWidth / window.devicePixelRatio) === 'wide';
   const navH    = clamp(30*S, canvas.height * 0.042, 44*S);
   const navY    = 7*S;
   const navR    = navH * 0.5;
@@ -4244,9 +4274,9 @@ const drawTopNav = () => {
     ctx.stroke();
   }
 
-  // ── Utility slots: Chat | Volume | Video | Layout | Lobby | Labels | User ──
+  // ── Utility slots: Chat | Volume | Video | Layout | Lobby | Labels | User [| Left Column — wide only] ──
   const utilW = navX + navW - divX;
-  const NUM_UTIL = 7;
+  const NUM_UTIL = isWideBp ? 8 : 7;
   const slotW = utilW / NUM_UTIL;
   const icoSz = navH * 0.36;
   const midY  = navY + navH * 0.5;
@@ -4365,6 +4395,21 @@ const drawTopNav = () => {
     ctx.beginPath(); ctx.arc(cx, midY-ur*0.20, ur*0.36, 0, Math.PI*2); ctx.stroke();
     ctx.beginPath(); ctx.arc(cx, midY+ur*0.68, ur*0.58, Math.PI*1.15, Math.PI*1.85, false); ctx.stroke();
     topNavUserHit = { X: cx-slotW*0.5, Y: navY, W: slotW, H: navH };
+  }
+
+  // Slot 7 — Left-column layout toggle (wide breakpoint only)
+  if (isWideBp) {
+    const cx = drawNavSlot(7, leftColumnMode, 'rgba(120,200,255,0.80)');
+    const g = icoSz * 0.82, gx = cx - g * 0.5, gy = midY - g * 0.5;
+    ctx.strokeStyle = leftColumnMode ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    ctx.lineWidth = 1.1 * S; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.roundRect(gx, gy, g, g, 2 * S); ctx.stroke();
+    // Filled narrow left column inside the frame
+    ctx.fillStyle = leftColumnMode ? '#ffffff' : 'rgba(255,255,255,0.70)';
+    ctx.beginPath(); ctx.roundRect(gx + g * 0.12, gy + g * 0.12, g * 0.28, g * 0.76, 1 * S); ctx.fill();
+    leftColumnBounds = { X: cx - slotW * 0.5, Y: navY, W: slotW, H: navH };
+  } else {
+    leftColumnBounds = null;
   }
 
   topNavSettingsHit = null;
@@ -4514,12 +4559,13 @@ canvas.addEventListener('pointermove', (e) => {
   const overLobby     = hitRegions.lobby && ctx.isPointInPath(hitRegions.lobby, x, y);
   const overVolume    = volumeBounds    && x >= volumeBounds.X    && x <= volumeBounds.X    + volumeBounds.W    && y >= volumeBounds.Y    && y <= volumeBounds.Y    + volumeBounds.H;
   const overLayout    = layoutBounds    && x >= layoutBounds.X    && x <= layoutBounds.X    + layoutBounds.W    && y >= layoutBounds.Y    && y <= layoutBounds.Y    + layoutBounds.H;
+  const overLeftColumn = leftColumnBounds && x >= leftColumnBounds.X && x <= leftColumnBounds.X + leftColumnBounds.W && y >= leftColumnBounds.Y && y <= leftColumnBounds.Y + leftColumnBounds.H;
   const overChatClose = isChatOpen && chatCloseBounds && x >= chatCloseBounds.X && x <= chatCloseBounds.X + chatCloseBounds.W && y >= chatCloseBounds.Y && y <= chatCloseBounds.Y + chatCloseBounds.H;
   const overChatSend  = isChatOpen && chatSendBounds  && x >= chatSendBounds.X  && x <= chatSendBounds.X  + chatSendBounds.W  && y >= chatSendBounds.Y  && y <= chatSendBounds.Y  + chatSendBounds.H;
   const overUndo      = undoBounds   && x >= undoBounds.X   && x <= undoBounds.X   + undoBounds.W   && y >= undoBounds.Y   && y <= undoBounds.Y   + undoBounds.H;
   const overCancel    = cancelBounds && x >= cancelBounds.X && x <= cancelBounds.X + cancelBounds.W && y >= cancelBounds.Y && y <= cancelBounds.Y + cancelBounds.H;
   const overChipRow   = chipRowBounds.some(b => x >= b.X && x <= b.X + b.W && y >= b.Y && y <= b.Y + b.H);
-  canvas.style.cursor = (overChip || overChipRow || overBetOption || overChat || overLobby || overVolume || overLayout || overUndo || overCancel || overChatClose || overChatSend || overNavGame || overNavSetting || overNavUser || overNavToggle) ? 'pointer' : 'default';
+  canvas.style.cursor = (overChip || overChipRow || overBetOption || overChat || overLobby || overVolume || overLayout || overLeftColumn || overUndo || overCancel || overChatClose || overChatSend || overNavGame || overNavSetting || overNavUser || overNavToggle) ? 'pointer' : 'default';
 });
 
 canvas.addEventListener('pointerdown', (e) => {
@@ -4574,6 +4620,8 @@ canvas.addEventListener('pointerdown', (e) => {
     pressedRegion = 'video';
   } else if (labelsBounds && x >= labelsBounds.X && x <= labelsBounds.X + labelsBounds.W && y >= labelsBounds.Y && y <= labelsBounds.Y + labelsBounds.H) {
     pressedRegion = 'labels';
+  } else if (leftColumnBounds && x >= leftColumnBounds.X && x <= leftColumnBounds.X + leftColumnBounds.W && y >= leftColumnBounds.Y && y <= leftColumnBounds.Y + leftColumnBounds.H) {
+    pressedRegion = 'leftcolumn';
   } else if (isChatOpen && chatCloseBounds && x >= chatCloseBounds.X && x <= chatCloseBounds.X + chatCloseBounds.W && y >= chatCloseBounds.Y && y <= chatCloseBounds.Y + chatCloseBounds.H) {
     pressedRegion = 'chatClose';
   } else if (isChatOpen && chatSendBounds && x >= chatSendBounds.X && x <= chatSendBounds.X + chatSendBounds.W && y >= chatSendBounds.Y && y <= chatSendBounds.Y + chatSendBounds.H) {
@@ -4656,6 +4704,10 @@ canvas.addEventListener('pointerup', () => {
   }
   if (pressedRegion === 'labels') {
     isLabelsOn = !isLabelsOn;
+    pressedRegion = null; return;
+  }
+  if (pressedRegion === 'leftcolumn') {
+    leftColumnMode = !leftColumnMode;
     pressedRegion = null; return;
   }
 

@@ -6,6 +6,24 @@
   --border: #ccc;
 }
 
+:root[data-theme="dark"] {
+  --bg: #15171c;
+  --text: #e8e6e1;
+  --muted: #9a9a95;
+  --accent: #7aa2d8;
+  --border: #333944;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --bg: #15171c;
+    --text: #e8e6e1;
+    --muted: #9a9a95;
+    --accent: #7aa2d8;
+    --border: #333944;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -21,6 +39,7 @@ body {
   line-height: 1.7;
   color: var(--text);
   background-color: var(--bg);
+  transition: background-color .15s ease, color .15s ease;
 }
 
 .wrap {
@@ -127,6 +146,42 @@ header nav a:hover {
   text-decoration: underline;
 }
 
+.header-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  gap: .25rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .15rem;
+}
+
+.theme-toggle button {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: .85rem;
+  line-height: 1;
+  padding: .3rem .5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.theme-toggle button:hover {
+  color: var(--text);
+}
+
+.theme-toggle button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+
 main section {
   border-bottom: 1px solid var(--border);
   padding: 2.5rem 0;
@@ -183,6 +238,40 @@ dd {
   display: flex;
   flex-wrap: wrap;
   gap: .4rem 1rem;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.project-card {
+  display: block;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color .15s ease, transform .15s ease;
+}
+
+.project-card:hover,
+.project-card:focus {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.project-card h3 {
+  margin: 0 0 .35rem;
+  font-size: 1rem;
+}
+
+.project-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: .9rem;
 }
 
 address {
