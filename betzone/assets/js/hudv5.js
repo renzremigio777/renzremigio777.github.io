@@ -4842,7 +4842,7 @@ canvas.addEventListener('pointerup', () => {
   if (pressedRegion && pressedRegion.startsWith('nav_game_')) {
     const gid = pressedRegion.slice(9);
     isGameDropOpen = false;
-    window.location.href = '/betzone/pages/game.html?game=' + gid;
+    window.location.href = window.location.host === 'ara-provider.dotara.dev'? '/pages/game.html?game=' + gid : '/betzone/pages/game.html?game=' + gid;
     pressedRegion = null; return;
   }
   if (pressedRegion === 'nav_settings') {
@@ -4864,9 +4864,9 @@ canvas.addEventListener('pointerup', () => {
     pressedRegion = null; return;
   }
 
-  if (pressedRegion === 'lobby') { window.location.href = '/betzone'; return; }
+  if (pressedRegion === 'lobby') { window.location.href = window.location.host === 'ara-provider.dotara.dev'? '/' : '/betzone'; return; }
 
-  if (pressedRegion === 'chat') {
+  if (pressedRegion === 'chat') { 
     isChatOpen = !isChatOpen;
     if (!isChatOpen && chatInputEl) chatInputEl.style.display = 'none';
     pressedRegion = null; return;
