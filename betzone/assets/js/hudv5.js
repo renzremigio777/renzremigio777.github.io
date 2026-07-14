@@ -1,4 +1,5 @@
-
+console.log('Hostname', window.location.hostname)
+const hostname = window.location.hostname;
 // --- Canvas Setup ---
 const canvas = document.createElement('canvas');
 document.body.prepend(canvas);
@@ -4842,7 +4843,7 @@ canvas.addEventListener('pointerup', () => {
   if (pressedRegion && pressedRegion.startsWith('nav_game_')) {
     const gid = pressedRegion.slice(9);
     isGameDropOpen = false;
-    window.location.href = window.location.host === 'ara-provider.dotara.dev'? '/pages/game.html?game=' + gid : '/betzone/pages/game.html?game=' + gid;
+    window.location.href = (['renzremigio777.github.io'].includes(hostname) ? '/betzone/pages/game.html?game=' + gid : '/pages/game.html?game=' + gid);
     pressedRegion = null; return;
   }
   if (pressedRegion === 'nav_settings') {
@@ -4864,7 +4865,7 @@ canvas.addEventListener('pointerup', () => {
     pressedRegion = null; return;
   }
 
-  if (pressedRegion === 'lobby') { window.location.href = window.location.host === 'ara-provider.dotara.dev'? '/' : '/betzone'; return; }
+  if (pressedRegion === 'lobby') { window.location.href = (['renzremigio777.github.io'].includes(hostname) ? '/betzone' : '/'); return; }
 
   if (pressedRegion === 'chat') { 
     isChatOpen = !isChatOpen;
