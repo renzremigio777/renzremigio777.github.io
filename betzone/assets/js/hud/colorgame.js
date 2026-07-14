@@ -9,5 +9,5 @@ window.GAME_CONFIG = {
 };
 
 const _s = document.createElement('script');
-_s.src = '../assets/js/hudv5.js';
+_s.src = '../assets/js/hudv5.js?v=1';
 document.head.appendChild(_s);
