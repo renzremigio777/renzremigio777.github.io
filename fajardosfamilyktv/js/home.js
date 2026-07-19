@@ -9,10 +9,12 @@
 
   function setupBranchView(branchView) {
     const cards = Array.from(branchView.querySelectorAll('.carousel-card'));
+    const track = branchView.querySelector('.carousel-track');
     const prevBtn = branchView.querySelector('.carousel-arrow.prev');
     const nextBtn = branchView.querySelector('.carousel-arrow.next');
     let activeIndex = cards.findIndex((c) => c.dataset.pos === 'active');
     if (activeIndex < 0) activeIndex = 0;
+    let didDrag = false;
 
     const render = () => {
       cards.forEach((card, i) => {
@@ -62,6 +64,11 @@
 
     cards.forEach((card, i) => {
       card.addEventListener('click', () => {
+        if (didDrag) {
+          didDrag = false;
+          return;
+        }
+
         if (card.classList.contains('is-fullscreen')) {
           collapseFullscreen();
           return;
@@ -79,6 +86,60 @@
 
     if (prevBtn) prevBtn.addEventListener('click', () => goTo(activeIndex - 1));
     if (nextBtn) nextBtn.addEventListener('click', () => goTo(activeIndex + 1));
+
+    // Touch/mouse drag-to-swipe. A single pointer type (Pointer Events)
+    // covers mouse, touch and pen. Only active in carousel mode with
+    // nothing expanded — grid layout and fullscreen cards don't have the
+    // stacked active/next/prev positions this swipe logic reasons about.
+    const DRAG_INTENT_PX = 10; // movement before we commit to horizontal vs. vertical
+    const SWIPE_PX = 50; // movement required to actually change slides
+    let drag = null;
+
+    const canDrag = () => !viewGrid.checked && !branchView.classList.contains('has-fullscreen');
+
+    const onPointerDown = (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (!canDrag()) return;
+      drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, dx: 0, horizontal: false };
+    };
+
+    const onPointerMove = (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      const dx = event.clientX - drag.startX;
+      const dy = event.clientY - drag.startY;
+      drag.dx = dx;
+
+      if (!drag.horizontal) {
+        if (Math.abs(dx) < DRAG_INTENT_PX && Math.abs(dy) < DRAG_INTENT_PX) return;
+        if (Math.abs(dx) <= Math.abs(dy)) {
+          drag = null; // vertical intent — leave it to page scroll
+          return;
+        }
+        drag.horizontal = true;
+        didDrag = true;
+        track.classList.add('is-dragging');
+        track.setPointerCapture(drag.pointerId);
+      }
+
+      event.preventDefault();
+    };
+
+    const endDrag = (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      const { dx, horizontal } = drag;
+      if (track.hasPointerCapture(drag.pointerId)) track.releasePointerCapture(drag.pointerId);
+      track.classList.remove('is-dragging');
+      drag = null;
+
+      if (horizontal && Math.abs(dx) > SWIPE_PX) {
+        goTo(activeIndex + (dx < 0 ? 1 : -1));
+      }
+    };
+
+    track.addEventListener('pointerdown', onPointerDown);
+    track.addEventListener('pointermove', onPointerMove);
+    track.addEventListener('pointerup', endDrag);
+    track.addEventListener('pointercancel', endDrag);
 
     render();
     return { collapseFullscreen };

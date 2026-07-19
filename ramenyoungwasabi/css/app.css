@@ -207,9 +207,9 @@ button {
      viewport). This is what makes "only the current dish is visible"
      actually true, not just usually true. */
   border-radius: 50%;
-  overflow: hidden;
+  /* overflow: hidden;
   background: radial-gradient(circle at 32% 26%, var(--cream-alt), #fff 72%);
-  box-shadow: 0 1.75rem 3.5rem var(--shadow), inset 0 0 0 1px var(--line);
+  box-shadow: 0 1.75rem 3.5rem var(--shadow), inset 0 0 0 1px var(--line); */
 }
 
 .wheel-stop {
@@ -292,41 +292,48 @@ button {
 .wheel-dots {
   display: flex;
   align-items: center;
-  gap: .1rem;
+  gap: .25rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-/* A small visual dot inside a larger invisible hit area, so the tap
-   target stays a comfortable 2.75rem (44px) even though the dot itself
-   is tiny. */
+/* A small round thumbnail of the dish inside a larger invisible hit
+   area, so the tap target stays a comfortable 2.75rem (44px) even
+   though the thumbnail itself sits smaller and inset within it. */
 .wheel-dot {
   display: grid;
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
-  padding: 0;
+  padding: .3rem;
   background: none;
+  border: none;
+  border-radius: 50%;
   cursor: pointer;
 }
 
-.wheel-dot::before {
-  content: '';
-  width: .5rem;
-  height: .5rem;
+.wheel-dot img {
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  background: var(--line);
-  transition: background .2s ease, transform .2s ease;
+  object-fit: cover;
+  outline: 2px solid var(--line);
+  outline-offset: -1px;
+  opacity: .55;
+  transform: scale(.72);
+  transition: opacity .2s ease, transform .2s ease, outline-color .2s ease;
 }
 
-.wheel-dot:hover::before {
-  background: var(--gold-light);
+.wheel-dot:hover img {
+  opacity: .8;
+  outline-color: var(--gold-light);
 }
 
-.wheel-dot.active::before {
-  background: var(--maroon);
-  transform: scale(1.35);
+.wheel-dot.active img {
+  opacity: 1;
+  transform: scale(1);
+  outline-color: var(--maroon);
 }
 
 .hero-text {
