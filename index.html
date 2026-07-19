@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>
     (function () {
+      if (localStorage.getItem('portfolio_unlocked') !== '1') {
+        var redirect = encodeURIComponent(location.pathname + location.search + location.hash);
+        location.replace('passcode.html?redirect=' + redirect);
+      }
+    })();
+  </script>
+  <script>
+    (function () {
       var t = localStorage.getItem('theme') || 'system';
       document.documentElement.setAttribute('data-theme', t);
     })();

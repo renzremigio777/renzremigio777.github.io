@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme') || 'system';
+      document.documentElement.setAttribute('data-theme', t);
+      if (localStorage.getItem('portfolio_unlocked') === '1') {
+        var redirect = new URLSearchParams(location.search).get('redirect');
+        location.replace(redirect || 'index.html');
+      }
+    })();
+  </script>
+  <title>Passcode Required — Marlon Renz Remigio</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="main">
+    <section class="gate-section" aria-label="Passcode required">
+      <div class="wrap gate-wrap">
+        <h1>🔒 This site is private</h1>
+        <p>Please enter the passcode to continue. If you don't have one, contact the owner to request access.</p>
+        <form id="gate-form" class="gate-form" autocomplete="off">
+          <label for="passcode">Passcode</label>
+          <input type="password" id="passcode" name="passcode" inputmode="numeric" autofocus required>
+          <button type="submit">Unlock</button>
+        </form>
+        <p id="gate-error" class="gate-error" role="alert" hidden>Incorrect passcode. Please try again or contact the owner.</p>
+        <p class="gate-contact">📧 <a href="mailto:renzremigio777@gmail.com">renzremigio777@gmail.com</a></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var PASSCODE_HASH = '062e7ab9f31fb793706371cad4aab8361a4dc2147dbd0186f4c9b7d6aeb804fa';
+      var form = document.getElementById('gate-form');
+      var input = document.getElementById('passcode');
+      var error = document.getElementById('gate-error');
+
+      function toHex(buffer) {
+        return Array.prototype.map.call(new Uint8Array(buffer), function (b) {
+          return b.toString(16).padStart(2, '0');
+        }).join('');
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        error.hidden = true;
+
+        if (!window.crypto || !window.crypto.subtle) {
+          error.textContent = 'Your browser cannot verify the passcode. Please use a modern browser over HTTPS.';
+          error.hidden = false;
+          return;
+        }
+
+        var data = new TextEncoder().encode(input.value.trim());
+        window.crypto.subtle.digest('SHA-256', data).then(function (hashBuffer) {
+          if (toHex(hashBuffer) === PASSCODE_HASH) {
+            localStorage.setItem('portfolio_unlocked', '1');
+            var redirect = new URLSearchParams(location.search).get('redirect');
+            location.replace(redirect || 'index.html');
+          } else {
+            error.textContent = 'Incorrect passcode. Please try again or contact the owner.';
+            error.hidden = false;
+            input.select();
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

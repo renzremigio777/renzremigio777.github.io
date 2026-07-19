@@ -288,6 +288,66 @@ footer p {
   font-size: .85rem;
 }
 
+.gate-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.gate-wrap {
+  max-width: 420px;
+}
+
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.gate-form label {
+  font-weight: bold;
+}
+
+.gate-form input {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: .6rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.gate-form input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.gate-form button {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: .6rem .75rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background-color: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.gate-form button:hover {
+  opacity: .9;
+}
+
+.gate-error {
+  color: #c0392b;
+}
+
+.gate-contact {
+  color: var(--muted);
+  font-size: .9rem;
+}
+
 @media (max-width: 600px) {
   body {
     font-size: 15px;
