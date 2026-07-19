@@ -4843,7 +4843,7 @@ canvas.addEventListener('pointerup', () => {
   if (pressedRegion && pressedRegion.startsWith('nav_game_')) {
     const gid = pressedRegion.slice(9);
     isGameDropOpen = false;
-    window.location.href = (['renzremigio777.github.io'].includes(hostname) ? '/betzone/pages/game.html?game=' + gid : '/pages/game.html?game=' + gid);
+    window.location.href = '/betzone/pages/game.html?game=' + gid;
     pressedRegion = null; return;
   }
   if (pressedRegion === 'nav_settings') {
@@ -4865,7 +4865,7 @@ canvas.addEventListener('pointerup', () => {
     pressedRegion = null; return;
   }
 
-  if (pressedRegion === 'lobby') { window.location.href = (['renzremigio777.github.io'].includes(hostname) ? '/betzone' : '/'); return; }
+  if (pressedRegion === 'lobby') { window.location.href = '/betzone'; return; }
 
   if (pressedRegion === 'chat') { 
     isChatOpen = !isChatOpen;
