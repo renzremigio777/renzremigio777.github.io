@@ -6,16 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fajardo's Family KTV — Rooms &amp; Rates</title>
   <meta name="description"
-    content="Fajardo's Family KTV — pick a room and see live availability and rates for our Dasmariñas and Robinsons Las Piñas branches. Pocket, Family, and Corporate KTV rooms available now.">
+    content="Fajardo's Family KTV — pick a room and see live availability and rates at our Dasmariñas branch. Pocket, Family, and Corporate KTV rooms available now.">
   <meta name="keywords"
-    content="Fajardo's Family KTV, KTV Dasmariñas, KTV Las Piñas, karaoke bar Cavite, private KTV rooms, family KTV rates">
+    content="Fajardo's Family KTV, KTV Dasmariñas, karaoke bar Cavite, private KTV rooms, family KTV rates">
   <meta name="author" content="Fajardo's Family KTV">
   <meta name="robots" content="index, follow">
 
   <meta property="og:type" content="business.business">
   <meta property="og:title" content="Fajardo's Family KTV — Rooms &amp; Rates">
   <meta property="og:description"
-    content="Pick a room and see rates for our Dasmariñas and Robinsons Las Piñas branches.">
+    content="Pick a room and see rates at our Dasmariñas branch.">
   <meta property="og:image" content="img/ktv-banner.jpg">
 
   <link rel="stylesheet" href="css/style.css">
@@ -29,35 +29,16 @@
     "slogan": "Just Sing or Celebrate!",
     "image": "img/ktv-banner.jpg",
     "priceRange": "₱₱",
-    "department": [
-      {
-        "@type": "LocalBusiness",
-        "name": "Fajardo's Family KTV – Dasmariñas (Main Branch)",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Arkansas St, Manuelaville Subd, Burol, Main Dr",
-          "addressLocality": "Dasmariñas",
-          "addressRegion": "Cavite",
-          "postalCode": "4114",
-          "addressCountry": "PH"
-        },
-        "telephone": "+63-912-345-6789",
-        "openingHours": "Mo-Su 10:00-02:00"
-      },
-      {
-        "@type": "LocalBusiness",
-        "name": "Fajardo's Family KTV – Robinsons Las Piñas",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Robinsons Place Alabang Zapote Road, Talon I",
-          "addressLocality": "Las Piñas",
-          "postalCode": "1747",
-          "addressCountry": "PH"
-        },
-        "telephone": "+63-921-855-7454",
-        "openingHours": "Mo-Su 10:00-02:00"
-      }
-    ]
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Arkansas St, Manuelaville Subd, Burol, Main Dr",
+      "addressLocality": "Dasmariñas",
+      "addressRegion": "Cavite",
+      "postalCode": "4114",
+      "addressCountry": "PH"
+    },
+    "telephone": "+63-912-345-6789",
+    "openingHours": "Mo-Su 10:00-02:00"
   }
   </script>
 </head>
@@ -65,17 +46,13 @@
 <body>
   <main class="carousel-page">
     <h1 class="sr-only">Fajardo's Family KTV — Rooms and Rates</h1>
-    <a target="_parent" href="/fajardosfamilyktv">
-      <img class="page-logo" src="img/ktv-logo.png" alt="Fajardo's Family KTV">
-    </a>
-    <div class="controls-bar">
-      <nav class="branch-switcher" aria-label="Select branch">
-        <input type="radio" name="branch" id="branch-main" class="sr-only" checked>
-        <input type="radio" name="branch" id="branch-laspinas" class="sr-only">
-        <label for="branch-main" class="switch-tab">Main Branch — Dasmariñas</label>
-        <label for="branch-laspinas" class="switch-tab">Robinsons — Las Piñas</label>
-      </nav>
-
+    <div class="page-header">
+      <div class="brand-group">
+        <a class="page-link back-link" href="/dandeliongourmet/#fajardosfamilyktv" target="_top">&larr; Dandelion Gourmet</a>
+        <a target="_parent" href="/fajardosfamilyktv">
+          <img class="page-logo" src="img/ktv-logo.png" alt="Fajardo's Family KTV">
+        </a>
+      </div>
       <nav class="view-switcher" aria-label="Select view">
         <input type="radio" name="view-mode" id="view-carousel" class="sr-only" checked>
         <input type="radio" name="view-mode" id="view-grid" class="sr-only">
@@ -125,64 +102,6 @@
             aria-current="false" style="--accent:#ff6d45">
             <span class="card-status is-occupied"><span class="status-dot"></span>Occupied &middot; 1h 10m
               left</span>
-            <img class="card-photo" src="img/rooms/corporate.jpg" alt="Corporate Room interior" draggable="false">
-            <span class="card-info">
-              <span class="card-name">Corporate Room</span>
-              <span class="card-pax">10–22 Pax</span>
-              <span class="card-price"><span class="check" aria-hidden="true">&#10003;</span>4,999<small>PHP /
-                  4hrs</small></span>
-              <span class="card-rate">Hourly <strong>&#8369;900</strong><small>/hr</small></span>
-            </span>
-            <span class="card-expand-hint">Tap to view full screen</span>
-            <span class="card-close" aria-hidden="true">&times; Tap to minimize</span>
-          </button>
-
-        </div>
-
-        <button type="button" class="carousel-arrow next" aria-label="Next room">&#10095;</button>
-      </div>
-    </div>
-
-    <div class="branch-view" data-branch="laspinas" hidden>
-      <div class="carousel-stage">
-        <button type="button" class="carousel-arrow prev" aria-label="Previous room">&#10094;</button>
-
-        <div class="carousel-track">
-
-          <button type="button" class="carousel-card" data-room="pocket-laspinas" data-pos="active"
-            aria-current="true" style="--accent:#e21f83">
-            <span class="card-status is-available"><span class="status-dot"></span>Available Now</span>
-            <img class="card-photo" src="img/rooms/pocket.jpg" alt="Pocket Room interior" draggable="false">
-            <span class="card-info">
-              <span class="card-name">Pocket Room</span>
-              <span class="card-pax">2–4 Pax</span>
-              <span class="card-price"><span class="check" aria-hidden="true">&#10003;</span>2,999<small>PHP /
-                  4hrs</small></span>
-              <span class="card-rate">Hourly <strong>&#8369;500</strong><small>/hr</small></span>
-            </span>
-            <span class="card-expand-hint">Tap to view full screen</span>
-            <span class="card-close" aria-hidden="true">&times; Tap to minimize</span>
-          </button>
-
-          <button type="button" class="carousel-card" data-room="family-laspinas" data-pos="next"
-            aria-current="false" style="--accent:#7b2ff0">
-            <span class="card-status is-occupied"><span class="status-dot"></span>Occupied &middot; 40 min
-              left</span>
-            <img class="card-photo" src="img/rooms/family.jpg" alt="Family Room interior" draggable="false">
-            <span class="card-info">
-              <span class="card-name">Family Room</span>
-              <span class="card-pax">5–8 Pax</span>
-              <span class="card-price"><span class="check" aria-hidden="true">&#10003;</span>3,999<small>PHP /
-                  4hrs</small></span>
-              <span class="card-rate">Hourly <strong>&#8369;700</strong><small>/hr</small></span>
-            </span>
-            <span class="card-expand-hint">Tap to view full screen</span>
-            <span class="card-close" aria-hidden="true">&times; Tap to minimize</span>
-          </button>
-
-          <button type="button" class="carousel-card" data-room="corporate-laspinas" data-pos="prev"
-            aria-current="false" style="--accent:#ff6d45">
-            <span class="card-status is-available"><span class="status-dot"></span>Available Now</span>
             <img class="card-photo" src="img/rooms/corporate.jpg" alt="Corporate Room interior" draggable="false">
             <span class="card-info">
               <span class="card-name">Corporate Room</span>

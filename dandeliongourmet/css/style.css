@@ -395,6 +395,10 @@ section.ktv {
   background-color: var(--color-surface-alt);
 }
 
+section.chorus {
+  background-color: var(--color-surface);
+}
+
 /* HERO SECTION */
 section.hero {
   position: relative;
@@ -835,7 +839,8 @@ iframe.brand-banner-image {
 }
 
 #ramenyoungwasabi .brand-banner,
-#fajardosfamilyktv .brand-banner {
+#fajardosfamilyktv .brand-banner,
+#chorusfamilyktv .brand-banner {
   --banner-w: 1280;
   --banner-h: 900;
 }

@@ -7,8 +7,8 @@
    Card navigation/fullscreen state is driven by js/home.js via the
    data-pos attribute and .is-fullscreen/.has-fullscreen classes —
    CSS only renders whatever state JS sets, it doesn't decide it.
-   Branch/view-mode switching stays plain radio+CSS (flat controls,
-   no 3D hit-testing concerns there).
+   Single branch (Dasmariñas) — no branch switcher, only the
+   carousel/grid view-mode toggle, driven by plain radio+CSS.
    ============================================================ */
 
 :root {
@@ -56,14 +56,9 @@ body {
     var(--ktv-bg);
 }
 
-.page-logo {
-  flex: 0 0 auto;
-  width: clamp(10rem, 17vw, 15rem);
-  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, .5));
-}
-
-/* CONTROLS: branch switcher + view switcher */
-.controls-bar {
+/* PAGE HEADER — logo top-left, view switcher top-right, sharing one row
+   so the carousel stage below keeps as much vertical room as possible. */
+.page-header {
   flex: 0 0 auto;
   width: 100%;
   max-width: 72rem;
@@ -74,7 +69,20 @@ body {
   gap: var(--sp-2);
 }
 
-.branch-switcher,
+.brand-group {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.page-logo {
+  flex: 0 0 auto;
+  width: clamp(8rem, 13vw, 12rem);
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, .5));
+}
+
 .view-switcher {
   display: flex;
   border: 1px solid var(--line);
@@ -97,7 +105,6 @@ body {
   transition: color .2s ease, background-color .2s ease;
 }
 
-.branch-switcher .switch-tab:last-child,
 .view-switcher .switch-tab:last-child {
   border-right: none;
 }
@@ -106,30 +113,17 @@ body {
   color: var(--text-on-dark);
 }
 
-main:has(#branch-main:checked) label[for="branch-main"],
-main:has(#branch-laspinas:checked) label[for="branch-laspinas"],
 main:has(#view-carousel:checked) label[for="view-carousel"],
 main:has(#view-grid:checked) label[for="view-grid"] {
   color: #fff;
   background: var(--primary);
 }
 
-/* BRANCH VIEWS (visibility toggled by js/home.js via the `hidden`
-   attribute rather than CSS, since switching branches also needs to
-   reset carousel/fullscreen state in JS anyway). */
 .branch-view {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
   display: flex;
-}
-
-/* [hidden] has the same specificity as .branch-view above and loads
-   later, so without this it would silently win and the hidden branch
-   would keep rendering (and being hit-testable) underneath the visible
-   one. */
-.branch-view[hidden] {
-  display: none;
 }
 
 /* CAROUSEL STAGE */
@@ -484,10 +478,16 @@ main:has(#view-grid:checked) .carousel-arrow {
   display: none;
 }
 
+/* height:100% + overflow-y:auto is a safety net so the grid scrolls
+   internally on short viewports instead of the whole page needing to. */
 main:has(#view-grid:checked) .carousel-track {
   display: flex;
+  align-content: flex-start;
   gap: var(--sp-3);
-  max-height: none;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
   position: static;
 }
 
@@ -587,7 +587,8 @@ main:has(#view-grid:checked) .card-pax {
     padding: .3em .55em;
   }
 
-  .controls-bar {
+  .page-header {
+    flex-direction: column;
     justify-content: center;
   }
 }

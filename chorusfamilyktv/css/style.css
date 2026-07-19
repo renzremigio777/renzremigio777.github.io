@@ -1,0 +1,631 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
+:root {
+  /* dreamy nightclub palette sampled from the Chorus Family KTV logo — a
+     dark violet-blue base with one signature blue→violet→lavender
+     diagonal gradient used consistently as the accent. */
+  --ktv-bg: #0a0a16;
+  --ktv-bg-alt: #14122a;
+  --panel-dark: #100e20;
+  --panel-dark-alt: #1c1938;
+  --grad-1: #5b9bd5;
+  --grad-2: #7b5cff;
+  --grad-3: #b19cd9;
+  --accent-gradient: linear-gradient(135deg, var(--grad-1), var(--grad-2) 55%, var(--grad-3));
+  --pink: #ff6fae;
+  --pink-dark: #d94f8c;
+  --green: #7b5cff;
+  --green-dark: #5c3fd4;
+  --yellow: #ffb648;
+  --red: #e8242c;
+  --teal: #5ed4c4;
+  --orange: #ff6d45;
+  --purple: #7b5cff;
+  --line: rgba(238, 236, 250, .18);
+  --text-on-dark: #f1eefb;
+  --text-on-dark-muted: rgba(241, 238, 251, .6);
+  --text-dark: #201638;
+  --text-muted: #8a86a0;
+  --shadow-d: rgba(4, 4, 12, .6);
+  --shadow-l: rgba(255, 255, 255, .05);
+
+  /* spacing — fluid steps between consecutive Fibonacci numbers (5,8,13,21,34,55px) */
+  --sp-1: clamp(0.3125rem, 0.9vh, 0.5rem);
+  --sp-2: clamp(0.5rem, 1.3vh, 0.8125rem);
+  --sp-3: clamp(0.8125rem, 1.9vh, 1.3125rem);
+  --sp-4: clamp(1.3125rem, 2.8vh, 2.125rem);
+  --sp-5: clamp(2.125rem, 4vh, 3.4375rem);
+
+  /* radii — fixed Fibonacci steps (8, 13, 21px) */
+  --r-1: 0.5rem;
+  --r-2: 0.8125rem;
+  --r-3: 1.3125rem;
+  --r-pill: 999px;
+
+  /* type — golden-ratio derived scale (base 1rem, step √φ ≈ 1.272). The
+     fluid middle term uses vmin so type scales on both narrow-tall and
+     wide-short viewports, not just when height shrinks. Floors are raised
+     for small-screen legibility and ceilings raised so headings/prices
+     keep scaling up on big screens instead of plateauing early. */
+  --fs-tiny: clamp(0.8125rem, 1.5vmin, 0.9375rem);
+  --fs-sm: clamp(0.875rem, 1.7vmin, 1rem);
+  --fs-base: clamp(1rem, 2.1vmin, 1.15rem);
+  --fs-md: clamp(1.05rem, 2.4vmin, 1.3rem);
+  --fs-lg: clamp(1.25rem, 3.2vmin, 1.75rem);
+  --fs-xl: clamp(1.8rem, 5.6vmin, 4rem);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+
+  font-family: "Comfortaa", sans-serif;
+  font-size: var(--fs-base);
+  background: var(--ktv-bg);
+  color: var(--text-on-dark);
+  line-height: 1.4;
+}
+
+h1, h2 { font-family: "Comfortaa", sans-serif; margin: 0; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* POSTER LAYOUT */
+.poster {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "header    header      header"
+    "rooms     rooms       rooms"
+    "liquors   appetizers  promo-sets";
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(91, 155, 213, .1), transparent 40%),
+    radial-gradient(circle at 90% 100%, rgba(177, 156, 217, .08), transparent 45%),
+    radial-gradient(circle at 15% 0%, var(--ktv-bg-alt), var(--ktv-bg) 65%);
+}
+
+/* HEADER — thin inset frame line */
+.ktv-header {
+  grid-area: header;
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+}
+
+/* Fixed bounding box (not just width:auto/height:auto) so a square
+   logo doesn't balloon the header height and squeeze the rooms row —
+   object-fit: contain letterboxes whatever aspect ratio comes in. */
+.logo-image {
+  display: block;
+  flex: 0 0 auto;
+  width: clamp(9rem, 22vw, 15rem);
+  height: clamp(4rem, 9vw, 6.5rem);
+  object-fit: contain;
+}
+
+.promo-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 .3em;
+  color: var(--text-on-dark-muted);
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: .28em;
+}
+
+.promo-copy h1 {
+  font-size: var(--fs-xl);
+  line-height: 1.02;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #fff;
+}
+
+.promo-copy h1 .accent-green {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.promo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.tag {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  padding: .5em 1.1em;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  color: var(--text-on-dark);
+  background: rgba(255, 255, 255, .03);
+}
+
+.tag-yellow { border-color: color-mix(in srgb, var(--grad-3) 55%, var(--line)); color: var(--grad-3); }
+.tag-pink { background: var(--accent-gradient); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(91, 155, 213, .35); }
+
+/* ROOMS — 7 room types, so the grid wraps instead of forcing 3 columns */
+.rooms {
+  grid-area: rooms;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+
+.room {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--panel-dark-alt), var(--panel-dark));
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.room:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent, var(--pink)) 65%, var(--line));
+  box-shadow: 0 14px 26px rgba(0, 0, 0, .5), 0 0 24px color-mix(in srgb, var(--accent, var(--pink)) 40%, transparent);
+}
+
+.room:active { transform: translateY(-1px) scale(.99); }
+
+.room.selected {
+  border-color: var(--accent, var(--pink));
+  box-shadow: 0 0 0 2px var(--accent, var(--pink)), 0 14px 26px rgba(0, 0, 0, .5);
+}
+
+.room-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.room-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--accent, var(--pink)) 55%, transparent), transparent 60%),
+    linear-gradient(180deg, transparent 45%, var(--panel-dark) 100%);
+  mix-blend-mode: multiply;
+  opacity: .85;
+  pointer-events: none;
+}
+
+.room-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.05) contrast(1.03);
+}
+
+.room-info {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding: var(--sp-4) var(--sp-2) var(--sp-2);
+  text-align: center;
+      background: linear-gradient(180deg, #00000000, #100e20b0 19%, #100e20 80%);
+}
+
+.room-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  background: var(--panel-dark);
+  color: var(--text-on-dark);
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  white-space: nowrap;
+  padding: .4em 1.2em;
+  border: 1px solid color-mix(in srgb, var(--accent, var(--pink)) 65%, var(--line));
+  border-radius: var(--r-pill);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .5);
+}
+
+.room-pax {
+  margin: 0;
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--accent, var(--pink));
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.room-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: .2em;
+  margin: .1em 0;
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 400;
+  letter-spacing: .02em;
+  font-size: var(--fs-xl);
+  color: #fff;
+}
+
+.room-price .check {
+  align-self: center;
+  font-size: .5em;
+  color: var(--accent, var(--pink));
+  border: 2px solid var(--accent, var(--pink));
+  border-radius: 50%;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: .15em;
+}
+
+.room-price small {
+  font-size: .32em;
+  font-weight: 700;
+  color: var(--text-on-dark-muted);
+  text-transform: uppercase;
+}
+
+.room-caption {
+  margin: 0;
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+  color: var(--text-on-dark-muted);
+  line-height: 1.3;
+}
+
+/* Hourly rate — folded into each room card, set off from the package
+   price above by a thin dashed rule. */
+.room-rate {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: .35em;
+  margin: .6em 0 0;
+  padding-top: .6em;
+  border-top: 1px dashed var(--line);
+  font-family: "Comfortaa", sans-serif;
+  font-size: var(--fs-tiny);
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: var(--text-on-dark-muted);
+}
+
+.room-rate strong {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 400;
+  font-size: 1.5em;
+  letter-spacing: .02em;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.room-rate small {
+  font-size: .85em;
+  color: var(--text-on-dark-muted);
+}
+
+/* LIQUOR SELECTION + APPETIZERS — share the same compact icon/label/price
+   row component so the two lists stay visually consistent. */
+.liquors,
+.appetizers {
+  grid-area: liquors;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  overflow: hidden;
+}
+
+.appetizers { grid-area: appetizers; }
+
+.liquors-heading {
+  flex: 0 0 auto;
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: .22em;
+  color: var(--text-on-dark-muted);
+  text-align: center;
+}
+
+.liquor-list,
+.appetizer-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  gap: var(--sp-1) var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.appetizer-list { grid-template-columns: minmax(0, 1fr); }
+
+.liquor-item {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: .5em;
+  padding: .5em .6em;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid var(--line);
+  border-radius: var(--r-1);
+  transition: border-color .2s ease, transform .2s ease;
+}
+
+.liquor-item:hover {
+  border-color: color-mix(in srgb, var(--pink) 55%, var(--line));
+  transform: translateY(-2px);
+}
+
+.liquor-item img {
+  flex: 0 0 auto;
+  width: clamp(1.5rem, 4.6vmin, 2.5rem);
+  height: clamp(1.5rem, 4.6vmin, 2.5rem);
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .5));
+}
+
+.liquor-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: .2em;
+}
+
+.liquor-label {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-tiny);
+  letter-spacing: .01em;
+  color: var(--text-on-dark);
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liquor-prices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .7em;
+}
+
+.liquor-price {
+  display: flex;
+  align-items: baseline;
+  gap: .3em;
+  line-height: 1.1;
+}
+
+.liquor-price small {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: .68em;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--text-on-dark-muted);
+}
+
+.liquor-price strong {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 400;
+  font-size: var(--fs-tiny);
+  letter-spacing: .02em;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* VALUE SETS — bundle promos reuse the room card's --accent hook so each
+   set reads as paired with a room's color, without a fourth palette. */
+.promo-sets {
+  grid-area: promo-sets;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  overflow: hidden;
+}
+
+.set-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.set-card {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: .5em;
+  padding: .4em .7em;
+  text-align: left;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .04), transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--pink)) 45%, var(--line));
+  border-radius: var(--r-1);
+}
+
+.set-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: .15em;
+}
+
+.set-name {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--accent, var(--pink));
+}
+
+.set-combo {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-tiny);
+  color: var(--text-on-dark-muted);
+  line-height: 1.2;
+}
+
+.set-price {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.set-price strong {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 400;
+  font-size: var(--fs-md);
+  letter-spacing: .02em;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.set-price small {
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 600;
+  font-size: var(--fs-tiny);
+  color: var(--teal);
+}
+
+/* RESPONSIVE OVERRIDES — declared last so they win over the base rules above. */
+@media (max-width: 780px) {
+  .room-info { padding-top: var(--sp-3); }
+  .room-badge { font-size: var(--fs-tiny); padding: .35em .8em; }
+
+  .poster {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "rooms"
+      "liquors"
+      "appetizers"
+      "promo-sets";
+  }
+
+  .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .liquor-list { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: var(--sp-2); }
+  .appetizer-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 780px), (max-height: 700px) {
+  html, body {
+    height: auto;
+    overflow: visible;
+  }
+
+  .poster {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .room { aspect-ratio: 3 / 4; }
+
+  .liquors, .appetizers, .promo-sets { overflow: visible; }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --fs-tiny: clamp(0.8125rem, 1.9vmin, 0.9375rem);
+    --fs-sm: clamp(0.875rem, 2.1vmin, 1rem);
+    --fs-base: clamp(0.9375rem, 2.3vmin, 1.05rem);
+    --fs-md: clamp(1rem, 2.5vmin, 1.1rem);
+    --fs-lg: clamp(1.15rem, 3vmin, 1.3rem);
+    --fs-xl: clamp(1.75rem, 6.8vmin, 2.25rem);
+  }
+
+  .ktv-header { justify-content: center; text-align: center; }
+  .promo-copy { text-align: center; }
+  .promo-tags { justify-content: center; }
+
+  .rooms {
+    grid-template-columns: 1fr;
+  }
+
+  .liquor-list, .appetizer-list, .set-list { grid-template-columns: 1fr; row-gap: var(--sp-1); }
+  .liquor-item img { width: 2.25rem; height: 2.25rem; }
+  .liquor-label { white-space: normal; }
+  .set-card { flex-direction: row; text-align: left; gap: .6em; }
+  .set-price { margin-left: auto; flex-direction: column; align-items: flex-end; gap: 0; }
+}
