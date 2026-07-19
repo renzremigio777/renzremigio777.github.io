@@ -17,6 +17,15 @@
       const pos = offset === 0 ? 'active' : offset === 1 ? 'next' : 'prev';
       card.dataset.pos = pos;
       card.setAttribute('aria-current', pos === 'active' ? 'true' : 'false');
+      // With more than 3 cards, several offsets all collapse onto the same
+      // "prev" position/transform, stacking exactly on top of the one true
+      // adjacent-prev card (offset === cards.length - 1). Being later in
+      // the DOM, the last of those duplicates would otherwise paint above
+      // — and swallow every click meant for — the others. Bury everything
+      // except the real adjacent-prev card so only it stays interactive.
+      const isBuried = pos === 'prev' && offset !== cards.length - 1;
+      card.classList.toggle('is-buried', isBuried);
+      card.tabIndex = isBuried ? -1 : 0;
     });
   };
 

@@ -56,25 +56,31 @@ body {
     var(--ktv-bg);
 }
 
-/* PAGE HEADER — logo top-left, view switcher top-right, sharing one row
-   so the carousel stage below keeps as much vertical room as possible. */
+/* PAGE HEADER — back-link left, logo centered, view switcher right, all
+   sharing one row so the carousel stage below keeps as much vertical
+   room as possible. A 3-column grid (instead of space-between flex)
+   keeps the logo truly centered regardless of how wide the back-link
+   or view-switcher end up being. */
 .page-header {
   flex: 0 0 auto;
   width: 100%;
   max-width: 72rem;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: var(--sp-2);
 }
 
-.brand-group {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-3);
+.back-link {
+  justify-self: start;
+}
+
+.page-logo-link {
+  justify-self: center;
+}
+
+.view-switcher {
+  justify-self: end;
 }
 
 .page-logo {
@@ -214,6 +220,14 @@ main:has(#view-grid:checked) label[for="view-grid"] {
 .carousel-card[data-pos="prev"] {
   transform: translate(-50%, -50%) translateX(-72%) translateZ(-40px) rotateY(14deg) scale(.8);
   z-index: 2;
+}
+
+/* Extra cards sharing the "prev" slot when there are more than 3 rooms
+   (see js/home.js) — demoted behind the real adjacent-prev card and
+   taken out of the click/tab path so they can't swallow its input. */
+.carousel-card.is-buried {
+  z-index: 1;
+  pointer-events: none;
 }
 
 .carousel-card:hover {
@@ -489,6 +503,12 @@ main:has(#view-grid:checked) .carousel-track {
   max-height: 100%;
   overflow-y: auto;
   position: static;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
+}
+
+main:has(#view-grid:checked) .carousel-track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
 }
 
 main:has(#view-grid:checked) .carousel-card:not(.is-fullscreen) {
@@ -588,7 +608,7 @@ main:has(#view-grid:checked) .card-pax {
   }
 
   .page-header {
-    flex-direction: column;
-    justify-content: center;
+    grid-template-columns: 1fr;
+    justify-items: center;
   }
 }
