@@ -245,15 +245,16 @@ const PlanCart = (() => {
       // if (!res.ok) throw new Error('Request failed');
       await new Promise((resolve) => setTimeout(resolve, 900));
 
-      const planNote = data['selected-plans']
-        ? ` We'll follow up about: ${data['selected-plans']}.`
-        : '';
-      showSnackbar(`Thanks, ${data.name.split(' ')[0]}! Your inquiry has been sent — we'll reply to ${data.email} shortly.${planNote}`, 'success');
-      form.reset();
-      PlanCart.clear();
+      const params = new URLSearchParams({
+        name: data.name || '',
+        email: data.email || '',
+      });
+      if (data['selected-plans']) params.set('plans', data['selected-plans']);
+
+      window.location.href = `success.html?${params.toString()}`;
+      return;
     } catch (err) {
       showSnackbar('Something went wrong. Please try again in a moment.', 'error');
-    } finally {
       submitBtn.disabled = false;
     }
   });
