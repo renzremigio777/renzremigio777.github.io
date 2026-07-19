@@ -224,8 +224,12 @@ main:has(#view-grid:checked) label[for="view-grid"] {
 
 /* Extra cards sharing the "prev" slot when there are more than 3 rooms
    (see js/home.js) — demoted behind the real adjacent-prev card and
-   taken out of the click/tab path so they can't swallow its input. */
-.carousel-card.is-buried {
+   taken out of the click/tab path so they can't swallow its input.
+   Scoped to carousel mode only: render() marks these regardless of
+   view mode, but grid view lays every card out flat with no overlap,
+   so there's nothing to protect against there — leaving pointer-events
+   unscoped would just make most grid cards untappable. */
+main:has(#view-carousel:checked) .carousel-card.is-buried {
   z-index: 1;
   pointer-events: none;
 }
