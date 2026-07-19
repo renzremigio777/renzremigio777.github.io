@@ -399,8 +399,7 @@ h1, h2, h3, h4, .display {
   color: #fff;
   overflow: hidden;
 }
-.hero .ph,
-.hero-bg {
+.hero .ph {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -409,6 +408,32 @@ h1, h2, h3, h4, .display {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.hero-slideshow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  animation: heroFade 10s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes heroFade {
+  0%   { opacity: 1; }
+  45%  { opacity: 1; }
+  50%  { opacity: 0; }
+  95%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg { animation: none; opacity: 1; }
+  .hero-bg:not(:first-child) { display: none; }
 }
 .hero::before {
   content: "";
@@ -492,7 +517,8 @@ h1, h2, h3, h4, .display {
    Gallery strip
    ============================================ */
 .strip {
-  display: grid;
+  display: none;
+  /* display: grid; */
   grid-auto-flow: column;
   grid-auto-columns: minmax(220px, 1fr);
   gap: 1px;
