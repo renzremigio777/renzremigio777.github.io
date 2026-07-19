@@ -483,54 +483,60 @@ main:has(#view-grid:checked) label[for="view-grid"] {
 }
 
 /* GRID VIEW — flattens the 3D carousel into a plain, evenly sized row of
-   cards with everything visible at once (no single "focused" card). */
-main:has(#view-grid:checked) .carousel-stage {
-  perspective: none;
-}
+   cards with everything visible at once (no single "focused" card).
+   Only offered above the mobile breakpoint (see the persist-carousel
+   query below) — small screens keep the carousel as the only view, so
+   the toggle is hidden there and these rules are guarded out entirely,
+   regardless of which radio happens to be checked. */
+@media (min-width: 761px) and (min-height: 641px) {
+  main:has(#view-grid:checked) .carousel-stage {
+    perspective: none;
+  }
 
-main:has(#view-grid:checked) .carousel-arrow {
-  display: none;
-}
+  main:has(#view-grid:checked) .carousel-arrow {
+    display: none;
+  }
 
-/* height:100% + overflow-y:auto is a safety net so the grid scrolls
-   internally on short viewports instead of the whole page needing to. */
-main:has(#view-grid:checked) .carousel-track {
-  display: flex;
-  align-content: flex-start;
-  gap: var(--sp-3);
-  height: 100%;
-  min-height: 0;
-  max-height: 100%;
-  overflow-y: auto;
-  position: static;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* legacy Edge */
-}
+  /* height:100% + overflow-y:auto is a safety net so the grid scrolls
+     internally on short viewports instead of the whole page needing to. */
+  main:has(#view-grid:checked) .carousel-track {
+    display: flex;
+    align-content: flex-start;
+    gap: var(--sp-3);
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    position: static;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge */
+  }
 
-main:has(#view-grid:checked) .carousel-track::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
-}
+  main:has(#view-grid:checked) .carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
 
-main:has(#view-grid:checked) .carousel-card:not(.is-fullscreen) {
-  position: static;
-  flex: 1 1 0;
-  width: auto;
-  transform: none !important;
-  filter: brightness(.85) saturate(1) !important;
-  z-index: auto !important;
-}
+  main:has(#view-grid:checked) .carousel-card:not(.is-fullscreen) {
+    position: static;
+    flex: 1 1 0;
+    width: auto;
+    transform: none !important;
+    filter: brightness(.85) saturate(1) !important;
+    z-index: auto !important;
+  }
 
-main:has(#view-grid:checked) .carousel-card[data-pos="active"]:not(.is-fullscreen) {
-  filter: brightness(1) saturate(1.05) !important;
-}
+  main:has(#view-grid:checked) .carousel-card[data-pos="active"]:not(.is-fullscreen) {
+    filter: brightness(1) saturate(1.05) !important;
+  }
 
-main:has(#view-grid:checked) .card-status,
-main:has(#view-grid:checked) .card-rate {
-  display: flex !important;
-}
+  main:has(#view-grid:checked) .card-status,
+  main:has(#view-grid:checked) .card-rate {
+    display: flex !important;
+  }
 
-main:has(#view-grid:checked) .card-pax {
-  display: block !important;
+  main:has(#view-grid:checked) .card-pax {
+    display: block !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -539,57 +545,69 @@ main:has(#view-grid:checked) .card-pax {
   }
 }
 
-/* Below this, the fixed no-scroll stage stops having enough room; fall
-   back to a normal, scrollable, single-column stack. */
+/* Small screens keep the real 3D carousel (swipe + peeking next/prev
+   cards) instead of falling back to a flat list — only the sizing
+   shrinks. Card width is bounded by min(vw, vh) so it shrinks whichever
+   dimension is tighter: a narrow phone (small vw) and a short desktop
+   window (small vh) both stay legible and fit with no page scroll. The
+   view switcher is hidden and the grid-view rules are guarded out above
+   (min-width/min-height), so carousel is the only view on small screens. */
 @media (max-width: 760px), (max-height: 640px) {
-  html, body {
-    height: auto;
-    overflow: visible;
+  .carousel-page {
+    padding: var(--sp-2) var(--sp-3);
   }
 
-  .carousel-page {
-    height: auto;
-    min-height: 100vh;
+  /* Height-driven instead of width-driven: on a short landscape phone a
+     width-based clamp doesn't know to shrink, and a near-square logo
+     would eat a fixed chunk of the scarce vertical budget no matter how
+     little of it there is. Sizing off vh instead means the logo — and
+     by extension the space it leaves for the card below — scales with
+     whichever dimension is actually tight. */
+  .page-logo {
+    width: auto;
+    height: clamp(2.5rem, 9vh, 5rem);
   }
 
   .carousel-stage {
-    perspective: none;
+    gap: var(--sp-2);
   }
 
+  /* The peeking next/prev cards can extend into where the arrow buttons
+     sit at narrow widths — rather than fight that overlap, drop the
+     arrows here. Swipe and tapping the peeking card itself (already
+     wired in js/home.js) remain fully functional as the nav method. */
   .carousel-arrow {
     display: none;
   }
 
-  .carousel-track {
-    position: static;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--sp-3);
-    max-height: none;
-  }
-
+  /* max-width + max-height + aspect-ratio (rather than a vh-guessed
+     width) lets the card size itself against whichever dimension is
+     actually tighter. max-height resolves against .carousel-track's
+     real rendered height — the space left over after the header/link
+     chrome and gaps are laid out — so it self-corrects for any chrome
+     size instead of needing to predict it via vh. :not(.is-fullscreen)
+     keeps this from fighting the tap-to-preview state below, which
+     needs to fill the full viewport, not the card's usual box. */
   .carousel-card:not(.is-fullscreen) {
-    position: static;
-    width: 100%;
-    max-width: 22rem;
-    transform: none !important;
-    filter: brightness(.85) saturate(1) !important;
+    width: auto;
+    min-width: 8rem;
+    max-width: 56vw;
+    max-height: 78%;
   }
 
   .carousel-card[data-pos="active"]:not(.is-fullscreen) {
-    width: 100%;
-    max-width: 24rem;
-    filter: brightness(1) saturate(1.05) !important;
+    width: auto;
+    min-width: 9rem;
+    max-width: 66vw;
+    max-height: 92%;
   }
 
-  .card-status,
-  .card-rate {
-    display: flex !important;
+  .carousel-card[data-pos="next"] {
+    transform: translate(-50%, -50%) translateX(58%) translateZ(-40px) rotateY(-14deg) scale(.8);
   }
 
-  .card-pax {
-    display: block !important;
+  .carousel-card[data-pos="prev"] {
+    transform: translate(-50%, -50%) translateX(-58%) translateZ(-40px) rotateY(14deg) scale(.8);
   }
 
   /* the status badge and expand hint can collide on narrow cards —
@@ -607,8 +625,21 @@ main:has(#view-grid:checked) .card-pax {
     padding: .3em .55em;
   }
 
+  /* view-switcher is hidden below, so only back-link + logo remain —
+     keep them on one compact row (instead of the desktop 3-column grid
+     stacking each visible item onto its own row) to leave the carousel
+     stage as much vertical room as possible. */
   .page-header {
-    grid-template-columns: 1fr;
-    justify-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+  }
+
+  /* Grid view is desktop-only — abolish the toggle on small screens so
+     carousel is the only option. */
+  .view-switcher {
+    display: none;
   }
 }
