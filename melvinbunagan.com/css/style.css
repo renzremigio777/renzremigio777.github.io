@@ -242,6 +242,13 @@ header {
   letter-spacing: 0.03em;
 }
 
+.logo-partner-logo {
+  display: block;
+  height: 14px;
+  width: auto;
+  margin-top: 0.3rem;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -419,9 +426,9 @@ header {
   background-image: url(../img/prulife-uk-logo.png);
   background-repeat: no-repeat;
   background-position: top center;
-  background-size: 90%;
+  background-size: 75%;
   /* filter: brightness(0) invert(1); */
-  opacity: 0.08;
+  /* opacity: 0.08; */
   pointer-events: none;
 }
 
